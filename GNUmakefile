@@ -79,7 +79,7 @@ override HEADER_DEPS := $(CFILES:.c=.d) $(ASFILES:.S=.d)
  
 # Default target.
 .PHONY: all
-all: $(KERNEL)
+all: $(KERNEL) iso
  
 # Link rules for the final kernel executable.
 $(KERNEL): $(OBJ)
@@ -106,10 +106,11 @@ clean:
 	rm -rvf $(KERNEL) $(OBJ) $(HEADER_DEPS)
 	rm -rvf ./iso_root
 	rm -rfv *.iso
+	rm -rfv *.log
 
 iso:
 	mkdir -v iso_root
-	cp -v warp.elf limine.cfg limine/limine.sys \
+	cp -v warp.bin limine.cfg limine/limine.sys \
       limine/limine-cd.bin limine/limine-cd-efi.bin iso_root/
 	xorriso -as mkisofs -b limine-cd.bin \
         -no-emul-boot -boot-load-size 4 -boot-info-table \
