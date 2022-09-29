@@ -2,14 +2,14 @@
 #include <stddef.h>
 #include "include/limine.h"
 
-#define     White   "\033[1;00m"
-#define     Red     "\033[1;31m"
-#define     Green   "\033[1;32m"
-#define     Yellow  "\033[1;33m"
-#define     Blue    "\033[1;34m"
-#define     Purple  "\033[1;35m"
-#define     Cyan    "\033[1;36m"
-#define     Black   "\033[1;37m
+#define White "\033[1;00m"
+#define Red "\033[1;31m"
+#define Green "\033[1;32m"
+#define Yellow "\033[1;33m"
+#define Blue "\033[1;34m"
+#define Purple "\033[1;35m"
+#define Cyan "\033[1;36m"
+#define Black "\033[1;37m"
 
 // The Limine requests can be placed anywhere, but it is important that
 // the compiler does not optimise them away, so, usually, they should
@@ -18,6 +18,10 @@
 static volatile struct limine_terminal_request terminal_request = {
     .id = LIMINE_TERMINAL_REQUEST,
     .revision = 0};
+
+static volatile struct limine_memmap_request memmap_request =
+    {
+        .id = LIMINE_MEMMAP_REQUEST, .revision = 0};
 
 static void done(void)
 {
@@ -42,5 +46,9 @@ void _start(void)
     terminal_request.response->write(terminal, "VoyagerOS64, Version 0.0.1", 26);
 
     // We're done, just hang...
-    done();
+    while (1)
+    {
+        
+    }
+    
 }
