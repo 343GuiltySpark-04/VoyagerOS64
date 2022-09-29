@@ -103,4 +103,17 @@ $(KERNEL): $(OBJ)
 # Remove object files and the final executable.
 .PHONY: clean
 clean:
-	rm -rf $(KERNEL) $(OBJ) $(HEADER_DEPS)
+	rm -rvf $(KERNEL) $(OBJ) $(HEADER_DEPS)
+	rm -rvf ./iso_root
+	rm -rfv *.iso
+
+iso:
+	mkdir -v iso_root
+	cp -v myos.elf limine.cfg limine/limine.sys \
+      limine/limine-cd.bin limine/limine-cd-efi.bin iso_root/
+	xorriso -as mkisofs -b limine-cd.bin \
+        -no-emul-boot -boot-load-size 4 -boot-info-table \
+        --efi-boot limine-cd-efi.bin \
+        -efi-boot-part --efi-boot-image --protective-msdos-label \
+        iso_root -o image.iso
+	limine-deploy image.iso
