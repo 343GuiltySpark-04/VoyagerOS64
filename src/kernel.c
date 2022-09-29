@@ -30,7 +30,7 @@ void _start(void)
     // We should now be able to call the Limine terminal to print out
     // a simple "Hello World" to screen.
     struct limine_terminal *terminal = terminal_request.response->terminals[0];
-    terminal_request.response->write(terminal, "Hello World", 11);
+    terminal_request.response->write(terminal, "VoyagerOS64, Version 0.0.1", 26);
 
     // We're done, just hang...
     done();
