@@ -1,6 +1,6 @@
 # This is the name that our final kernel executable will have.
 # Change as needed.
-override KERNEL := myos.elf
+override KERNEL := warp.bin
  
 # Convenience macro to reliably declare overridable command variables.
 define DEFAULT_VAR =
@@ -109,11 +109,11 @@ clean:
 
 iso:
 	mkdir -v iso_root
-	cp -v myos.elf limine.cfg limine/limine.sys \
+	cp -v warp.elf limine.cfg limine/limine.sys \
       limine/limine-cd.bin limine/limine-cd-efi.bin iso_root/
 	xorriso -as mkisofs -b limine-cd.bin \
         -no-emul-boot -boot-load-size 4 -boot-info-table \
         --efi-boot limine-cd-efi.bin \
         -efi-boot-part --efi-boot-image --protective-msdos-label \
-        iso_root -o image.iso
-	limine-deploy image.iso
+        iso_root -o VoyagerOS.iso
+	limine-deploy VoyagerOS.iso
