@@ -24,7 +24,7 @@ $(eval $(call DEFAULT_VAR,LD,ld))
 CFLAGS ?= -g -O2 -pipe -Wall -Wextra
  
 # User controllable preprocessor flags. We set none by default.
-CPPFLAGS ?=
+CPPFLAGS ?= 
  
 # User controllable nasm flags.
 NASMFLAGS ?= -F dwarf -g
@@ -72,10 +72,11 @@ override NASMFLAGS += \
  
 # Use find to glob all *.c, *.S, and *.asm files in the directory and extract the object names.
 override CFILES := $(shell find src -type f -name '*.c')
+override CCFILES := $(shell find src -type f -name '*.cpp')
 override ASFILES := $(shell find src -type f -name '*.S')
 override NASMFILES := $(shell find src -type f -name '*.asm')
-override OBJ := $(CFILES:.c=.o) $(ASFILES:.S=.o) $(NASMFILES:.asm=.o)
-override HEADER_DEPS := $(CFILES:.c=.d) $(ASFILES:.S=.d)
+override OBJ := $(CFILES:.c=.o) $(ASFILES:.S=.o) $(NASMFILES:.asm=.o) $(CCFILES:.cpp=.o)
+override HEADER_DEPS := $(CFILES:.c=.d) $(ASFILES:.S=.d) $(CCFILES:.cpp=.d)
  
 # Default target.
 .PHONY: all
@@ -91,6 +92,9 @@ $(KERNEL): $(OBJ)
 # Compilation rules for *.c files.
 %.o: %.c
 	$(CC) $(CPPFLAGS) $(CFLAGS) -c $< -o $@
+
+%.o: %.cpp
+	gcc $(CPPFLAGS) $(CFLAGS) -c $< -o $@
  
 # Compilation rules for *.S files.
 %.o: %.S
