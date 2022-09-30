@@ -1,6 +1,6 @@
 #pragma once
 
-#include "tss/tss.hpp"
+#include "tss.hpp"
 #include <stdint.h>
 
 #define GDTAccessDPL(n) (n << 5)
