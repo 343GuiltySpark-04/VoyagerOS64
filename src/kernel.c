@@ -15,7 +15,7 @@
 // the compiler does not optimise them away, so, usually, they should
 // be made volatile or equivalent.
 
-extern void LoadGDT();
+extern void init_kernel();
 
 static volatile struct limine_terminal_request terminal_request = {
     .id = LIMINE_TERMINAL_REQUEST,
