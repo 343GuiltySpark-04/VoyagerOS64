@@ -43,6 +43,8 @@ void _start(void)
         done();
     }
 
+    init_kernel();
+
     struct limine_memmap_response *memory_map_response = memmap_request.response;
 
     // We should now be able to call the Limine terminal to print out
