@@ -50,8 +50,6 @@ void _start(void)
 
     struct limine_memmap_response *memory_map_response = memmap_request.response;
 
-    LoadGDT();
-
     // We should now be able to call the Limine terminal to print out
     // a simple "Hello World" to screen.
     struct limine_terminal *terminal = terminal_request.response->terminals[0];
