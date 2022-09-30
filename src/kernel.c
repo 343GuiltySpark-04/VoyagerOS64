@@ -1,7 +1,5 @@
 #include <stdint.h>
 #include <stddef.h>
-#include <stdlib.h>
-#include <string.h>
 #include "include/limine.h"
 
 #define White "\033[1;00m"
@@ -36,7 +34,7 @@ static void done(void)
 struct GDT_desc_data
 {
     uint64_t base;
-    
+
 };
 
 
