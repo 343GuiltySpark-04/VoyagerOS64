@@ -1,5 +1,7 @@
 #include <stdint.h>
 #include <stddef.h>
+#include <stdlib.h>
+#include <string.h>
 #include "include/limine.h"
 
 #define White "\033[1;00m"
@@ -34,16 +36,14 @@ static void done(void)
 // The following will be our kernel's entry point.
 void _start(void)
 {
+
     // Ensure we got a terminal
     if (terminal_request.response == NULL || terminal_request.response->terminal_count < 1)
     {
         done();
     }
- 
-   
-   struct limine_memap_response* memory_map_response = memmap_request.response;
 
-
+    struct limine_memmap_response *memory_map_response = memmap_request.response;
 
     // We should now be able to call the Limine terminal to print out
     // a simple "Hello World" to screen.
@@ -53,7 +53,5 @@ void _start(void)
     // We're done, just hang...
     while (1)
     {
-        
     }
-    
 }
