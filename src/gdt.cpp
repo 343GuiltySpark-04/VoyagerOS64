@@ -7,6 +7,8 @@ uint8_t bootstrapist2Stack[0x100000];
 
 TSS bootstrapTSS = {0};
 
+extern "C" void breakpoint();
+
 __attribute__((aligned(0x1000)))
 GDT bootstrapGDT = {
     {.limitLow = 0,
@@ -64,6 +66,8 @@ void LoadGDT(GDT *gdt, TSS *tss, uint8_t *tssStack, uint8_t *ist1Stack, uint8_t 
 {
     uint64_t address = (uint64_t)tss;
 
+    breakpoint();
+
     gdt->tss = (TSSDescriptor){
         .length = 104,
         .baseLow = (uint16_t)address,
@@ -73,9 +77,13 @@ void LoadGDT(GDT *gdt, TSS *tss, uint8_t *tssStack, uint8_t *ist1Stack, uint8_t 
         .baseUp = (uint32_t)(address >> 32),
     };
 
+    breakpoint();
+
     tss->rsp0 = (uint64_t)tssStack + stackSize;
     tss->ist1 = (uint64_t)ist1Stack + stackSize;
     tss->ist2 = (uint64_t)ist2Stack + stackSize;
+
+    breakpoint();
 
     /*
     DEBUG_OUT("%s", "GDT Offsets:");
@@ -91,6 +99,8 @@ void LoadGDT(GDT *gdt, TSS *tss, uint8_t *tssStack, uint8_t *ist1Stack, uint8_t 
                  :
                  : "m"(*gdtr));
 
+    breakpoint();
+
     asm volatile("push $0x08\n"
                  "lea 1f(%%rip), %%rax\n"
                  "push %%rax\n"
@@ -100,6 +110,8 @@ void LoadGDT(GDT *gdt, TSS *tss, uint8_t *tssStack, uint8_t *ist1Stack, uint8_t 
                  :
                  : "rax", "memory");
 
+    breakpoint();
+
     asm volatile("mov %0, %%ds\n"
                  "mov %0, %%es\n"
                  "mov %0, %%gs\n"
@@ -108,7 +120,10 @@ void LoadGDT(GDT *gdt, TSS *tss, uint8_t *tssStack, uint8_t *ist1Stack, uint8_t 
                  :
                  : "a"((uint16_t)0x10));
 
+    breakpoint();
+
     asm volatile("ltr %0"
                  :
                  : "a"((uint16_t)GDTTSSSegment));
+    breakpoint();
 }

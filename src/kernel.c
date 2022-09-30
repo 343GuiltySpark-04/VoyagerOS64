@@ -17,6 +17,8 @@
 
 extern void init_kernel();
 
+extern void breakpoint();
+
 static volatile struct limine_terminal_request terminal_request = {
     .id = LIMINE_TERMINAL_REQUEST,
     .revision = 0};
@@ -42,6 +44,8 @@ void _start(void)
     {
         done();
     }
+
+    breakpoint();
 
     init_kernel();
 
