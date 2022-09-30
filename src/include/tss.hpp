@@ -2,7 +2,6 @@
 #include <stdint.h>
 #include "global_defs.hpp"
 
-
 struct PACKED TSS
 {
     uint32_t reserved0;

@@ -15,6 +15,8 @@
 // the compiler does not optimise them away, so, usually, they should
 // be made volatile or equivalent.
 
+extern void LoadGDT();
+
 static volatile struct limine_terminal_request terminal_request = {
     .id = LIMINE_TERMINAL_REQUEST,
     .revision = 0};
@@ -34,9 +36,7 @@ static void done(void)
 struct GDT_desc_data
 {
     uint64_t base;
-
 };
-
 
 // The following will be our kernel's entry point.
 void _start(void)
@@ -49,6 +49,8 @@ void _start(void)
     }
 
     struct limine_memmap_response *memory_map_response = memmap_request.response;
+
+    LoadGDT();
 
     // We should now be able to call the Limine terminal to print out
     // a simple "Hello World" to screen.

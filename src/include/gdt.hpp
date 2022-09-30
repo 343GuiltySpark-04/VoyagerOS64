@@ -47,7 +47,6 @@ struct PACKED GDTEntry
     uint8_t baseHigh;
 };
 
-
 struct PACKED TSSDescriptor
 {
     uint16_t length;
@@ -62,13 +61,13 @@ struct PACKED TSSDescriptor
 
 struct PACKED __attribute__((aligned(0x1000))) GDT
 {
-    GDTEntry null; //0x00
-    GDTEntry kernelCode; //0x08
-    GDTEntry kernelData; //0x10
-    GDTEntry userNull; //0x18
-    GDTEntry userData; //0x20
-    GDTEntry userCode; //0x28
-    TSSDescriptor tss; //0x30
+    GDTEntry null;       // 0x00
+    GDTEntry kernelCode; // 0x08
+    GDTEntry kernelData; // 0x10
+    GDTEntry userNull;   // 0x18
+    GDTEntry userData;   // 0x20
+    GDTEntry userCode;   // 0x28
+    TSSDescriptor tss;   // 0x30
 };
 
 static_assert(sizeof(GDT) <= 0x1000);
@@ -80,4 +79,4 @@ extern uint8_t bootstrapTssStack[0x100000];
 extern uint8_t bootstrapist1Stack[0x100000];
 extern uint8_t bootstrapist2Stack[0x100000];
 
-void LoadGDT(GDT *gdt, TSS *tss, uint8_t *tssStack, uint8_t *ist1Stack, uint8_t *ist2Stack, int stackSize, GDTDescriptor *gdtr);
+extern "C" void LoadGDT(GDT *gdt, TSS *tss, uint8_t *tssStack, uint8_t *ist1Stack, uint8_t *ist2Stack, int stackSize, GDTDescriptor *gdtr);

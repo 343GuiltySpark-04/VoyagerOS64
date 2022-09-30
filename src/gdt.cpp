@@ -64,7 +64,7 @@ void LoadGDT(GDT *gdt, TSS *tss, uint8_t *tssStack, uint8_t *ist1Stack, uint8_t 
 {
     uint64_t address = (uint64_t)tss;
 
-    gdt->tss = (TSSDescriptor) {
+    gdt->tss = (TSSDescriptor){
         .length = 104,
         .baseLow = (uint16_t)address,
         .baseMid = (uint8_t)(address >> 16),
@@ -87,19 +87,28 @@ void LoadGDT(GDT *gdt, TSS *tss, uint8_t *tssStack, uint8_t *ist1Stack, uint8_t 
     DEBUG_OUT("GDT TSS: 0x%llx", (uint64_t)&gdt->tss - (uint64_t)gdt);
     */
 
-    asm volatile("lgdt %0" : : "m"(*gdtr));
+    asm volatile("lgdt %0"
+                 :
+                 : "m"(*gdtr));
 
     asm volatile("push $0x08\n"
-                "lea 1f(%%rip), %%rax\n"
-                "push %%rax\n"
-                "lretq\n"
-                "1:\n" : : : "rax", "memory");
+                 "lea 1f(%%rip), %%rax\n"
+                 "push %%rax\n"
+                 "lretq\n"
+                 "1:\n"
+                 :
+                 :
+                 : "rax", "memory");
 
     asm volatile("mov %0, %%ds\n"
-                "mov %0, %%es\n"
-                "mov %0, %%gs\n"
-                "mov %0, %%fs\n"
-                "mov %0, %%ss\n" : : "a"((uint16_t)0x10));
+                 "mov %0, %%es\n"
+                 "mov %0, %%gs\n"
+                 "mov %0, %%fs\n"
+                 "mov %0, %%ss\n"
+                 :
+                 : "a"((uint16_t)0x10));
 
-    asm volatile("ltr %0" : : "a"((uint16_t)GDTTSSSegment));
+    asm volatile("ltr %0"
+                 :
+                 : "a"((uint16_t)GDTTSSSegment));
 }
