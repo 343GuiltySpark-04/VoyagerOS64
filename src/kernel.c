@@ -33,11 +33,6 @@ static void done(void)
     }
 }
 
-struct GDT_desc_data
-{
-    uint64_t base;
-};
-
 // The following will be our kernel's entry point.
 void _start(void)
 {
