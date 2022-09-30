@@ -39,6 +39,11 @@ void _start(void)
     {
         done();
     }
+ 
+   
+   struct limine_memap_response* memory_map_response = memmap_request.response;
+
+
 
     // We should now be able to call the Limine terminal to print out
     // a simple "Hello World" to screen.
