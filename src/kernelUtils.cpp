@@ -3,7 +3,7 @@
 
 extern void breakpoint();
 
-extern "C" void init_kernel()
+extern "C" volatile void init_kernel()
 {
     LoadGDT(&bootstrapGDT, &bootstrapTSS, bootstrapTssStack, bootstrapist1Stack, bootstrapist2Stack, sizeof(bootstrapTssStack), &bootstrapGDTR);
     // breakpoint();

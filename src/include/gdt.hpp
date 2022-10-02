@@ -7,18 +7,14 @@
 
 namespace GDTAccessFlag
 {
-
     enum GDTAccessFlag
     {
-
-        ReadWrite = (2 << 1),
+        ReadWrite = (1 << 1),
         DC = (1 << 2),
         Execute = (1 << 3),
         Segments = (1 << 4),
         Present = (1 << 7)
-
     };
-
 }
 
 #define GDTKernelBaseSelector 0x08
@@ -38,7 +34,6 @@ struct PACKED GDTDescriptor
 
 struct PACKED GDTEntry
 {
-
     uint16_t limitLow;
     uint16_t baseLow;
     uint8_t baseMiddle;
