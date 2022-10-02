@@ -49,6 +49,8 @@ void _start(void)
 
     init_kernel();
 
+    breakpoint();
+
     struct limine_memmap_response *memory_map_response = memmap_request.response;
 
     // We should now be able to call the Limine terminal to print out
