@@ -2,4 +2,4 @@
 set -e
 . ./iso.sh
 
-sudo qemu-system-$(./target-triplet-to-arch.sh $HOST) -serial file:serial.log -cdrom VoyagerOS.iso
+sudo qemu-system-x86_64 -serial file:serial.log -cdrom VoyagerOS.iso
