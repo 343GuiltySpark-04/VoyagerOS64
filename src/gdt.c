@@ -47,6 +47,15 @@ struct GDT_Entry User_ds = {
 
 };
 
+struct GDT_Desc desc = {
+
+.size = sizeof(Kernel_cs) - 1,
+.offset = (uint64_t)&Kernel_cs
+
+
+};
+
+
 void encodeGdtEntry(uint8_t *target, struct GDT_Entry source)
 {
     // Check the limit to make sure that it can be encoded
