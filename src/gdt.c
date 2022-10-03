@@ -73,12 +73,12 @@ void encodeGdtEntry(uint8_t *target, struct GDT_Entry source)
     target[6] |= (source.flags << 4);
 }
 
+void LoadGDT_Stage1()
+{
 
-void LoadGDT_Stage1(){
-
-   encodeGdtEntry(0x0000, null_seg);
-   encodeGdtEntry(0x0008, Kernel_cs);
-   encodeGdtEntry(0x0010, Kernel_ds);
-   
-
+    encodeGdtEntry(0x0000, null_seg);
+    encodeGdtEntry(0x0008, Kernel_cs);
+    encodeGdtEntry(0x0010, Kernel_ds);
+    encodeGdtEntry(0x0018, User_cs);
+    encodeGdtEntry(0x0020, User_ds);
 }
