@@ -24,6 +24,24 @@ struct GDT_Entry Kernel_cs = {
 
 struct GDT_Entry Kernel_ds = {
 
+    .base = 0,
+    .limit = 0xFFFFF,
+    .access_byte = GDTAccessKernelData,
+    .flags = 0xC
+
+};
+
+
+struct GDT_Entry User_cs = {
+
+    .base = 0,
+    .limit = 0xFFFFF,
+    .access_byte = GDTAccessUserCode,
+    .flags = 0xA
+
+};
+
+struct GDT_Entry User_ds = {
 
 
 };
