@@ -15,7 +15,7 @@
 // the compiler does not optimise them away, so, usually, they should
 // be made volatile or equivalent.
 
-extern void init_kernel();
+
 
 extern void breakpoint();
 
@@ -45,11 +45,9 @@ void _start(void)
         done();
     }
 
-    breakpoint();
+    // breakpoint();
 
-    init_kernel();
-
-    breakpoint();
+     
 
     struct limine_memmap_response *memory_map_response = memmap_request.response;
 
@@ -59,6 +57,7 @@ void _start(void)
     terminal_request.response->write(terminal, "VoyagerOS64, Version 0.0.1", 26);
 
     // We're done, just hang...
+    breakpoint();
     while (1)
     {
     }

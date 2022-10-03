@@ -1,6 +1,6 @@
 #pragma once
 #include <stdint.h>
-#include "global_defs.hpp"
+#include "global_defs.h"
 
 struct PACKED TSS
 {
