@@ -38,6 +38,15 @@ struct PACKED GDT_Entry
     uint8_t flags;
 };
 
+
+
+struct PACKED TSS_Entry{
+
+
+
+};
+
+
 extern GDT_Desc;
 extern GDT_Entry;
 
