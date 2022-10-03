@@ -2,9 +2,7 @@
 #include "include/global_defs.h"
 #include <stdint.h>
 
-
-__attribute__((aligned(0x1000)))
-struct GDT_Entry null_seg = {
+__attribute__((aligned(0x1000))) struct GDT_Entry null_seg = {
 
     .base = 0,
     .limit = 0x00000000,
@@ -31,7 +29,6 @@ struct GDT_Entry Kernel_ds = {
 
 };
 
-
 struct GDT_Entry User_cs = {
 
     .base = 0,
@@ -43,5 +40,9 @@ struct GDT_Entry User_cs = {
 
 struct GDT_Entry User_ds = {
 
+    .base = 0,
+    .limit = 0xFFFFF,
+    .access_byte = GDTAccessUserData,
+    .flags = 0xC
 
 };
