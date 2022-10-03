@@ -12,3 +12,18 @@ struct GDT_Entry null_seg = {
     .flags = 0x00
 
 };
+
+struct GDT_Entry Kernel_cs = {
+
+    .base = 0,
+    .limit = 0xFFFFF,
+    .access_byte = GDTAccessKernelCode,
+    .flags = 0xA
+
+};
+
+struct GDT_Entry Kernel_ds = {
+
+
+
+};
