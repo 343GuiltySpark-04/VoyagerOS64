@@ -37,3 +37,10 @@ struct PACKED GDT_Entry
     uint8_t access_byte;
     uint8_t flags;
 };
+
+
+extern GDT_Desc;
+//extern GDT_Entry;
+
+void LoadGDT();
+
