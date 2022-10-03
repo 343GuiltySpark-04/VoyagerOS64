@@ -1,6 +1,7 @@
 #include <stdint.h>
 #include <stddef.h>
 #include "include/limine.h"
+#include "include/gdt.h"
 
 #define White "\033[1;00m"
 #define Red "\033[1;31m"
