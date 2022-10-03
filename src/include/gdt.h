@@ -41,4 +41,4 @@ struct PACKED GDT_Entry
 extern GDT_Desc;
 extern GDT_Entry;
 
-void LoadGDT();
+void LoadGDT_Stage1();
