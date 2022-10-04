@@ -54,7 +54,7 @@ struct GDT_Desc desc = {
 
 };
 
-extern gdt_load(int *gdtr);
+extern gdt_load(void *gdtr);
 
 void encodeGdtEntry(uint8_t *target, struct GDT_Entry source)
 {
