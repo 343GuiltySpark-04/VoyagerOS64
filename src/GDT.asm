@@ -1,6 +1,6 @@
 [bits 64]
 
-global gdt_loader
+global gdt_load
 
-gdt_loader:
+gdt_load:
 
