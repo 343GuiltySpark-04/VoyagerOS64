@@ -47,11 +47,7 @@ struct GDT_Entry User_ds = {
 
 };
 
-uint64_t null_size = sizeof(null_seg);
-uint64_t Kernel_cs_size = sizeof(Kernel_cs);
-uint64_t Kernel_ds_size = sizeof(Kernel_ds);
-uint64_t User_cs_size = sizeof(User_cs);
-uint64_t User_ds_size = sizeof(User_ds);
+
 
 struct GDT_Desc desc = {
 
