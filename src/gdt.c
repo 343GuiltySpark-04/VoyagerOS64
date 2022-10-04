@@ -49,7 +49,7 @@ struct GDT_Entry User_ds = {
 
 struct GDT_Desc desc = {
 
-    .size = sizeof(Kernel_cs) - 1,
+    .size = sizeof(null_seg) + sizeof(Kernel_cs) + sizeof(Kernel_ds) + sizeof(User_cs) + sizeof(User_ds) - 1,
     .offset = (uint64_t)&Kernel_cs
 
 };
