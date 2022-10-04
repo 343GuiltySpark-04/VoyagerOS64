@@ -2,9 +2,6 @@
 #include "include/global_defs.h"
 #include <stdint.h>
 
-
-
-
 __attribute__((aligned(0x1000))) struct GDT_Entry null_seg = {
 
     .base = 0,
@@ -57,7 +54,7 @@ struct GDT_Desc desc = {
 
 };
 
-extern gdt_load();
+extern gdt_load(int *gdtr);
 
 void encodeGdtEntry(uint8_t *target, struct GDT_Entry source)
 {
