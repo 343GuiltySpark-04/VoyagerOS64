@@ -47,8 +47,6 @@ struct GDT_Entry User_ds = {
 
 };
 
-
-
 struct GDT_Desc desc = {
 
     .size = sizeof(Kernel_cs) - 1,
