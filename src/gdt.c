@@ -47,14 +47,21 @@ struct GDT_Entry User_ds = {
 
 };
 
-struct GDT_Desc desc = {
+struct GDT_Entry GDT_end = {
 
-.size = sizeof(Kernel_cs) - 1,
-.offset = (uint64_t)&Kernel_cs
-
+    .base = 0,
+    .limit = 0x00000000,
+    .access_byte = 0x00,
+    .flags = 0x00
 
 };
 
+struct GDT_Desc desc = {
+
+    .size = sizeof(Kernel_cs) - 1,
+    .offset = (uint64_t)&Kernel_cs
+
+};
 
 void encodeGdtEntry(uint8_t *target, struct GDT_Entry source)
 {
