@@ -47,14 +47,8 @@ struct GDT_Entry User_ds = {
 
 };
 
-struct GDT_Entry GDT_end = {
-
-    .base = 0,
-    .limit = 0x00000000,
-    .access_byte = 0x00,
-    .flags = 0x00
-
-};
+uint64_t null_size = sizeof(null_seg);
+uint64_t Kernel_cs_size = sizeof(Kernel_cs);
 
 struct GDT_Desc desc = {
 
