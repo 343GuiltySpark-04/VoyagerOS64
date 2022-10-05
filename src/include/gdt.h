@@ -41,14 +41,9 @@ struct PACKED GDT_Entry
 struct PACKED TSS_Entry
 {
 
-   uint16_t limit;
-   uint8_t flags;
-
-
-
-
-
-
+    uint16_t base;
+    uint16_t limit;
+    uint8_t flags;
 };
 
 extern GDT_Desc;
