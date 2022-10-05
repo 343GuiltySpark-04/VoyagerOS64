@@ -2,6 +2,8 @@
 #include "include/global_defs.h"
 #include <stdint.h>
 
+extern void breakpoint();
+
 __attribute__((aligned(0x1000))) struct GDT_Entry null_seg = {
 
     .base = 0,
@@ -92,4 +94,6 @@ void LoadGDT_Stage1()
     encodeGdtEntry(0x0020, User_ds);
 
     gdt_load(desc.limit, desc.base);
+
+    // breakpoint();
 }

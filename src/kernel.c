@@ -16,8 +16,6 @@
 // the compiler does not optimise them away, so, usually, they should
 // be made volatile or equivalent.
 
-
-
 extern void breakpoint();
 
 static volatile struct limine_terminal_request terminal_request = {
@@ -40,7 +38,6 @@ static void done(void)
 void _start(void)
 {
 
-
     breakpoint();
 
     LoadGDT_Stage1();
@@ -53,8 +50,6 @@ void _start(void)
 
     // breakpoint();
 
-     
-
     struct limine_memmap_response *memory_map_response = memmap_request.response;
 
     // We should now be able to call the Limine terminal to print out
@@ -63,7 +58,7 @@ void _start(void)
     terminal_request.response->write(terminal, "VoyagerOS64, Version 0.0.1", 26);
 
     // We're done, just hang...
-    breakpoint();
+    // breakpoint();
     while (1)
     {
     }
