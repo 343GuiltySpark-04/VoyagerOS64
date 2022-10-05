@@ -58,6 +58,7 @@ struct GDT_Desc desc = {
 };
 
 extern gdt_load(uint16_t, uint64_t);
+extern reloadSegs();
 
 void encodeGdtEntry(uint8_t *target, struct GDT_Entry source)
 {
@@ -95,6 +96,7 @@ void LoadGDT_Stage1()
     encodeGdtEntry(0x0020, User_ds);
 
     gdt_load(desc.limit, desc.base);
+    reloadSegs();
 
     // breakpoint();
 }
