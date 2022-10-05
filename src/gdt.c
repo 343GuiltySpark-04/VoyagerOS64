@@ -1,5 +1,6 @@
 #include "include/gdt.h"
 #include "include/global_defs.h"
+#include "include/tss.h"
 #include <stdint.h>
 
 extern void breakpoint();
