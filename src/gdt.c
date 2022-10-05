@@ -8,6 +8,8 @@ uint8_t TssStack[0x100000];
 uint8_t ist1Stack[0x100000];
 uint8_t ist2Stack[0x100000];
 
+
+
 __attribute__((aligned(0x1000))) struct GDT_Entry null_seg = {
 
     .base = 0,
