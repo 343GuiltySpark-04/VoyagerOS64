@@ -49,12 +49,12 @@ struct GDT_Entry User_ds = {
 
 struct GDT_Desc desc = {
 
-    .size = sizeof(null_seg) + sizeof(Kernel_cs) + sizeof(Kernel_ds) + sizeof(User_cs) + sizeof(User_ds) - 1,
-    .offset = (uint64_t)&null_seg
+    .limit = sizeof(null_seg) + sizeof(Kernel_cs) + sizeof(Kernel_ds) + sizeof(User_cs) + sizeof(User_ds) - 1,
+    .base = (uint64_t)&null_seg
 
 };
 
-extern gdt_load(void *gdtr);
+extern gdt_load(uint16_t, uint64_t);
 
 void encodeGdtEntry(uint8_t *target, struct GDT_Entry source)
 {
@@ -90,4 +90,6 @@ void LoadGDT_Stage1()
     encodeGdtEntry(0x0010, Kernel_ds);
     encodeGdtEntry(0x0018, User_cs);
     encodeGdtEntry(0x0020, User_ds);
+
+    gdt_load(desc.limit, desc.base);
 }

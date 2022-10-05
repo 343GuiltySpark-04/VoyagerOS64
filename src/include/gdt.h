@@ -26,8 +26,8 @@ enum GDTAccessFlag
 
 struct PACKED GDT_Desc
 {
-    uint16_t size;
-    uint64_t offset;
+    uint16_t limit;
+    uint64_t base;
 };
 
 struct PACKED GDT_Entry
