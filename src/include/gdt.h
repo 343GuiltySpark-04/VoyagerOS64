@@ -43,6 +43,9 @@ struct PACKED TSS_Entry
     uint16_t base;
     uint16_t limit;
     uint8_t flags;
+    uint64_t rsp0;
+    uint64_t ist1;
+    uint64_t ist2;
 };
 
 extern GDT_Desc;
