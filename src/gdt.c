@@ -53,6 +53,14 @@ struct GDT_Entry User_ds = {
 
 };
 
+struct TSS_Entry TSS = {
+
+
+
+
+
+};
+
 struct GDT_Desc desc = {
 
     .limit = sizeof(null_seg) + sizeof(Kernel_cs) + sizeof(Kernel_ds) + sizeof(User_cs) + sizeof(User_ds) - 1,
