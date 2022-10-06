@@ -3,6 +3,8 @@
 #include "include/idt.h"
 #include <stdbool.h>
 
+// Based on https://github.com/austanss/skylight/blob/trunk/glass/src/cpu/interrupts/idt.c
+
 idt_entry_t idt[IDT_MAX_DESCRIPTORS];
 
 static bool vectors[IDT_MAX_DESCRIPTORS];
