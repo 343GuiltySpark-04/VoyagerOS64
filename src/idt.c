@@ -6,6 +6,7 @@
 // Based on https://github.com/austanss/skylight/blob/trunk/glass/src/cpu/interrupts/idt.c
 
 extern void breakpoint();
+extern void stop_interrupts();
 
 __attribute__((aligned(0x10))) static idt_entry_t idt[IDT_MAX_DESCRIPTORS]; // Create an array of IDT entries; aligned for performance
 
@@ -45,6 +46,7 @@ void idt_init()
         vectors[vector] = true;
     }
 
+    stop_interrupts();
     breakpoint();
 
     __asm__ volatile("lidt %0"
