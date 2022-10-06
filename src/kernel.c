@@ -50,6 +50,8 @@ void _start(void)
 
     LoadGDT_Stage1();
 
+    serial_debug(0x47);
+
     breakpoint();
 
     idt_init();
