@@ -56,7 +56,12 @@ struct GDT_Entry User_ds = {
 struct TSS_Entry TSS = {
 
     .base = &TSS,
-    .limit = sizeof(TSS)
+    .limit = sizeof(TSS),
+    .access_byte = 0x89,
+    .flags = 0x0,
+    .rsp0 = TssStack,
+    .ist1 = ist1Stack,
+    .ist2 = ist2Stack
 
 };
 
