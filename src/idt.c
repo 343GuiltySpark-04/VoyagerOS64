@@ -45,6 +45,8 @@ void idt_init()
         vectors[vector] = true;
     }
 
+    breakpoint();
+
     __asm__ volatile("lidt %0"
                      :
                      : "m"(idtr)); // load the new IDT

@@ -43,6 +43,8 @@ void _start(void)
 
     LoadGDT_Stage1();
 
+    breakpoint();
+
     idt_init();
 
     // Ensure we got a terminal
