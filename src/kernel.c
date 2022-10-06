@@ -2,6 +2,7 @@
 #include <stddef.h>
 #include "include/limine.h"
 #include "include/gdt.h"
+#include "include/idt.h"
 
 #define White "\033[1;00m"
 #define Red "\033[1;31m"
