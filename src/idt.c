@@ -4,12 +4,6 @@
 
 __attribute__((aligned(0x10))) static idt_entry_t idt[256]; // Create an array of IDT entries; aligned for performance
 
-typedef struct
-{
-    uint16_t limit;
-    uint64_t base;
-} PACKED idtr_t;
-
 static idtr_t idtr;
 
 __attribute__((noreturn)) void exception_handler(void);
@@ -20,7 +14,7 @@ void exception_handler()
 
 void idt_set_descriptor(uint8_t vector, void *isr, uint8_t flags)
 {
-    idt_desc_t *descriptor = &idt[vector];
+    idt_entry_t *descriptor = &idt[vector];
 
     descriptor->base_low = (uint64_t)isr & 0xFFFF;
     descriptor->cs = 0x0008;

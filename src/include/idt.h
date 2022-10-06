@@ -3,8 +3,6 @@
 #include <stdint.h>
 #include "global_defs.h"
 
-
-
 typedef struct
 {
     uint16_t isr_low;   // The lower 16 bits of the ISR's address
@@ -16,4 +14,10 @@ typedef struct
     uint32_t reserved;  // Set to zero
 } PACKED idt_entry_t;
 
-void idt_set_descriptor(uint8_t vector, void* isr, uint8_t flags);
+typedef struct
+{
+    uint16_t limit;
+    uint64_t base;
+} PACKED idtr_t;
+
+void idt_set_descriptor(uint8_t vector, void *isr, uint8_t flags);
