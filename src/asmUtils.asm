@@ -3,6 +3,7 @@
 global breakpoint
 global stop_interrupts
 global start_interrupts
+global serial_debug
 
 ; Bochs Magic Breakpoints
 breakpoint:
@@ -16,4 +17,10 @@ stop_interrupts:
 
 start_interrupts:
     sti 
+    ret
+
+serial_debug:
+    mov dx,0xe9
+    mov eax,edi
+    out dx,eax
     ret

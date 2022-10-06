@@ -3,6 +3,7 @@
 #include "include/limine.h"
 #include "include/gdt.h"
 #include "include/idt.h"
+#include "include/KernelUtils.h"
 
 #define White "\033[1;00m"
 #define Red "\033[1;31m"
@@ -44,6 +45,7 @@ void _start(void)
     breakpoint();
 
     stop_interrupts();
+    NMI_disable();
 
     LoadGDT_Stage1();
 
