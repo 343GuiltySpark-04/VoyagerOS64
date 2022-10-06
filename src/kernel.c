@@ -46,7 +46,6 @@ void _start(void)
     breakpoint();
 
     stop_interrupts();
-    NMI_disable();
 
     LoadGDT_Stage1();
 

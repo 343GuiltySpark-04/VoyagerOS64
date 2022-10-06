@@ -4,6 +4,7 @@ global breakpoint
 global stop_interrupts
 global start_interrupts
 global serial_debug
+global NMI_disable
 
 ; Bochs Magic Breakpoints
 breakpoint:
@@ -24,3 +25,6 @@ serial_debug:
     mov eax,edi
     out dx,eax
     ret
+
+NMI_disable:
+    
