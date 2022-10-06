@@ -47,3 +47,12 @@ isr_no_err_stub 28
 isr_no_err_stub 29
 isr_err_stub    30
 isr_no_err_stub 31
+
+
+global isr_stub_table
+isr_stub_table:
+%assign i 0 
+%rep    32 
+    dd isr_stub_%+i ; use DQ instead if targeting 64-bit
+%assign i i+1 
+%endrep
