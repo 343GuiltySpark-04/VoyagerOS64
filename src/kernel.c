@@ -43,6 +43,8 @@ void _start(void)
 
     LoadGDT_Stage1();
 
+    idt_init();
+
     // Ensure we got a terminal
     if (terminal_request.response == NULL || terminal_request.response->terminal_count < 1)
     {
