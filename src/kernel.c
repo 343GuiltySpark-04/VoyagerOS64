@@ -41,11 +41,11 @@ void _start(void)
 
     breakpoint();
 
-    idt_init();
+    LoadGDT_Stage1();
 
     breakpoint();
 
-    LoadGDT_Stage1();
+    idt_init();
 
     // Ensure we got a terminal
     if (terminal_request.response == NULL || terminal_request.response->terminal_count < 1)
