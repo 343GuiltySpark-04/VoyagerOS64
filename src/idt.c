@@ -1,7 +1,6 @@
 #include "include/global_defs.h"
 #include <stdint.h>
 #include "include/idt.h"
-#include <stdbool.h>
 
 __attribute__((aligned(0x10))) static idt_entry_t idt[256]; // Create an array of IDT entries; aligned for performance
 typedef struct
@@ -48,7 +47,7 @@ extern void* isr_stub_table[];
 void idt_init(void);
 void idt_init() {
     idtr.base = (uintptr_t)&idt[0];
-    idtr.limit = (uint16_t)sizeof(idt_entry_t) * 256 - 1;
+    idtr.limit = (uint16_t)sizeof(idt_entry_t) * IDT_MAX_DESCRIPTORS - 1;
  
     for (uint8_t vector = 0; vector < 32; vector++) {
         idt_set_descriptor(vector, isr_stub_table[vector], 0x8E);
