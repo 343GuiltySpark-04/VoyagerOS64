@@ -1,60 +1,56 @@
 #pragma once
+
 #include <stdint.h>
 #include "global_defs.h"
 
-#define GDT_MAX_DESCRIPTORS 0x2000
-#define GDT_DESCRIPTOR_SIZE 0x08
+#define GDTAccessDPL(n) (n << 5)
 
-#define GDT_DESCRIPTOR_ACCESS 0x01
-#define GDT_DESCRIPTOR_READWRITE 0x02
-#define GDT_DESCRIPTOR_DC 0x04
-#define GDT_DESCRIPTOR_EXECUTABLE 0x08
-#define GDT_DESCRIPTOR_CODE_DATA 0x10
-#define GDT_DESCRIPTOR_DPL 0x60
-#define GDT_DESCRIPTOR_PRESENT 0x80
+enum GDTAccessFlag
+{
+    ReadWrite = (1 << 1),
+    DC = (1 << 2),
+    Execute = (1 << 3),
+    Segments = (1 << 4),
+    Present = (1 << 7)
+};
 
-#define GDT_GRANULARITY_OS 0x10
-#define GDT_GRANULARITY_X64 0x20
-#define GDT_GRANULARITY_X32 0x40
-#define GDT_GRANULARITY_4K 0x80
+#define GDTKernelBaseSelector 0x08
+#define GDTUserBaseSelector 0x18
+#define GDTTSSSegment 0x30
 
-#define GDT_BASIC_DESCRIPTOR (GDT_DESCRIPTOR_PRESENT | GDT_DESCRIPTOR_READWRITE | GDT_DESCRIPTOR_CODE_DATA)
-#define GDT_BASIC_GRANULARITY (GDT_GRANULARITY_X64 | GDT_GRANULARITY_4K)
+#define GDTAccessKernelCode (ReadWrite | Execute | Segments | Present)
+#define GDTAccessKernelData (ReadWrite | Segments | Present)
+#define GDTAccessUserCode (ReadWrite | Execute | Segments | GDTAccessDPL(3) | Present)
+#define GDTAccessUserData (ReadWrite | Segments | GDTAccessDPL(3) | Present)
 
-#define GDT_OFFSET_KERNEL_CODE (0x01 * 0x08)
-#define GDT_OFFSET_KERNEL_DATA (0x02 * 0x08)
-#define GDT_OFFSET_USER_DATA (0x03 * 0x08)
-#define GDT_OFFSET_USER_CODE (0x04 * 0x08)
-
-typedef struct
+struct PACKED GDT_Desc
 {
     uint16_t limit;
-    uint16_t base_low;
-    uint8_t base_mid;
+    uint64_t base;
+};
+
+struct PACKED GDT_Entry
+{
+    uint16_t base;
+    uint16_t limit;
+    uint8_t access_byte;
     uint8_t flags;
-    uint8_t granularity;
-    uint8_t base_high;
-} PACKED gdt_desc_t;
+};
 
-typedef struct
+struct PACKED TSS_Entry
 {
-    uint16_t limit_0;
-    uint16_t addr_0;
-    uint8_t addr_1;
-    uint8_t type_0;
-    uint8_t limit_1;
-    uint8_t addr_2;
-    uint32_t addr_3;
-    uint32_t reserved;
-} PACKED gdt_tss_desc_t;
 
-typedef struct
-{
+    uint64_t base;
     uint16_t limit;
-    uintptr_t base;
-} PACKED gdtr_t;
+    uint8_t access_byte;
+    uint8_t flags;
+    uint64_t rsp0;
+    uint64_t ist1;
+    uint64_t ist2;
+};
 
-void gdt_add_descriptor(uint64_t base, uint16_t limit, uint8_t access, uint8_t granularity);
-void gdt_reload(gdtr_t *gdtr, uint16_t code, uint16_t data);
-uint16_t gdt_install_tss(uint64_t tss);
-void gdt_assemble(void);
+extern GDT_Desc;
+extern GDT_Entry;
+extern TSS_Entry;
+
+void LoadGDT_Stage1();

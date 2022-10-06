@@ -1,66 +1,117 @@
 #include "include/gdt.h"
 #include "include/global_defs.h"
-#include <stddef.h>
+#include <stdint.h>
 
-static ALIGN_4K
-    gdt_desc_t gdt[GDT_MAX_DESCRIPTORS];
+extern void breakpoint();
 
-static gdtr_t gdtr;
+uint8_t TssStack[0x100000];
+uint8_t ist1Stack[0x100000];
+uint8_t ist2Stack[0x100000];
 
-static uint16_t gindex;
+__attribute__((aligned(0x1000))) struct GDT_Entry null_seg = {
 
-void gdt_assemble()
+    .base = 0,
+    .limit = 0x00000000,
+    .access_byte = 0x00,
+    .flags = 0x00
+
+};
+
+struct GDT_Entry Kernel_cs = {
+
+    .base = 0,
+    .limit = 0xFFFFF,
+    .access_byte = GDTAccessKernelCode,
+    .flags = 0xA
+
+};
+
+struct GDT_Entry Kernel_ds = {
+
+    .base = 0,
+    .limit = 0xFFFFF,
+    .access_byte = GDTAccessKernelData,
+    .flags = 0xC
+
+};
+
+struct GDT_Entry User_cs = {
+
+    .base = 0,
+    .limit = 0xFFFFF,
+    .access_byte = GDTAccessUserCode,
+    .flags = 0xA
+
+};
+
+struct GDT_Entry User_ds = {
+
+    .base = 0,
+    .limit = 0xFFFFF,
+    .access_byte = GDTAccessUserData,
+    .flags = 0xC
+
+};
+
+struct TSS_Entry TSS = {
+
+    .base = &TSS,
+    .limit = sizeof(TSS),
+    .access_byte = 0x89,
+    .flags = 0x0,
+    .rsp0 = TssStack,
+    .ist1 = ist1Stack,
+    .ist2 = ist2Stack
+
+};
+
+struct GDT_Desc desc = {
+
+    .limit = sizeof(null_seg) + sizeof(Kernel_cs) + sizeof(Kernel_ds) + sizeof(User_cs) + sizeof(User_ds) - 1,
+    .base = (uint64_t)&null_seg
+
+};
+
+extern gdt_load(uint16_t, uint64_t);
+extern reloadSegs();
+
+void encodeGdtEntry(uint8_t *target, struct GDT_Entry source)
 {
-    gdtr.limit = (sizeof(gdt_desc_t) * GDT_MAX_DESCRIPTORS) - 1;
-    gdtr.base = (uintptr_t)&gdt[0];
+    // Check the limit to make sure that it can be encoded
+    if (source.limit > 0xFFFFF)
+    {
+        kerror("GDT cannot encode limits larger than 0xFFFFF");
+    }
 
-    gdt_add_descriptor(0, 0, 0, 0);
-    gdt_add_descriptor(0, 0, GDT_BASIC_DESCRIPTOR | GDT_DESCRIPTOR_EXECUTABLE, GDT_BASIC_GRANULARITY);
-    gdt_add_descriptor(0, 0, GDT_BASIC_DESCRIPTOR, GDT_BASIC_GRANULARITY);
-    gdt_add_descriptor(0, 0, GDT_BASIC_DESCRIPTOR | GDT_DESCRIPTOR_DPL, GDT_BASIC_GRANULARITY);
-    gdt_add_descriptor(0, 0, GDT_BASIC_DESCRIPTOR | GDT_DESCRIPTOR_DPL | GDT_DESCRIPTOR_EXECUTABLE, GDT_BASIC_GRANULARITY);
-    gdt_add_descriptor(0, 0, 0, 0);
+    // Encode the limit
+    target[0] = source.limit & 0xFF;
+    target[1] = (source.limit >> 8) & 0xFF;
+    target[6] = (source.limit >> 16) & 0x0F;
 
-    gdt_reload(&gdtr, GDT_OFFSET_KERNEL_CODE, GDT_OFFSET_KERNEL_DATA);
+    // Encode the base
+    target[2] = source.base & 0xFF;
+    target[3] = (source.base >> 8) & 0xFF;
+    target[4] = (source.base >> 16) & 0xFF;
+    target[7] = (source.base >> 24) & 0xFF;
+
+    // Encode the access byte
+    target[5] = source.access_byte;
+
+    // Encode the flags
+    target[6] |= (source.flags << 4);
 }
 
-void gdt_add_descriptor(uint64_t base, uint16_t limit, uint8_t access, uint8_t granularity)
+void LoadGDT_Stage1()
 {
-    if (gindex >= GDT_MAX_DESCRIPTORS)
-        return;
 
-    gdt[gindex].base_low = base & 0xFFFF;
-    gdt[gindex].base_mid = (base >> 16) & 0xFF;
-    gdt[gindex].base_high = (base >> 24) & 0xFF;
+    encodeGdtEntry(0x0000, null_seg);
+    encodeGdtEntry(0x0008, Kernel_cs);
+    encodeGdtEntry(0x0010, Kernel_ds);
+    encodeGdtEntry(0x0018, User_cs);
+    encodeGdtEntry(0x0020, User_ds);
 
-    gdt[gindex].limit = limit;
+    gdt_load(desc.limit, desc.base);
+    reloadSegs();
 
-    gdt[gindex].flags = access;
-    gdt[gindex].granularity = granularity;
-
-    gindex++;
-}
-
-#define TSS_SIZE 0x70
-
-uint16_t gdt_install_tss(uint64_t tss)
-{
-    uint8_t tss_type = GDT_DESCRIPTOR_ACCESS | GDT_DESCRIPTOR_EXECUTABLE | GDT_DESCRIPTOR_PRESENT;
-
-    gdt_tss_desc_t *tss_desc = (gdt_tss_desc_t *)&gdt[gindex];
-
-    if (gindex >= GDT_MAX_DESCRIPTORS)
-        return 0;
-
-    tss_desc->limit_0 = TSS_SIZE & 0xFFFF;
-    tss_desc->addr_0 = tss & 0xFFFF;
-    tss_desc->addr_1 = (tss & 0xFF0000) >> 16;
-    tss_desc->type_0 = tss_type;
-    tss_desc->limit_1 = (TSS_SIZE & 0xF0000) >> 16;
-    tss_desc->addr_2 = (tss & 0xFF000000) >> 24;
-    tss_desc->addr_3 = tss >> 32;
-    tss_desc->reserved = 0;
-
-    gindex += 2;
-    return (gindex - 2) * GDT_DESCRIPTOR_SIZE;
+    // breakpoint();
 }

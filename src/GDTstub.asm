@@ -1,20 +1,31 @@
+[bits 64]
 
-global gdt_reload
-gdt_reload:
-    push rbp
-    mov rbp, rsp
-    mov ax, dx
-    pushfq
-    cli
-    lgdt [rdi]
-    popfq
-    mov ds, ax
-    mov es, ax
-    mov ss, ax
-    pop rbp
-    pop rax
-    push rsi
-    push rax
-    xor rax, rax
-    o64 retf
-    
+global gdt_load
+global reloadSegs
+
+gdtr DW 0 ; For limit storage
+     DQ 0 ; For base storage
+ 
+gdt_load:
+   MOV   [gdtr], DI
+   MOV   [gdtr+2], RSI
+   LGDT  [gdtr]
+   RET
+
+
+
+reloadSegs:
+   ; Reload CS register:
+   PUSH 0x08                 ; Push code segment to stack, 0x08 is a stand-in for your code segment
+   LEA RAX, [rel .reload_CS] ; Load address of .reload_CS into RAX
+   PUSH RAX                  ; Push this value to the stack
+   RETFQ                     ; Perform a far return, RETFQ or LRETQ depending on syntax
+.reload_CS:
+   ; Reload data segment registers
+   MOV   AX, 0x10 ; 0x10 is a stand-in for your data segment
+   MOV   DS, AX
+   MOV   ES, AX
+   MOV   FS, AX
+   MOV   GS, AX
+   MOV   SS, AX
+   RET
