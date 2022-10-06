@@ -20,3 +20,11 @@ typedef struct
     uint16_t limit;
     uint64_t base;
 } PACKED idtr_t;
+
+static idtr_t idtr;
+
+__attribute__((noreturn)) void exception_handler(void);
+void exception_handler()
+{
+    __asm__ volatile("cli; hlt"); // Completely hangs the computer
+}
