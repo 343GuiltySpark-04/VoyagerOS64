@@ -1,16 +1,16 @@
 #include "include/gdt.h"
-#include "mm/paging/paging.h"
+#include "include/global_defs.h"
 #include <stddef.h>
 
-static
-PAGING_PAGE_ALIGNED
-gdt_desc_t gdt[GDT_MAX_DESCRIPTORS];
+static ALIGN_4K
+    gdt_desc_t gdt[GDT_MAX_DESCRIPTORS];
 
 static gdtr_t gdtr;
 
 static uint16_t gindex;
 
-void gdt_assemble() {
+void gdt_assemble()
+{
     gdtr.limit = (sizeof(gdt_desc_t) * GDT_MAX_DESCRIPTORS) - 1;
     gdtr.base = (uintptr_t)&gdt[0];
 
@@ -24,8 +24,9 @@ void gdt_assemble() {
     gdt_reload(&gdtr, GDT_OFFSET_KERNEL_CODE, GDT_OFFSET_KERNEL_DATA);
 }
 
-void gdt_add_descriptor(uint64_t base, uint16_t limit, uint8_t access, uint8_t granularity) {
-    if (gindex >= GDT_MAX_DESCRIPTORS) 
+void gdt_add_descriptor(uint64_t base, uint16_t limit, uint8_t access, uint8_t granularity)
+{
+    if (gindex >= GDT_MAX_DESCRIPTORS)
         return;
 
     gdt[gindex].base_low = base & 0xFFFF;
@@ -42,10 +43,11 @@ void gdt_add_descriptor(uint64_t base, uint16_t limit, uint8_t access, uint8_t g
 
 #define TSS_SIZE 0x70
 
-uint16_t gdt_install_tss(uint64_t tss) {
+uint16_t gdt_install_tss(uint64_t tss)
+{
     uint8_t tss_type = GDT_DESCRIPTOR_ACCESS | GDT_DESCRIPTOR_EXECUTABLE | GDT_DESCRIPTOR_PRESENT;
 
-    gdt_tss_desc_t* tss_desc = (gdt_tss_desc_t *)&gdt[gindex];
+    gdt_tss_desc_t *tss_desc = (gdt_tss_desc_t *)&gdt[gindex];
 
     if (gindex >= GDT_MAX_DESCRIPTORS)
         return 0;
