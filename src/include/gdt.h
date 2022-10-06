@@ -1,5 +1,6 @@
 #pragma once
 #include <stdint.h>
+#include "global_defs.h"
 
 #define GDT_MAX_DESCRIPTORS 0x2000
 #define GDT_DESCRIPTOR_SIZE 0x08
@@ -33,7 +34,7 @@ typedef struct
     uint8_t flags;
     uint8_t granularity;
     uint8_t base_high;
-} __attribute__((packed)) gdt_desc_t;
+} PACKED gdt_desc_t;
 
 typedef struct
 {
@@ -45,13 +46,13 @@ typedef struct
     uint8_t addr_2;
     uint32_t addr_3;
     uint32_t reserved;
-} __attribute__((packed)) gdt_tss_desc_t;
+} PACKED gdt_tss_desc_t;
 
 typedef struct
 {
     uint16_t limit;
     uintptr_t base;
-} __attribute__((packed)) gdtr_t;
+} PACKED gdtr_t;
 
 void gdt_add_descriptor(uint64_t base, uint16_t limit, uint8_t access, uint8_t granularity);
 void gdt_reload(gdtr_t *gdtr, uint16_t code, uint16_t data);
