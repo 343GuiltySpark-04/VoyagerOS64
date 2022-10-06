@@ -18,6 +18,8 @@
 // be made volatile or equivalent.
 
 extern void breakpoint();
+extern void stop_interrupts();
+extern void start_interrupts();
 
 static volatile struct limine_terminal_request terminal_request = {
     .id = LIMINE_TERMINAL_REQUEST,
@@ -40,6 +42,8 @@ void _start(void)
 {
 
     breakpoint();
+
+    stop_interrupts();
 
     LoadGDT_Stage1();
 
