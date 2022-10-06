@@ -53,6 +53,6 @@ global isr_stub_table
 isr_stub_table:
 %assign i 0 
 %rep    32 
-    dd isr_stub_%+i ; use DQ instead if targeting 64-bit
+    dq isr_stub_%+i ; use DQ instead if targeting 64-bit
 %assign i i+1 
 %endrep
