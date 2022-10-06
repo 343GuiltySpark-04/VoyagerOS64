@@ -5,7 +5,7 @@
 
 // Based on https://github.com/austanss/skylight/blob/trunk/glass/src/cpu/interrupts/idt.c
 
-idt_entry_t idt[IDT_MAX_DESCRIPTORS];
+__attribute__((aligned(0x10))) static idt_entry_t idt[IDT_MAX_DESCRIPTORS]; // Create an array of IDT entries; aligned for performance
 
 static bool vectors[IDT_MAX_DESCRIPTORS];
 

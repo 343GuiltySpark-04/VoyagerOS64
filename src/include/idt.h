@@ -7,7 +7,6 @@
 
 #define IDT_MAX_DESCRIPTORS 256
 
-__attribute__((aligned(0x10))) static idt_entry_t idt[256]; // Create an array of IDT entries; aligned for performance
 typedef struct
 {
     uint16_t base_low;  // The lower 16 bits of the ISR's address
