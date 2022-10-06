@@ -8,7 +8,7 @@ uint8_t TssStack[0x100000];
 uint8_t ist1Stack[0x100000];
 uint8_t ist2Stack[0x100000];
 
-__attribute__((aligned(0x1000))) struct GDT_Entry null_seg = {
+ALIGN_4K struct GDT_Entry null_seg = {
 
     .base = 0,
     .limit = 0x00000000,
@@ -17,7 +17,7 @@ __attribute__((aligned(0x1000))) struct GDT_Entry null_seg = {
 
 };
 
-struct GDT_Entry Kernel_cs = {
+ALIGN_4K struct GDT_Entry Kernel_cs = {
 
     .base = 0,
     .limit = 0xFFFFF,
@@ -26,7 +26,7 @@ struct GDT_Entry Kernel_cs = {
 
 };
 
-struct GDT_Entry Kernel_ds = {
+ALIGN_4K struct GDT_Entry Kernel_ds = {
 
     .base = 0,
     .limit = 0xFFFFF,
@@ -35,7 +35,7 @@ struct GDT_Entry Kernel_ds = {
 
 };
 
-struct GDT_Entry User_cs = {
+ALIGN_4K struct GDT_Entry User_cs = {
 
     .base = 0,
     .limit = 0xFFFFF,
@@ -44,7 +44,7 @@ struct GDT_Entry User_cs = {
 
 };
 
-struct GDT_Entry User_ds = {
+ALIGN_4K struct GDT_Entry User_ds = {
 
     .base = 0,
     .limit = 0xFFFFF,
