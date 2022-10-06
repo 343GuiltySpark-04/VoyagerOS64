@@ -21,6 +21,7 @@
 extern void breakpoint();
 extern void stop_interrupts();
 extern void start_interrupts();
+extern void serial_debug(int);
 
 static volatile struct limine_terminal_request terminal_request = {
     .id = LIMINE_TERMINAL_REQUEST,
