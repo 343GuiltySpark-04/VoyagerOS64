@@ -3,8 +3,9 @@
 #include <stdint.h>
 #include "global_defs.h"
 
-#define IDT_MAX_DESCRIPTORS 			256
+// Based on https://github.com/austanss/skylight/blob/trunk/glass/src/cpu/interrupts/idt.h
 
+#define IDT_MAX_DESCRIPTORS 256
 
 __attribute__((aligned(0x10))) static idt_entry_t idt[256]; // Create an array of IDT entries; aligned for performance
 typedef struct
