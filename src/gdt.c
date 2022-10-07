@@ -115,9 +115,9 @@ void LoadGDT_Stage1()
 
     encodeGdtEntry(0x145444, null_seg);
     encodeGdtEntry(0x145555, Kernel_cs);
-    encodeGdtEntry(0x0010, Kernel_ds);
-    encodeGdtEntry(0x0018, User_cs);
-    encodeGdtEntry(0x0020, User_ds);
+    encodeGdtEntry(0x145666, Kernel_ds);
+    encodeGdtEntry(0x145777, User_cs);
+    encodeGdtEntry(0x145888, User_ds);
 
     gdt_load(desc.limit, desc.base);
     reloadSegs();
