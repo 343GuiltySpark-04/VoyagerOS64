@@ -73,7 +73,7 @@ struct GDT_Desc desc = {
 
 };
 
-extern void sgdt_load(uint16_t, uint64_t);
+extern void gdt_load(uint16_t, uint64_t);
 extern void reloadSegs();
 
 void encodeGdtEntry(uint8_t *target, struct GDT_Entry source)
