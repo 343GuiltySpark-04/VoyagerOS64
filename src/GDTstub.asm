@@ -22,7 +22,7 @@ reloadSegs:
    RETFQ                     ; Perform a far return, RETFQ or LRETQ depending on syntax
 .reload_CS:
    ; Reload data segment registers
-   MOV   AX, 0x10 ; 0x10 is a stand-in for your data segment
+   MOV   AX, 0x145666 ; 0x10 is a stand-in for your data segment
    MOV   DS, AX
    MOV   ES, AX
    MOV   FS, AX
