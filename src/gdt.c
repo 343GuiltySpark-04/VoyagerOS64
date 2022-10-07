@@ -3,6 +3,7 @@
 #include <stdint.h>
 
 extern void breakpoint();
+extern void serial_debug(int);
 
 uint8_t TssStack[0x100000];
 uint8_t ist1Stack[0x100000];
@@ -80,7 +81,15 @@ void encodeGdtEntry(uint8_t *target, struct GDT_Entry source)
     // Check the limit to make sure that it can be encoded
     if (source.limit > 0xFFFFF)
     {
-        kerror("GDT cannot encode limits larger than 0xFFFFF");
+        serial_debug(0x47);
+        serial_debug(0x44);
+        serial_debug(0x54);
+        serial_debug(0x20);
+        serial_debug(0x4C);
+        serial_debug(0x69);
+        serial_debug(0x6D);
+        serial_debug(0x69);
+        serial_debug(0x74);
     }
 
     // Encode the limit

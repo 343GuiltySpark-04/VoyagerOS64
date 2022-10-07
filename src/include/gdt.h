@@ -32,7 +32,7 @@ struct PACKED GDT_Desc
 struct PACKED GDT_Entry
 {
     uint16_t base;
-    uint16_t limit;
+    uint32_t limit;
     uint8_t access_byte;
     uint8_t flags;
 };
