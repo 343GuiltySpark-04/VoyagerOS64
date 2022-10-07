@@ -10,4 +10,4 @@ goto launch
 :launch
 cls
 color 07
-qemu-system-i386 -serial file:serial.log -gdb tcp::6000 -cdrom VoyagerOS.iso
+qemu-system-x86_64 -serial file:serial.log -gdb tcp::6000 -cdrom VoyagerOS.iso
