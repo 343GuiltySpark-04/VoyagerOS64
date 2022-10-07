@@ -73,8 +73,8 @@ struct GDT_Desc desc = {
 
 };
 
-extern gdt_load(uint16_t, uint64_t);
-extern reloadSegs();
+extern void sgdt_load(uint16_t, uint64_t);
+extern void reloadSegs();
 
 void encodeGdtEntry(uint8_t *target, struct GDT_Entry source)
 {
@@ -113,8 +113,8 @@ void encodeGdtEntry(uint8_t *target, struct GDT_Entry source)
 void LoadGDT_Stage1()
 {
 
-    encodeGdtEntry(0x0000, null_seg);
-    encodeGdtEntry(0x0008, Kernel_cs);
+    encodeGdtEntry(0x145444, null_seg);
+    encodeGdtEntry(0x145555, Kernel_cs);
     encodeGdtEntry(0x0010, Kernel_ds);
     encodeGdtEntry(0x0018, User_cs);
     encodeGdtEntry(0x0020, User_ds);
