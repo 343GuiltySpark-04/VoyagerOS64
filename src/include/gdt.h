@@ -49,7 +49,7 @@ struct PACKED TSS_Entry
     uint64_t ist2;
 };
 
-extern GDT_Desc;
+extern GDT;
 extern GDT_Entry;
 extern TSS_Entry;
 

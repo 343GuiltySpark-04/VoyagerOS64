@@ -36,7 +36,7 @@ ALIGN_4K struct GDT_Entry Kernel_ds = {
 
 };
 
-ALIGN_4K struct GDT_Entry User_cs = {
+PACKED ALIGN_4K struct GDT_Entry User_cs = {
 
     .base = 0,
     .limit = 0xFFFFF,
@@ -67,7 +67,7 @@ ALIGN_4K struct GDT_Entry User_ds = {
 };
  */
 
-struct GDT_Desc desc = {
+struct GDT desc = {
 
     .limit = sizeof(null_seg) + sizeof(Kernel_cs) + sizeof(Kernel_ds) + sizeof(User_cs) + sizeof(User_ds) - 1,
     .base = (uint64_t)&null_seg
