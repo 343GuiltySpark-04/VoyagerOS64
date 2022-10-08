@@ -23,12 +23,6 @@ enum GDTAccessFlag
 #define GDTAccessUserCode (ReadWrite | Execute | Segments | GDTAccessDPL(3) | Present)
 #define GDTAccessUserData (ReadWrite | Segments | GDTAccessDPL(3) | Present)
 
-struct PACKED GDT
-{
-    uint16_t limit;
-    uint64_t base;
-} GDT_t;
-
 struct PACKED GDT_Entry
 {
     uint16_t base;
@@ -48,6 +42,11 @@ struct PACKED TSS_Entry
     uint64_t ist1;
     uint64_t ist2;
 };
+
+struct PACKED GDT
+{
+
+} GDT_t;
 
 extern GDT;
 extern GDT_Entry;
