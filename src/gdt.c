@@ -9,7 +9,7 @@ uint8_t TssStack[0x100000];
 uint8_t ist1Stack[0x100000];
 uint8_t ist2Stack[0x100000];
 
-ALIGN_4K struct GDT_Entry null_seg = {
+PACKED ALIGN_4K struct GDT_Entry null_seg = {
 
     .base = 0,
     .limit = 0x00000000,
@@ -18,7 +18,7 @@ ALIGN_4K struct GDT_Entry null_seg = {
 
 };
 
-ALIGN_4K struct GDT_Entry Kernel_cs = {
+PACKED ALIGN_4K struct GDT_Entry Kernel_cs = {
 
     .base = 0,
     .limit = 0xFFFFF,
@@ -27,7 +27,7 @@ ALIGN_4K struct GDT_Entry Kernel_cs = {
 
 };
 
-ALIGN_4K struct GDT_Entry Kernel_ds = {
+PACKED ALIGN_4K struct GDT_Entry Kernel_ds = {
 
     .base = 0,
     .limit = 0xFFFFF,
@@ -45,7 +45,7 @@ PACKED ALIGN_4K struct GDT_Entry User_cs = {
 
 };
 
-ALIGN_4K struct GDT_Entry User_ds = {
+PACKED ALIGN_4K struct GDT_Entry User_ds = {
 
     .base = 0,
     .limit = 0xFFFFF,
@@ -67,7 +67,7 @@ ALIGN_4K struct GDT_Entry User_ds = {
 };
  */
 
-struct GDT desc = {
+PACKED ALIGN_4K struct GDT desc = {
 
     .limit = sizeof(null_seg) + sizeof(Kernel_cs) + sizeof(Kernel_ds) + sizeof(User_cs) + sizeof(User_ds) - 1,
     .base = (uint64_t)&null_seg
