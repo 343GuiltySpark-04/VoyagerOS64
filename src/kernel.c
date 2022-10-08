@@ -4,6 +4,7 @@
 #include "include/gdt.h"
 #include "include/idt.h"
 #include "include/KernelUtils.h"
+#include "include/serial.h"
 
 #define White "\033[1;00m"
 #define Red "\033[1;31m"
@@ -21,7 +22,6 @@
 extern void breakpoint();
 extern void stop_interrupts();
 extern void start_interrupts();
-extern void serial_debug(int);
 
 static volatile struct limine_terminal_request terminal_request = {
     .id = LIMINE_TERMINAL_REQUEST,
@@ -42,18 +42,19 @@ static void done(void)
 // The following will be our kernel's entry point.
 void _start(void)
 {
-
     breakpoint();
 
     stop_interrupts();
 
     LoadGDT_Stage1();
 
-    serial_debug(0x47);
+    serial_print_line("Loaded GDT");
 
     breakpoint();
 
     idt_init();
+
+    serial_print_line("Loaded idt");
 
     // Ensure we got a terminal
     if (terminal_request.response == NULL || terminal_request.response->terminal_count < 1)
