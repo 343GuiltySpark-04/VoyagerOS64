@@ -113,6 +113,7 @@ clean:
 	rm -rfv *.log
 
 iso:
+	sh buildlimine.sh
 	mkdir -v iso_root
 	cp -v warp.bin limine.cfg limine/limine.sys \
       limine/limine-cd.bin limine/limine-cd-efi.bin iso_root/
@@ -121,4 +122,8 @@ iso:
         --efi-boot limine-cd-efi.bin \
         -efi-boot-part --efi-boot-image --protective-msdos-label \
         iso_root -o VoyagerOS.iso
-	limine-deploy VoyagerOS.iso
+	limine/limine-deploy VoyagerOS.iso
+
+.PHONY: qemu-linux
+qemu-linux:
+	sh qemu.sh
