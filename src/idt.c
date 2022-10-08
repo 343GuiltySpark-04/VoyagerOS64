@@ -25,7 +25,7 @@ void idt_set_descriptor(uint8_t vector, void *isr, uint8_t flags)
     idt_entry_t *descriptor = &idt[vector];
 
     descriptor->base_low = (uint64_t)isr & 0xFFFF;
-    descriptor->cs = 0x0008;
+    descriptor->cs = 0x1008;
     descriptor->ist = 0;
     descriptor->attributes = flags;
     descriptor->base_mid = ((uint64_t)isr >> 16) & 0xFFFF;

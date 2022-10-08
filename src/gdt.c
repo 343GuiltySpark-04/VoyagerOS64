@@ -54,7 +54,7 @@ ALIGN_4K struct GDT_Entry User_ds = {
 
 };
 
-struct TSS_Entry TSS = {
+/* struct TSS_Entry TSS = {
 
     .base = &TSS,
     .limit = sizeof(TSS),
@@ -65,6 +65,7 @@ struct TSS_Entry TSS = {
     .ist2 = ist2Stack
 
 };
+ */
 
 struct GDT_Desc desc = {
 
@@ -113,11 +114,11 @@ void encodeGdtEntry(uint8_t *target, struct GDT_Entry source)
 void LoadGDT_Stage1()
 {
 
-    encodeGdtEntry(0x145444, null_seg);
-    encodeGdtEntry(0x145555, Kernel_cs);
-    encodeGdtEntry(0x145666, Kernel_ds);
-    encodeGdtEntry(0x145777, User_cs);
-    encodeGdtEntry(0x145888, User_ds);
+    encodeGdtEntry(0x1000, null_seg);
+    encodeGdtEntry(0x1008, Kernel_cs);
+    encodeGdtEntry(0x1010, Kernel_ds);
+    encodeGdtEntry(0x1018, User_cs);
+    encodeGdtEntry(0x1020, User_ds);
 
     gdt_load(desc.limit, desc.base);
     reloadSegs();
