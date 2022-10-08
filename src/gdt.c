@@ -9,113 +9,99 @@ uint8_t TssStack[0x100000];
 uint8_t ist1Stack[0x100000];
 uint8_t ist2Stack[0x100000];
 
-PACKED ALIGN_4K struct GDT_Entry null_seg = {
+struct TSS tss = { 0 };
 
-    .base = 0,
-    .limit = 0x00000000,
-    .access_byte = 0x00,
-    .flags = 0x00
-
-};
-
-PACKED ALIGN_4K struct GDT_Entry Kernel_cs = {
-
-    .base = 0,
-    .limit = 0xFFFFF,
-    .access_byte = GDTAccessKernelCode,
-    .flags = 0xA
-
-};
-
-PACKED ALIGN_4K struct GDT_Entry Kernel_ds = {
-
-    .base = 0,
-    .limit = 0xFFFFF,
-    .access_byte = GDTAccessKernelData,
-    .flags = 0xC
-
-};
-
-PACKED ALIGN_4K struct GDT_Entry User_cs = {
-
-    .base = 0,
-    .limit = 0xFFFFF,
-    .access_byte = GDTAccessUserCode,
-    .flags = 0xA
-
-};
-
-PACKED ALIGN_4K struct GDT_Entry User_ds = {
-
-    .base = 0,
-    .limit = 0xFFFFF,
-    .access_byte = GDTAccessUserData,
-    .flags = 0xC
-
-};
-
-/* struct TSS_Entry TSS = {
-
-    .base = &TSS,
-    .limit = sizeof(TSS),
-    .access_byte = 0x89,
-    .flags = 0x0,
-    .rsp0 = TssStack,
-    .ist1 = ist1Stack,
-    .ist2 = ist2Stack
-
-};
- */
-
-
-extern void gdt_load(uint16_t, uint64_t);
-extern void reloadSegs();
-
-void encodeGdtEntry(uint8_t *target, struct GDT_Entry source)
-{
-    // Check the limit to make sure that it can be encoded
-    if (source.limit > 0xFFFFF)
+ALIGN_4K struct GDT gdt = {
     {
-        serial_debug(0x47);
-        serial_debug(0x44);
-        serial_debug(0x54);
-        serial_debug(0x20);
-        serial_debug(0x4C);
-        serial_debug(0x69);
-        serial_debug(0x6D);
-        serial_debug(0x69);
-        serial_debug(0x74);
-    }
+        .limit_low = 0,
+        .base_low = 0,
+        .base_middle = 0,
+        .access_flag = 0x00,
+        .limit_flags = 0x00,
+        .base_high = 0
+    }, // null
+    {
+        .limit_low = 0,
+        .base_low = 0,
+        .base_middle = 0,
+        .access_flag = GDTAccessKernelCode,
+        .limit_flags = 0xA0, 
+        .base_high = 0
+    }, // kernel code segment
+    {
+        .limit_low = 0,
+        .base_low = 0,
+        .base_middle = 0,
+        .access_flag = GDTAccessKernelData,
+        .limit_flags = 0x80,
+        .base_high = 0
+    }, // kernel data segment
+    {
+        .limit_low = 0,
+        .base_low = 0,
+        .base_middle = 0,
+        .access_flag = 0x00,
+        .limit_flags = 0x00,
+        .base_high = 0
+    }, // user null
+    {
+        .limit_low = 0,
+        .base_low = 0,
+        .base_middle = 0,
+        .access_flag = GDTAccessUserData,
+        .limit_flags = 0x80,
+        .base_high = 0
+    }, // user data segment
+    {
+        .limit_low = 0,
+        .base_low = 0,
+        .base_middle = 0,
+        .access_flag = GDTAccessUserCode,
+        .limit_flags = 0xA0,
+        .base_high = 0
+    }, // user code segment
+    {
+        .length = 104,
+        .flags = 0b10001001,
+    }, //TSS
+};
 
-    // Encode the limit
-    target[0] = source.limit & 0xFF;
-    target[1] = (source.limit >> 8) & 0xFF;
-    target[6] = (source.limit >> 16) & 0x0F;
+struct GDT_Desc desc = {
 
-    // Encode the base
-    target[2] = source.base & 0xFF;
-    target[3] = (source.base >> 8) & 0xFF;
-    target[4] = (source.base >> 16) & 0xFF;
-    target[7] = (source.base >> 24) & 0xFF;
-
-    // Encode the access byte
-    target[5] = source.access_byte;
-
-    // Encode the flags
-    target[6] |= (source.flags << 4);
-}
+    .limit = sizeof(gdt) - 1,
+    .base = (uint64_t)&gdt
+};
 
 void LoadGDT_Stage1()
 {
+    uint64_t address = (uint64_t)&tss;
 
-    encodeGdtEntry(0x1000, null_seg);
-    encodeGdtEntry(0x1008, Kernel_cs);
-    encodeGdtEntry(0x1010, Kernel_ds);
-    encodeGdtEntry(0x1018, User_cs);
-    encodeGdtEntry(0x1020, User_ds);
+    gdt.tss = (struct TSS_Entry) {
+        .length = 104,
+        .base_low = (uint16_t)address,
+        .base_mid = (uint8_t)(address >> 16),
+        .flags = 0b10001001,
+        .base_high = (uint8_t)(address >> 24),
+        .base_up = (uint32_t)(address >> 32),
+    };
 
-    
-    reloadSegs();
+    tss.rsp0 = (uint64_t)TssStack + sizeof(TssStack);
+
+    __asm__ volatile("lgdt %0" : : "m"(desc));
+
+    __asm__ volatile("push $0x08\n"
+                "lea 1f(%%rip), %%rax\n"
+                "push %%rax\n"
+                "lretq\n"
+                "1:\n" : : : "rax", "memory");
+
+    __asm__ volatile("mov %0, %%ds\n"
+                "mov %0, %%es\n"
+                "mov %0, %%gs\n"
+                "mov %0, %%fs\n"
+                "mov %0, %%ss\n" : : "a"((uint16_t)0x10));
+
+    __asm__ volatile("ltr %0" : : "a"((uint16_t)GDTTSSSegment));
 
     // breakpoint();
 }
