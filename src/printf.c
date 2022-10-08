@@ -34,6 +34,7 @@
 #include <stdint.h>
 
 #include "include/printf.h"
+#include "include/serial.h"
 
 // define this globally (e.g. gcc -DPRINTF_INCLUDE_CONFIG_H ...) to include the
 // printf_config.h header file
@@ -150,7 +151,7 @@ static inline void _out_char(char character, void *buffer, size_t idx, size_t ma
     (void)maxlen;
     if (character)
     {
-        _putchar(character);
+        serial_print(character);
     }
 }
 
