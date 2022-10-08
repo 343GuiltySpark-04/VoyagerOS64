@@ -51,6 +51,7 @@ override CFLAGS +=       \
     -mno-red-zone        \
     -mcmodel=kernel      \
     -MMD                 \
+	-DPRINTF_DISABLE_SUPPORT_FLOAT \
     -I.
  
 # Internal linker flags that should not be changed by the user.
