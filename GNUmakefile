@@ -121,4 +121,4 @@ iso:
         --efi-boot limine-cd-efi.bin \
         -efi-boot-part --efi-boot-image --protective-msdos-label \
         iso_root -o VoyagerOS.iso
-	limine/limine-deploy VoyagerOS.iso
+	limine-deploy VoyagerOS.iso

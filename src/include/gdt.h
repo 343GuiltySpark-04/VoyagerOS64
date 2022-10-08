@@ -25,13 +25,6 @@ enum GDTAccessFlag
 
 typedef struct PACKED GDT_Entry
 {
-<<<<<<< HEAD
-    uint16_t base;
-    uint32_t limit;
-    uint8_t access_byte;
-    uint8_t flags;
-} GDT_Entry_t;
-=======
     uint16_t limit_low;
     uint16_t base_low;
     uint8_t base_middle;
@@ -39,7 +32,6 @@ typedef struct PACKED GDT_Entry
     uint8_t limit_flags;
     uint8_t base_high;
 };
->>>>>>> Minor fixes to GDT
 
 typedef struct PACKED TSS_Entry
 {
