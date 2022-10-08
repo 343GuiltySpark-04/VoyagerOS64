@@ -1,6 +1,7 @@
 #include "include/gdt.h"
 #include "include/global_defs.h"
 #include <stdint.h>
+#include "include/printf.h"
 
 extern void breakpoint();
 extern void serial_debug(int);
@@ -76,6 +77,22 @@ void LoadGDT_Stage1()
         .base_high = (uint8_t)(address >> 24),
         .base_up = (uint32_t)(address >> 32),
     };
+
+    printf_("%s\n", "--------------------------------------");
+    printf_("%s\n", "GDT Offsets as follows: ");
+    printf_("%s", "GDT NULL: ");
+    printf_("0x%llx\n", (uint64_t)&gdt.null - (uint64_t)&gdt);
+    printf_("%s", "GDT Kernel Code: ");
+    printf_("0x%llx\n", (uint64_t)&gdt.kernelCS - (uint64_t)&gdt);
+    printf_("%s", "GDT Kernel Data: ");
+    printf_("0x%llx\n", (uint64_t)&gdt.kernelData - (uint64_t)&gdt);
+    printf_("%s", "GDT User Code: ");
+    printf_("0x%llx\n", (uint64_t)&gdt.userCode - (uint64_t)&gdt);
+    printf_("%s", "GDT User Data: ");
+    printf_("0x%llx\n", (uint64_t)&gdt.userData - (uint64_t)&gdt);
+    printf_("%s", "GDT TSS: ");
+    printf_("0x%llx\n", (uint64_t)&gdt.tss - (uint64_t)&gdt);
+    printf_("%s\n", "--------------------------------------");
 
     tss.rsp0 = (uint64_t)TssStack + sizeof(TssStack);
 
