@@ -68,8 +68,8 @@ ALIGN_4K struct GDT gdt = {
 
 struct GDT_Desc desc = {
 
-    .limit = sizeof(gdt) - 1,
-    .base = (uint64_t)&gdt
+    .size = sizeof(gdt) - 1,
+    .offset = (uint64_t)&gdt
 };
 
 void LoadGDT_Stage1()
