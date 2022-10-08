@@ -21,7 +21,7 @@ start_interrupts:
     ret
 
 serial_debug:
-    mov dx,0x3F8
+    mov dx,0x3F8    ;0xE9 if using Bochs, 0x3f8 if using QEMU
     mov eax,edi
     out dx,eax
     ret

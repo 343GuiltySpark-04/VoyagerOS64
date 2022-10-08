@@ -5,6 +5,7 @@
 #include "include/idt.h"
 #include "include/KernelUtils.h"
 #include "include/serial.h"
+#include "include/printf.h"
 
 #define White "\033[1;00m"
 #define Red "\033[1;31m"
@@ -43,6 +44,8 @@ static void done(void)
 void _start(void)
 {
     breakpoint();
+
+    printf("t%stest");
 
     stop_interrupts();
 
