@@ -35,7 +35,7 @@ struct PACKED GDT_Entry
     uint32_t limit;
     uint8_t access_byte;
     uint8_t flags;
-};
+} GDT_Entry_t;
 
 struct PACKED TSS_Entry
 {

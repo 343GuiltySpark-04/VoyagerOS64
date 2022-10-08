@@ -11,7 +11,7 @@
 *.ilk
 *.map
 *.exp
-#*.bin
+*.bin
 
 # Precompiled Headers
 *.gch
@@ -65,3 +65,4 @@ iso_root/*
 release.sh
 release/*
 *.ini
+limine/*
