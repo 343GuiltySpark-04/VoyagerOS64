@@ -45,8 +45,6 @@ void _start(void)
 {
     breakpoint();
 
-    printf("t%stest");
-
     stop_interrupts();
 
     LoadGDT_Stage1();
