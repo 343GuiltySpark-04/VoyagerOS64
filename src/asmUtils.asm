@@ -21,7 +21,7 @@ start_interrupts:
     ret
 
 serial_debug:
-    mov dx,0xe9
+    mov dx,0x3F8
     mov eax,edi
     out dx,eax
     ret
