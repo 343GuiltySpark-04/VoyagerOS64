@@ -67,12 +67,6 @@ PACKED ALIGN_4K struct GDT_Entry User_ds = {
 };
  */
 
-PACKED ALIGN_4K struct GDT desc = {
-
-    .limit = sizeof(null_seg) + sizeof(Kernel_cs) + sizeof(Kernel_ds) + sizeof(User_cs) + sizeof(User_ds) - 1,
-    .base = (uint64_t)&null_seg
-
-};
 
 extern void gdt_load(uint16_t, uint64_t);
 extern void reloadSegs();
@@ -120,7 +114,7 @@ void LoadGDT_Stage1()
     encodeGdtEntry(0x1018, User_cs);
     encodeGdtEntry(0x1020, User_ds);
 
-    gdt_load(desc.limit, desc.base);
+    
     reloadSegs();
 
     // breakpoint();
