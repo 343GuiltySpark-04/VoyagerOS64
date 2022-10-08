@@ -74,6 +74,7 @@ void _start(void)
 
     // We're done, just hang...
     // breakpoint();
+    printf_("%s\n", "Kernel Loaded");
     while (1)
     {
     }
