@@ -142,3 +142,11 @@ def_irq_handler 9
 def_irq_handler 10
 def_irq_handler 11
 def_irq_handler 12
+
+global isr_stub_table
+isr_stub_table:
+%assign i 0 
+%rep    32 
+    dq isr_stub_%+i ; use DQ instead if targeting 64-bit
+%assign i i+1 
+%endrep
