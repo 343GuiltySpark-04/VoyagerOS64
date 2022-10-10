@@ -50,3 +50,12 @@ struct PACKED cpu_state
     uint64_t r14;
     uint64_t r15;
 };
+
+struct PACKED stack_state
+{
+
+    uint64_t error_code;
+    uint64_t rip;
+    uint64_t cs;
+    uint64_t rflags;
+};
