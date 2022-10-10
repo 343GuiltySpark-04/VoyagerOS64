@@ -33,3 +33,12 @@ typedef struct PACKED IDT_Entry
 } idt_entry_t;
 
 uint8_t freevector;
+// box<vector<uint8_t>> reservedVectors;
+uint8_t AllocateVector();
+bool ReserveVector(uint8_t vector);
+void Init();
+void SetIST(uint8_t vector, uint8_t ist);
+void SetFlags(uint8_t vector, uint8_t flags);
+void Load();
+void RegisterGate(uint8_t vector, uint64_t handler, uint8_t type, uint8_t dpl, uint8_t ist);
+void RegisterInterrupt(uint8_t vector, uint64_t handler);
