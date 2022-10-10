@@ -4,6 +4,7 @@ global breakpoint
 global stop_interrupts
 global start_interrupts
 global serial_debug
+global halt
 
 
 ; Bochs Magic Breakpoints
@@ -25,4 +26,8 @@ serial_debug:
     mov eax,edi
     out dx,eax
     ret
+
+halt:
+    cli
+    hlt
 

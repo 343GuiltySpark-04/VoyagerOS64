@@ -9,36 +9,17 @@
 
 typedef struct PACKED IDT_Entry
 {
-
-    uint16_t offset_low;
-    uint16_t selector;
-    uint8_t ist;
-
-    union
-    {
-
-        struct
-        {
-            uint8_t type : 4;
-            uint8_t s : 1;
-            uint8_t dpl : 2;
-            uint8_t present : 1;
-        };
-    };
-
-    uint16_t offset_mid;
-    uint32_t offset_high;
-    uint32_t reserved;
-
+    uint16_t isr_low;   // The lower 16 bits of the ISR's address
+    uint16_t kernel_cs; // The GDT segment selector that the CPU will load into CS before calling the ISR
+    uint8_t ist;        // The IST in the TSS that the CPU will load into RSP; set to zero for now
+    uint8_t attributes; // Type and attributes; see the IDT page
+    uint16_t isr_mid;   // The higher 16 bits of the lower 32 bits of the ISR's address
+    uint32_t isr_high;  // The higher 32 bits of the ISR's address
+    uint32_t reserved;  // Set to zero
 } idt_entry_t;
 
-uint8_t freevector;
-// box<vector<uint8_t>> reservedVectors;
-uint8_t AllocateVector();
-bool ReserveVector(uint8_t vector);
-void Init();
-void SetIST(uint8_t vector, uint8_t ist);
-void SetFlags(uint8_t vector, uint8_t flags);
-void Load();
-void RegisterGate(uint8_t vector, uint64_t handler, uint8_t type, uint8_t dpl, uint8_t ist);
-void RegisterInterrupt(uint8_t vector, uint64_t handler);
+typedef struct PACKED IDTR_Desc
+{
+    uint16_t limit;
+    uint64_t base;
+} idtr_t;
