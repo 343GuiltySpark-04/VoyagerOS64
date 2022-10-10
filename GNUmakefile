@@ -21,16 +21,16 @@ $(eval $(call DEFAULT_VAR,CC,cc))
 $(eval $(call DEFAULT_VAR,LD,ld))
  
 # User controllable CFLAGS.
-CFLAGS ?= -g -O0 -pipe -Wall -Wextra
+CFLAGS ?= -g -O2 -pipe -Wall -Wextra
  
 # User controllable preprocessor flags. We set none by default.
 CPPFLAGS ?= 
  
 # User controllable nasm flags.
-NASMFLAGS ?= -O0 -F dwarf -g
+NASMFLAGS ?= -O2 -F dwarf -g
  
 # User controllable linker flags. We set none by default.
-LDFLAGS ?= -O0
+LDFLAGS ?=
  
 # Internal C flags that should not be changed by the user.
 override CFLAGS +=       \
