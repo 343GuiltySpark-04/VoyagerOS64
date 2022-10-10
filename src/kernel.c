@@ -24,22 +24,6 @@ extern void breakpoint();
 extern void stop_interrupts();
 extern void start_interrupts();
 
-static volatile struct limine_terminal_request terminal_request = {
-    .id = LIMINE_TERMINAL_REQUEST,
-    .revision = 0};
-
-static volatile struct limine_memmap_request memmap_request =
-    {
-        .id = LIMINE_MEMMAP_REQUEST, .revision = 0};
-
-static void done(void)
-{
-    for (;;)
-    {
-        __asm__("hlt");
-    }
-}
-
 // The following will be our kernel's entry point.
 void _start(void)
 {
@@ -57,23 +41,6 @@ void _start(void)
 
     serial_print_line("Loaded idt");
 
-    // Ensure we got a terminal
-    if (terminal_request.response == NULL || terminal_request.response->terminal_count < 1)
-    {
-        done();
-    }
-
-    // breakpoint();
-
-    struct limine_memmap_response *memory_map_response = memmap_request.response;
-
-    // We should now be able to call the Limine terminal to print out
-    // a simple "Hello World" to screen.
-    struct limine_terminal *terminal = terminal_request.response->terminals[0];
-    terminal_request.response->write(terminal, "VoyagerOS64, Version 0.0.1", 26);
-
-    // We're done, just hang...
-    // breakpoint();
     printf_("%s\n", "Kernel Loaded");
     while (1)
     {
