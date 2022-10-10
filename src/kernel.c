@@ -2,6 +2,7 @@
 #include <stddef.h>
 #include "include/limine.h"
 #include "include/gdt.h"
+#include "include/idt.h"
 #include "include/KernelUtils.h"
 #include "include/serial.h"
 #include "include/printf.h"
@@ -52,7 +53,7 @@ void _start(void)
 
     breakpoint();
 
-    
+    idt_init();
 
     serial_print_line("Loaded idt");
 
