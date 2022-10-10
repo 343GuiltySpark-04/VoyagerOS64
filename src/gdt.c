@@ -2,6 +2,7 @@
 #include "include/global_defs.h"
 #include <stdint.h>
 #include "include/printf.h"
+#include "include/tss.h"
 
 extern void breakpoint();
 extern void serial_debug(int);
