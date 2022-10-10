@@ -1,5 +1,6 @@
 #pragma once
 #include <stdint.h>
+#include <stdbool.h>
 #include "global_defs.h"
 
 #define IDT_INTERRUPT_GATE 0xE
@@ -30,3 +31,5 @@ typedef struct PACKED IDT_Entry
     uint32_t reserved;
 
 } idt_entry_t;
+
+uint8_t freevector;
