@@ -6,6 +6,8 @@
 #include "include/printf.h"
 #include "include/gdt.h"
 
+extern void halt();
+
 ALIGN_16BIT static idt_entry_t idt[IDT_ENTRIES];
 
 static idtr_t idtr;
@@ -24,6 +26,15 @@ void irq_handler()
 
     printf_("%s\n", "!!!KERNEL PANIC!!!");
     printf_("%s", "INTERRUPT HANDLING NOT AVIAL!");
+}
+
+void exception_handler()
+{
+
+    printf_("%s\n", "!!!KERNEL PANIC!!!");
+    printf_("%s", "INTERRUPT HANDLING NOT AVIAL!");
+
+    halt();
 }
 
 void idt_set_descriptor(uint8_t vector, void *isr, uint8_t flags)
