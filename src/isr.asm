@@ -79,8 +79,8 @@
 int_common_stub:
   save_registers
   cld
-  ;extern int_handler
-  ;call int_handler
+  extern int_handler
+  call int_handler
   restore_registers
   add rsp, 16
   iretq
@@ -88,8 +88,8 @@ int_common_stub:
 irq_common_stub:
   save_registers
   cld
-  ;extern irq_handler
-  ;call irq_handler
+  extern irq_handler
+  call irq_handler
   restore_registers
   add rsp, 16
   iretq
