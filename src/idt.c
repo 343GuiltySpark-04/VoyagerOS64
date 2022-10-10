@@ -5,14 +5,20 @@
 #include "include/idt.h"
 #include "include/printf.h"
 
-
 ALIGN_16BIT static idt_entry_t idt[IDT_ENTRIES];
 
 static idtr_t idtr;
 
-void int_handler(){
+void int_handler()
+{
 
     printf_("%s\n", "!!!KERNEL PANIC!!!");
     printf_("%s", "INTERRUPT HANDLING NOT AVIAL!");
+}
 
+void irq_handler()
+{
+
+    printf_("%s\n", "!!!KERNEL PANIC!!!");
+    printf_("%s", "INTERRUPT HANDLING NOT AVIAL!");
 }
