@@ -93,6 +93,13 @@ void LoadGDT_Stage1()
     printf_("%s", "GDT TSS: ");
     printf_("0x%llx\n", (uint64_t)&gdt.tss - (uint64_t)&gdt);
     printf_("%s\n", "--------------------------------------");
+    printf_("%s\n", "Expected GDTR Data as Follows: ");
+    printf_("%s", "GDTR Size: ");
+    printf_("0x%llx\n", (uint16_t)&desc.size);
+    printf_("%s", "GDTR Offset: ");
+    printf_("0x%llx\n", (uint64_t)&desc.offset);
+
+    printf_("%s\n", "--------------------------------------");
 
     tss.rsp0 = (uint64_t)TssStack + sizeof(TssStack);
 
