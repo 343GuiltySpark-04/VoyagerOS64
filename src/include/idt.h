@@ -60,4 +60,4 @@ struct PACKED stack_state
     uint64_t rflags;
 };
 
-void interrupt_handler(struct cpu_state cpu, struct stack_state stack, uint64_t interrupt);
+void interrupt_handler();
