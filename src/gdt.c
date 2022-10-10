@@ -79,6 +79,8 @@ void LoadGDT_Stage1()
     };
 
     printf_("%s\n", "--------------------------------------");
+    printf_("%s\n", "|              GDT INFO              |");
+    printf_("%s\n", "--------------------------------------");
     printf_("%s\n", "GDT Offsets as follows: ");
     printf_("%s", "GDT NULL: ");
     printf_("0x%llx\n", (uint64_t)&gdt.null - (uint64_t)&gdt);
@@ -98,7 +100,6 @@ void LoadGDT_Stage1()
     printf_("0x%llx\n", (uint16_t)&desc.size);
     printf_("%s", "GDTR Offset: ");
     printf_("0x%llx\n", (uint64_t)&desc.offset);
-
     printf_("%s\n", "--------------------------------------");
 
     tss.rsp0 = (uint64_t)TssStack + sizeof(TssStack);
