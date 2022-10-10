@@ -6,7 +6,7 @@
 #define IDT_TRAP_GATE 0xF
 #define IDT_ENTRIES 256
 
-struct __attribute__((packed)) IDTDescEntry
+struct PACKED IDTDescEntry
 {
     uint16_t ptrLow;
     uint16_t selector;
