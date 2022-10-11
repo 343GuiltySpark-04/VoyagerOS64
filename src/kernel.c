@@ -1,6 +1,5 @@
 #include <stdint.h>
 #include <stddef.h>
-#include "include/limine.h"
 #include "include/gdt.h"
 #include "include/idt.h"
 #include "include/KernelUtils.h"
