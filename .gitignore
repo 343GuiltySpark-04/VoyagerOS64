@@ -69,3 +69,5 @@ release/*
 *.ini
 limine/*
 limine/
+latex/*
+html/*
