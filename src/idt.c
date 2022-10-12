@@ -1,5 +1,5 @@
 #include <stdint.h>
-#include <string.h>
+#include "include/string.h"
 #include <stdbool.h>
 #include "include/global_defs.h"
 #include "include/idt.h"
