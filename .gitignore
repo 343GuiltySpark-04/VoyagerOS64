@@ -55,7 +55,9 @@ Module.symvers
 Mkfile.old
 dkms.conf
 
-.vscode
+.vscode/*
+
+*.json
 
 gcc-9.3.0/*
 *.iso
