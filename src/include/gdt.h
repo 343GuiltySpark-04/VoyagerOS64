@@ -60,6 +60,6 @@ struct PACKED ALIGN_4K GDT
     struct GDT_Entry userData;
     struct GDT_Entry userCode;
     struct TSS_Entry tss;
-} GDT;
+};
 
 void LoadGDT_Stage1();
