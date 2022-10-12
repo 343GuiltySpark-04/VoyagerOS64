@@ -1,0 +1,8 @@
+{
+    "files.associations": {
+        "*.S": "asm-intel-x86-generic",
+        "tty.h": "c",
+        "kheap.h": "c"
+    },
+    "C_Cpp.errorSquiggles": "Enabled"
+}
