@@ -10,10 +10,29 @@
                 "UNICODE",
                 "_UNICODE"
             ],
-            "compilerPath": "E:\\MinGW\\posix-64-8.1.0\\mingw64\\bin\\gcc.exe",
+            "compilerPath": "/home/tristan/opt/cross/bin/x86_64-elf-gcc",
             "cStandard": "gnu11",
             "cppStandard": "gnu++11",
-            "intelliSenseMode": "windows-gcc-x64"
+            "intelliSenseMode": "windows-gcc-x64",
+            "configurationProvider": "ms-vscode.makefile-tools"
+        },
+        {
+            "name": "Linux",
+            "includePath": [
+                "${workspaceFolder}/**"
+            ],
+            "defines": [],
+            "compilerPath": "/home/tristan/opt/cross/bin/x86_64-elf-gcc",
+            "cStandard": "gnu17",
+            "cppStandard": "gnu++14",
+            "intelliSenseMode": "linux-gcc-x64",
+            "mergeConfigurations": false,
+            "browse": {
+                "path": [
+                    "${workspaceFolder}/**"
+                ],
+                "limitSymbolsToIncludedHeaders": true
+            }
         }
     ],
     "version": 4
