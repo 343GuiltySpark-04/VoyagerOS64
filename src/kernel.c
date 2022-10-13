@@ -26,6 +26,13 @@ static volatile struct limine_memmap_request memmap_req = {
 
 };
 
+static volatile struct limine_kernel_address_request Kaddress_req = {
+
+    .id = LIMINE_KERNEL_ADDRESS_REQUEST,
+    .revision = 0
+
+};
+
 extern void breakpoint();
 extern void stop_interrupts();
 extern void start_interrupts();
@@ -47,7 +54,37 @@ void _start(void)
 
     printf_("%s\n", "Loaded IDT");
 
+    if (memmap_req.response == NULL || memmap_req.response->entry_count < 1)
+    {
+
+        printf_("%s\n", "!!!Error While Fetching Memory Map!!!");
+    }
+    else
+    {
+
+        printf_("%s\n", "Memory Map Retrieved");
+        printf_("%s", "Number of entries retrived: ");
+        printf_("%i\n", memmap_req.response->entry_count);
+    }
+
+    if (Kaddress_req.response == NULL)
+    {
+
+        printf_("%s\n", "!!!Error While Fetching Kernel Addresses!!!");
+    }
+    else
+    {
+
+        printf_("%s\n", "Kernel Base Addresses Are As Follows: ");
+        printf_("%s", "Physical Address: ");
+        printf_("0x%llx\n", Kaddress_req.response->physical_base);
+        printf_("%s", "Virtual Address: ");
+        printf_("0x%llx\n", Kaddress_req.response->virtual_base);
+    }
+
     printf_("%s\n", "Kernel Loaded");
+
+    // Just chill until needed
     while (1)
     {
     }
