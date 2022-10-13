@@ -4,6 +4,7 @@
 #include "include/idt.h"
 #include "include/KernelUtils.h"
 #include "include/serial.h"
+#include "include/limine.h"
 #include "include/printf.h"
 
 #define White "\033[1;00m"
@@ -19,6 +20,12 @@
 // the compiler does not optimise them away, so, usually, they should
 // be made volatile or equivalent.
 
+static volatile struct limine_memmap_request memmap_req = {
+    .id = LIMINE_MEMMAP_REQUEST,
+    .revision = 0
+
+};
+
 extern void breakpoint();
 extern void stop_interrupts();
 extern void start_interrupts();
@@ -32,13 +39,13 @@ void _start(void)
 
     LoadGDT_Stage1();
 
-    serial_print_line("Loaded GDT");
+    printf_("%s\n", "Loaded GDT");
 
     breakpoint();
 
     idt_init();
 
-    serial_print_line("Loaded idt");
+    printf_("%s\n", "Loaded IDT");
 
     printf_("%s\n", "Kernel Loaded");
     while (1)
