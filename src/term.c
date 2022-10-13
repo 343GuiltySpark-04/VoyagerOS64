@@ -1,4 +1,4 @@
-#include "include/tterm.h"
+/* #include "include/tterm.h"
 #include "include/gterm.h"
 #include "include/term.h"
 
@@ -1440,4 +1440,4 @@ void term_full_refresh(struct term_t *term)
     else if (term->term_backend == TEXTMODE && term->tterm)
         tterm_full_refresh(term->tterm);
 #endif
-}
+} */

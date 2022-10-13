@@ -1,4 +1,4 @@
-#include "include/image.h"
+/* #include "include/image.h"
 #include "include/term.h"
 
 #define DIV_ROUNDUP(A, B)        \
@@ -79,4 +79,4 @@ bool image_open(struct image_t *image, uint64_t file, uint64_t size)
 void image_close(struct image_t *image)
 {
     free_mem(image->img, image->allocated_size);
-}
+} */

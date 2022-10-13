@@ -1,4 +1,4 @@
-#if defined(__i386__) || defined(__x86_64__)
+/* #if defined(__i386__) || defined(__x86_64__)
 
 #include "include/tterm.h"
 #include "include/term.h"
@@ -287,4 +287,4 @@ void tterm_full_refresh(struct tterm_t *tterm)
     }
 }
 
-#endif
+#endif */
