@@ -46,6 +46,25 @@ void print_memmap()
     printf_("%s\n", "--------------------------------------");
     printf_("%s\n", "|             MEMORY MAP             |");
     printf_("%s\n", "--------------------------------------");
+    printf_("%s\n", "Type Legend: ");
+
+    printf_("%s", "Usable: ");
+    printf_("%i\n", 0);
+    printf_("%s", "Reserved: ");
+    printf_("%i\n", 1);
+    printf_("%s", "ACPI Reclaimable: ");
+    printf_("%i\n", 2);
+    printf_("%s", "ACPI NVS: ");
+    printf_("%i\n", 3);
+    printf_("%s", "Bad Memory: ");
+    printf_("%i\n", 4);
+    printf_("%s", "Bootloader Reclaimable: ");
+    printf_("%i\n", 5);
+    printf_("%s", "Kernel And Modules: ");
+    printf_("%i\n", 6);
+    printf_("%s", "Framebuffer: ");
+    printf_("%i\n", 7);
+    printf_("%s\n", "--------------------------------------");
 
     printf_("%s\n", "Memory Map Is As Follows: ");
 
@@ -59,7 +78,7 @@ void print_memmap()
         printf_("%s", "Entry Limit: ");
         printf_("0x%llx\n", memmap_req.response->entries[i]->length);
         printf_("%s", "Entry Type: ");
-        printf_("0x%llx\n", memmap_req.response->entries[i]->type);
+        printf_("%i\n", memmap_req.response->entries[i]->type);
         printf_("%s\n", "--------------------------------------");
     }
 }
