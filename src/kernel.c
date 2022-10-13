@@ -5,7 +5,6 @@
 #include "include/KernelUtils.h"
 #include "include/serial.h"
 #include "include/printf.h"
-#include "include/term.h"
 
 #define White "\033[1;00m"
 #define Red "\033[1;31m"
