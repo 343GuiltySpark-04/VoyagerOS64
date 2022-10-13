@@ -37,6 +37,32 @@ extern void breakpoint();
 extern void stop_interrupts();
 extern void start_interrupts();
 
+void print_memmap()
+{
+
+    int size = memmap_req.response->entry_count;
+
+    printf_("%s\n", "--------------------------------------");
+    printf_("%s\n", "|             MEMORY MAP             |");
+    printf_("%s\n", "--------------------------------------");
+
+    printf_("%s\n", "Memory Map Is As Follows: ");
+
+    for (size_t i = 0; i < size; ++i)
+    {
+
+        printf_("%s", "Info For Entry Number: ");
+        printf_("%i\n", i + 1);
+        printf_("%s", "Entry Base: ");
+        printf_("0x%llx\n", memmap_req.response->entries[i]->base);
+        printf_("%s", "Entry Limit: ");
+        printf_("0x%llx\n", memmap_req.response->entries[i]->length);
+        printf_("%s", "Entry Type: ");
+        printf_("0x%llx\n", memmap_req.response->entries[i]->type);
+        printf_("%s\n", "--------------------------------------");
+    }
+}
+
 // The following will be our kernel's entry point.
 void _start(void)
 {
@@ -67,6 +93,9 @@ void _start(void)
         printf_("%i\n", memmap_req.response->entry_count);
     }
 
+    print_memmap();
+
+    // Retrive Kernel Addresses
     if (Kaddress_req.response == NULL)
     {
 
@@ -80,6 +109,11 @@ void _start(void)
         printf_("0x%llx\n", Kaddress_req.response->physical_base);
         printf_("%s", "Virtual Address: ");
         printf_("0x%llx\n", Kaddress_req.response->virtual_base);
+        printf_("%s", "Address From Memory Map: ");
+        printf_("0x%llx\n", memmap_req.response->entries[6]->base);
+        printf_("%s", "Limit From Memory Map: ");
+        printf_("0x%llx\n", memmap_req.response->entries[6]->length);
+        printf_("%s\n", "--------------------------------------");
     }
 
     printf_("%s\n", "Kernel Loaded");
