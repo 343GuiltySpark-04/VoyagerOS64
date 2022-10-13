@@ -3,7 +3,8 @@
         {
             "name": "Win32",
             "includePath": [
-                "${workspaceFolder}/**"
+                "${workspaceFolder}/**",
+                "/home/tristan/opt/cross/lib/gcc/x86_64-elf/10.3.0/include"
             ],
             "defines": [
                 "_DEBUG",
@@ -19,10 +20,11 @@
         {
             "name": "Linux",
             "includePath": [
-                "${workspaceFolder}/**"
+                "${workspaceFolder}/**",
+                "/home/tristan/opt/cross/lib/gcc/x86_64-elf/10.3.0/include"
             ],
             "defines": [],
-            "compilerPath": "/home/tristan/opt/cross/bin/x86_64-elf-gcc",
+            "compilerPath": "/usr/bin/gcc",
             "cStandard": "gnu17",
             "cppStandard": "gnu++14",
             "intelliSenseMode": "linux-gcc-x64",
