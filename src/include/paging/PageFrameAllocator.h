@@ -3,12 +3,14 @@
 #include <stdint.h>
 #include "../bitmap.h"
 
+void ReadMemoryMap();
+
 /* class PageFrameAllocator
 {
 public:
     Bitmap PageBitmap;
 
-    void ReadMemoryMap(stivale2_struct_tag_memmap *memmap);
+    DONE void ReadMemoryMap(stivale2_struct_tag_memmap *memmap);
     void FreePage(void* address);
     void FreePages(void* address, uint64_t pageCount);
     void LockPage(void* address);

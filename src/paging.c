@@ -1,4 +1,4 @@
-#include "include/paging/paging.h"
+/* #include "include/paging/paging.h"
 #include "include/string.h"
 
 struct PageTableOffset VirtualAddressToOffsets(void *virtualAddress)
@@ -34,15 +34,16 @@ uint64_t ReadCR3()
 
     asm("mov %%cr3, %0"
         : "=r"(outValue)
-        : /* no input */);
+        : );
 
     return outValue;
+    // no input
 }
 
 void WriteCR3(uint64_t value)
 {
     asm("mov %0, %%cr3"
-        : /* no output */
+        : //no output
         : "r"(value));
 }
 
@@ -209,3 +210,4 @@ void PagingDuplicate(struct PageTable *p4, struct PageTable *newTable)
         newTable->entries[i] = p4Virtual->entries[i];
     }
 }
+ */
