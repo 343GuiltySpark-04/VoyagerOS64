@@ -1,4 +1,4 @@
-#include "include/paging.h"
+#include "include/paging/paging.h"
 #include "include/string.h"
 
 struct PageTableOffset VirtualAddressToOffsets(void *virtualAddress)
