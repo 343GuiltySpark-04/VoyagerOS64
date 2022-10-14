@@ -1,4 +1,4 @@
-#pragma once
+/* #pragma once
 #include <stddef.h>
 #include <stdint.h>
 
@@ -66,3 +66,4 @@ inline void SetBit(uint8_t *bitmap, size_t bit, uint8_t value)
         bitmap[bitmapIndex] &= ~(1 << bitIndex);
     }
 }
+ */
