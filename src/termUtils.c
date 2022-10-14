@@ -7,7 +7,6 @@
 
 void *alloc_mem(size_t size)
 {
-
 }
 void free_mem(void *ptr, size_t size)
 {
