@@ -3,7 +3,7 @@
 #include <stdint.h>
 #include "../bitmap.h"
 
-class PageFrameAllocator
+/* class PageFrameAllocator
 {
 public:
     Bitmap PageBitmap;
@@ -25,6 +25,6 @@ private:
     void ReservePages(void* address, uint64_t pageCount);
     void UnreservePage(void* address);
     void UnreservePages(void* address, uint64_t pageCount);
-};
+}; */
 
-extern PageFrameAllocator globalAllocator;
+/* extern PageFrameAllocator globalAllocator; */
