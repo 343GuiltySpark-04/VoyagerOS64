@@ -17,8 +17,6 @@
 #define Cyan "\033[1;36m"
 #define Black "\033[1;37m"
 
-KHEAPBM kheap;
-char *ptr;
 
 // The Limine requests can be placed anywhere, but it is important that
 // the compiler does not optimise them away, so, usually, they should
@@ -142,8 +140,7 @@ void _start(void)
         printf_("%s\n", "--------------------------------------");
     }
 
-    k_heapBMInit(&kheap); /* initialize the heap */
-    k_heapBMAddBlock(&kheap, 0x100000, 0x100000, 16);
+ 
 
     printf_("%s\n", "Kernel Loaded");
 
