@@ -1,7 +1,6 @@
 #include "include/term.h"
 #include "include/vgafont.h"
 #include "include/printf.h"
-#include "include/memUtils.h"
 #include "include/string.h"
 #include "include/kernel.h"
 

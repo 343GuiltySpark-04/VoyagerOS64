@@ -6,7 +6,7 @@
 #include "include/serial.h"
 #include "include/limine.h"
 #include "include/printf.h"
-#include "include/memUtils.h"
+#include "include/heap.h"
 #include "include/kernel.h"
 
 #define White "\033[1;00m"

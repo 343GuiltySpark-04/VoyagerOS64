@@ -1,7 +1,7 @@
 /* Leonard Kevin McGuire Jr (kmcg3413@gmail.com) (www.kmcg3413.net) */
 
 #include <stdint.h>
-#include "include/memUtils.h"
+#include "include/heap.h"
 
 void k_heapBMInit(KHEAPBM *heap)
 {
