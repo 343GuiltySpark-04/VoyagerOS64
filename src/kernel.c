@@ -17,6 +17,9 @@
 #define Cyan "\033[1;36m"
 #define Black "\033[1;37m"
 
+KHEAPBM kheap;
+char *ptr;
+
 // The Limine requests can be placed anywhere, but it is important that
 // the compiler does not optimise them away, so, usually, they should
 // be made volatile or equivalent.
@@ -64,6 +67,9 @@ void print_memmap()
     printf_("%i\n", 6);
     printf_("%s", "Framebuffer: ");
     printf_("%i\n", 7);
+    printf_("%s\n", "--------------------------------------");
+    printf_("%s", "Number Of Entries: ");
+    printf_("%i\n", size);
     printf_("%s\n", "--------------------------------------");
 
     printf_("%s\n", "Memory Map Is As Follows: ");
@@ -136,7 +142,12 @@ void _start(void)
         printf_("%s\n", "--------------------------------------");
     }
 
+    k_heapBMInit(&kheap); /* initialize the heap */
+    k_heapBMAddBlock(&kheap, 0x100000, 0x100000, 16);
+
     printf_("%s\n", "Kernel Loaded");
+
+    print_memmap();
 
     // Just chill until needed
     while (1)

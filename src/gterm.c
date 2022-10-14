@@ -1,4 +1,4 @@
-/* #include "include/image.h"
+#include "include/image.h"
 #include "include/gterm.h"
 #include "include/term.h"
 
@@ -780,4 +780,4 @@ void gterm_full_refresh(struct gterm_t *gterm)
 
     if (gterm->context.cursor_status)
         draw_cursor(gterm);
-} */
+}
