@@ -1,6 +1,7 @@
 #include "include/image.h"
 #include "include/gterm.h"
 #include "include/term.h"
+#include "include/string.h"
 
 static uint64_t sqrt(uint64_t a_nInput)
 {

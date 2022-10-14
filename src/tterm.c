@@ -2,6 +2,7 @@
 
 #include "include/tterm.h"
 #include "include/term.h"
+#include "include/string.h"
 
 static void outb(uint16_t port, uint8_t val)
 {

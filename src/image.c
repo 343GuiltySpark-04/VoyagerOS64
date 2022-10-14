@@ -1,5 +1,6 @@
 #include "include/image.h"
 #include "include/term.h"
+#include "include/string.h"
 
 #define DIV_ROUNDUP(A, B)        \
     ({                           \
