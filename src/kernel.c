@@ -7,6 +7,7 @@
 #include "include/limine.h"
 #include "include/printf.h"
 #include "include/memUtils.h"
+#include "include/kernel.h"
 
 #define White "\033[1;00m"
 #define Red "\033[1;31m"
@@ -17,6 +18,11 @@
 #define Cyan "\033[1;36m"
 #define Black "\033[1;37m"
 
+#define SIZE 0x7FE0000 - 1
+#define BSIZE 16
+#define HSTART 0x7c36000
+
+KHEAPBM bmh;
 
 // The Limine requests can be placed anywhere, but it is important that
 // the compiler does not optimise them away, so, usually, they should
@@ -38,6 +44,7 @@ static volatile struct limine_kernel_address_request Kaddress_req = {
 extern void breakpoint();
 extern void stop_interrupts();
 extern void start_interrupts();
+extern void halt();
 
 void print_memmap()
 {
@@ -140,11 +147,14 @@ void _start(void)
         printf_("%s\n", "--------------------------------------");
     }
 
- 
+    breakpoint();
 
-    printf_("%s\n", "Kernel Loaded");
+    k_heapBMInit(&bmh);
+    k_heapBMAddBlock(&bmh, HSTART, SIZE, BSIZE);
 
     print_memmap();
+
+    printf_("%s\n", "Kernel Loaded");
 
     // Just chill until needed
     while (1)
