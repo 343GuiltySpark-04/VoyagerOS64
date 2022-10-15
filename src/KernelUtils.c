@@ -76,9 +76,3 @@ void print_memmap()
     printf_("0x%llx\n", get_memory_size());
     printf_("%s\n", "--------------------------------------");
 }
-
-PAGING_EXPORT uint64_t PagingGetFreeFrame()
-{
-
-    return (uint64_t)frame_request();
-}
