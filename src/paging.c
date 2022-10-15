@@ -1,4 +1,5 @@
-/* #include "include/paging/paging.h"
+#include "include/paging/paging.h"
+#include "include/paging/frameallocator.h"
 #include "include/string.h"
 
 struct PageTableOffset VirtualAddressToOffsets(void *virtualAddress)
@@ -210,4 +211,3 @@ void PagingDuplicate(struct PageTable *p4, struct PageTable *newTable)
         newTable->entries[i] = p4Virtual->entries[i];
     }
 }
- */
