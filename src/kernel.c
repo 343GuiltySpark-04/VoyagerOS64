@@ -8,6 +8,7 @@
 #include "include/printf.h"
 #include "include/heap.h"
 #include "include/kernel.h"
+#include "include/paging/frameallocator.h"
 
 #define White "\033[1;00m"
 #define Red "\033[1;31m"
@@ -60,12 +61,10 @@ void _start(void)
     // Retrive Kernel Addresses
     if (Kaddress_req.response == NULL)
     {
-
         printf_("%s\n", "!!!Error While Fetching Kernel Addresses!!!");
     }
     else
     {
-
         printf_("%s\n", "Kernel Base Addresses Are As Follows: ");
         printf_("%s", "Physical Address: ");
         printf_("0x%llx\n", Kaddress_req.response->physical_base);
@@ -75,6 +74,10 @@ void _start(void)
     }
 
     breakpoint();
+
+    read_memory_map();
+
+    printf("total memory: %llu\nfree memory: %llu\nused memory: %llu\nreserved memory: %llu\n", get_memory_size(), free_ram(), used_ram(), reserved_ram());
 
     print_memmap();
 

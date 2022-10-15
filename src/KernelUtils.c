@@ -6,23 +6,19 @@
 volatile struct limine_memmap_request memmap_req = {
     .id = LIMINE_MEMMAP_REQUEST,
     .revision = 0
-
 };
 
-uint64_t GetMemorySize()
+uint64_t get_memory_size()
 {
-
     static uint64_t memorySize = 0;
 
     if (memorySize > 0)
     {
-
         return memorySize;
     }
 
     for (uint64_t i = 0; i < memmap_req.response->entry_count; i++)
     {
-
         memorySize += memmap_req.response->entries[i]->length;
     }
 
@@ -31,7 +27,6 @@ uint64_t GetMemorySize()
 
 void print_memmap()
 {
-
     int size = memmap_req.response->entry_count;
 
     printf_("%s\n", "--------------------------------------");
@@ -77,6 +72,6 @@ void print_memmap()
     }
 
     printf_("%s", "Memory Size: ");
-    printf_("0x%llx\n", GetMemorySize());
+    printf_("0x%llx\n", get_memory_size());
     printf_("%s\n", "--------------------------------------");
 }
