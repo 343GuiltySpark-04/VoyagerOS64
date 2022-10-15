@@ -5,6 +5,7 @@
 #include "include/idt.h"
 #include "include/printf.h"
 #include "include/gdt.h"
+#include "include/registers.h"
 
 extern void halt();
 
@@ -33,6 +34,9 @@ void exception_handler()
 
     printf_("%s\n", "!!!KERNEL PANIC!!!");
     printf_("%s", "INTERRUPT HANDLING NOT AVIAL!");
+    printf_("%s\n", "In case it's Page Fault here's the CR2 contents.");
+    printf_("%s", "CR2: ");
+    printf_("0x%llx\n", readCR2());
 
     halt();
 }

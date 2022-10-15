@@ -9,6 +9,7 @@
 #include "include/heap.h"
 #include "include/kernel.h"
 #include "include/paging/frameallocator.h"
+#include "include/registers.h"
 
 #define White "\033[1;00m"
 #define Red "\033[1;31m"
