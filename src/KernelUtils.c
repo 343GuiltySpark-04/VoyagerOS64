@@ -2,11 +2,12 @@
 #include <stddef.h>
 #include <stdint.h>
 #include "include/limine.h"
+#include "include/paging/frameallocator.h"
+#include "include/paging/paging.h"
 
 volatile struct limine_memmap_request memmap_req = {
     .id = LIMINE_MEMMAP_REQUEST,
-    .revision = 0
-};
+    .revision = 0};
 
 uint64_t get_memory_size()
 {
@@ -74,4 +75,10 @@ void print_memmap()
     printf_("%s", "Memory Size: ");
     printf_("0x%llx\n", get_memory_size());
     printf_("%s\n", "--------------------------------------");
+}
+
+PAGING_EXPORT uint64_t PagingGetFreeFrame()
+{
+
+    return (uint64_t)frame_request();
 }
