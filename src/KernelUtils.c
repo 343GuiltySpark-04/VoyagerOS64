@@ -76,3 +76,14 @@ void print_memmap()
     printf_("0x%llx\n", get_memory_size());
     printf_("%s\n", "--------------------------------------");
 }
+
+
+void init_memory(){
+
+read_memory_map();
+
+printf_("%s\n", "Initializing Paging");
+
+
+
+}

@@ -34,6 +34,7 @@ static volatile struct limine_kernel_address_request Kaddress_req = {
 
 };
 
+/// @brief breakpoint() Provides a magic breakpoint for debugging in Bochs
 extern void breakpoint();
 extern void stop_interrupts();
 extern void start_interrupts();
@@ -78,8 +79,6 @@ void _start(void)
     read_memory_map();
 
     printf("total memory: %llu\nfree memory: %llu\nused memory: %llu\nreserved memory: %llu\n", get_memory_size(), free_ram(), used_ram(), reserved_ram());
-
-    print_memmap();
 
     printf_("%s\n", "Kernel Loaded");
 
