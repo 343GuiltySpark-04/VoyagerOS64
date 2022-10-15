@@ -22,8 +22,6 @@
 #define BSIZE 16
 #define HSTART 0x7c36000
 
-KHEAPBM bmh;
-
 // The Limine requests can be placed anywhere, but it is important that
 // the compiler does not optimise them away, so, usually, they should
 // be made volatile or equivalent.
@@ -77,9 +75,6 @@ void _start(void)
     }
 
     breakpoint();
-
-    k_heapBMInit(&bmh);
-    k_heapBMAddBlock(&bmh, HSTART, SIZE, BSIZE);
 
     print_memmap();
 
