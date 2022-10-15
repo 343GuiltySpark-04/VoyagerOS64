@@ -1,7 +1,20 @@
-/* #pragma once
+ #pragma once
 #include <stddef.h>
 #include <stdint.h>
+#include <stdbool.h>
 
+
+
+size_t size;
+uint8_t* buffer;
+
+
+
+
+
+
+
+/*
 class Bitmap
 {
 public:
