@@ -100,13 +100,9 @@ void init_memory()
 
     memset(page_table, 0, sizeof(struct PageTable));
 
-    printf_("0x%llx\n", (uint64_t)page_table);
-
     printf_("%s\n", "Initializing Paging");
 
     breakpoint();
-
-    printf_("0x%llx\n", (uint64_t)page_table);
 
     printf_("%s\n", "Preallocating Upper Region");
 
@@ -118,8 +114,6 @@ void init_memory()
 
         page_table->entries[i] = (uint64_t)page | PAGING_FLAG_PRESENT | PAGING_FLAG_WRITABLE;
     }
-
-    printf_("0x%llx\n", (uint64_t)page_table);
 
     // Enable Write Protection
     writeCR0(readCRO() | (1 << 16));
@@ -148,8 +142,6 @@ void init_memory()
     for(uint64_t textAddress = textStart; textAddress < textEnd; textAddress += 0x1000)
     {
         uint64_t target = textAddress - Kaddress_req.response->virtual_base + Kaddress_req.response->physical_base;
-
-        printf_("Text: Mapping %llx to %llx: virtual base: %llx; physical base: %llx\n", textAddress, target, Kaddress_req.response->virtual_base, Kaddress_req.response->physical_base);
 
         PagingMapMemory(page_table, (void *)textAddress, (void *)target, PAGING_FLAG_PRESENT);
     }
@@ -208,17 +200,9 @@ void init_memory()
     
     frameBitmap = (uint8_t *)TranslateToHighHalfMemoryAddress(frameBitmap);
 
-    printf_("%s", "Writing The Following Value To CR3: ");
-    printf_("0x%llx\n", (uint64_t)page_table);
-    printf_("%s", "Current Value of CR3: ");
-    printf_("0x%llx\n", readCR3());
-
     breakpoint();
 
     writeCR3((uint64_t)page_table);
 
-    printf_("%s", "Wrote The Following Value To CR3: ");
-    printf_("0x%llx\n", (uint64_t)page_table);
-    printf_("%s", "Current Value of CR3: ");
-    printf_("0x%llx\n", readCR3());
+    printf_("Wrote CR3\n");
 }

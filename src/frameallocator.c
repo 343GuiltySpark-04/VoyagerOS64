@@ -67,10 +67,12 @@ void read_memory_map()
 
     for (uint64_t i = 0; i < memmap_req.response->entry_count; i++)
     {
-        if (memmap_req.response->entries[i]->type == LIMINE_MEMMAP_USABLE && memmap_req.response->entries[i]->length > largestFreeMemSegment)
+        struct limine_memmap_entry *entry = memmap_req.response->entries[i];
+
+        if (entry->type == LIMINE_MEMMAP_USABLE && entry->length > largestFreeMemSegment)
         {
-            largestFreeMemSegment = (void *)memmap_req.response->entries[i]->base;
-            largestFreeMemSegmentSize = memmap_req.response->entries[i]->length;
+            largestFreeMemSegment = (void *)entry->base;
+            largestFreeMemSegmentSize = entry->length;
         }
     }
 
@@ -91,17 +93,14 @@ void read_memory_map()
 
     for (uint64_t i = 0; i < memmap_req.response->entry_count; i++)
     {
-        if (memmap_req.response->entries[i]->type == LIMINE_MEMMAP_USABLE)
+        struct limine_memmap_entry *entry = memmap_req.response->entries[i];
+
+        if (entry->type == LIMINE_MEMMAP_USABLE)
         {
+            printf("Unlocking usable pages for %p-%p (%llu pages)\n", entry->base, entry->base + entry->length, entry->length / 0x1000);
 
-            printf("Unlocking usable pages for %p-%p (%llu pages)", memmap_req.response->entries[i]->base, memmap_req.response->entries[i]->base
-
-                                                                                                               + memmap_req.response->entries[i]->length,
-                   memmap_req.response->entries[i]->length / 0x1000);
-
-            for (uint64_t index = 0, startIndex = memmap_req.response->entries[i]->base / 0x1000;
-                 index < memmap_req.response->entries[i]->length / 0x1000; index++)
-
+            for (uint64_t index = 0, startIndex = entry->base / 0x1000;
+                 index < entry->length / 0x1000; index++)
             {
                 bitmap_set(frameBitmap, index + startIndex, false);
 

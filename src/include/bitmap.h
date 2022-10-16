@@ -3,25 +3,25 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-inline uint8_t bitmap_get(uint8_t *bitmap, size_t bit)
+inline bool bitmap_get(uint8_t *bitmap, size_t bit)
 {
-    size_t bitmapIndex = bit / 8;
-    size_t bitIndex = bit % 8;
+    uint64_t byteIndex = bit / 8;
+    uint8_t bitIndex = bit % 8;
+    uint8_t bitIndexer = 0b10000000 >> bitIndex;
 
-    return bitmap[bitmapIndex] & (1 << bitIndex);
+    return (bitmap[byteIndex] & bitIndexer) > 0;
 }
 
 inline void bitmap_set(uint8_t *bitmap, size_t bit, uint8_t value)
 {
-    size_t bitmapIndex = bit / 8;
-    size_t bitIndex = bit % 8;
+    uint64_t byteIndex = bit / 8;
+    uint8_t bitIndex = bit % 8;
+    uint8_t bitIndexer = 0b10000000 >> bitIndex;
 
-    if(value)
+    bitmap[byteIndex] &= ~bitIndexer;
+
+    if (value)
     {
-        bitmap[bitmapIndex] |= (1 << bitIndex);
-    }
-    else
-    {
-        bitmap[bitmapIndex] &= ~(1 << bitIndex);
+        bitmap[byteIndex] |= bitIndexer;
     }
 }
