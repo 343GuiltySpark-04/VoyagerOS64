@@ -28,7 +28,7 @@
 // the compiler does not optimise them away, so, usually, they should
 // be made volatile or equivalent.
 
-static volatile struct limine_kernel_address_request Kaddress_req = {
+volatile struct limine_kernel_address_request Kaddress_req = {
 
     .id = LIMINE_KERNEL_ADDRESS_REQUEST,
     .revision = 0
@@ -83,8 +83,8 @@ void _start(void)
 
     init_memory();
 
-    printf_("%s", "CR0: ");
-    printf_("0x%llx\n", readCRO());
+    printf_("%s", "CR3: ");
+    printf_("0x%llx\n", readCR3());
 
     printf_("%s\n", "Kernel Loaded");
 
