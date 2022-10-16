@@ -7,6 +7,8 @@
 #include "include/string.h"
 #include "include/registers.h"
 
+extern void breakpoint();
+
 volatile struct limine_memmap_request memmap_req = {
     .id = LIMINE_MEMMAP_REQUEST,
     .revision = 0};
@@ -104,12 +106,16 @@ void init_memory()
 
     printf_("%s\n", "Mapping Whole Memory");
 
+    breakpoint();
+
     for (uint64_t index = 0; index < get_memory_size(); index += 0x1000)
     {
 
         PagingMapMemory(page_table.entries[index], TranslateToHighHalfMemoryAddress(index), (void *)(index),
                         PAGING_FLAG_PRESENT | PAGING_FLAG_WRITABLE);
     }
+
+    breakpoint();
 
     printf_("%s\n", "Mapping Memory Map");
 
