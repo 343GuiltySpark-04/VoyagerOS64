@@ -135,20 +135,23 @@ void init_memory()
                     base = TranslateToHighHalfMemoryAddress(base);
                 }
 
-                    // have Fox look at this bit.
-                    /* pageTableManager.MapMemory((void *)(base + index * 0x1000), (void *)(desc->base + index * 0x1000),
-                    PAGING_FLAG_PRESENT | PAGING_FLAG_WRITABLE); */
+                PagingMapMemory(page_table.entries[index], (void *)(base + index * 0x1000), (void *)(memmap_req.response->entries[i]->base + index * 0x1000),
+                                PAGING_FLAG_PRESENT | PAGING_FLAG_WRITABLE);
 
+                // have Fox look at this bit.
+                /* pageTableManager.MapMemory((void *)(base + index * 0x1000), (void *)(desc->base + index * 0x1000),
+                PAGING_FLAG_PRESENT | PAGING_FLAG_WRITABLE); */
             }
-        } else if (memmap_req.response->entries[i]->type != LIMINE_MEMMAP_USABLE){
+        }
+        else if (memmap_req.response->entries[i]->type != LIMINE_MEMMAP_USABLE)
+        {
 
+            for (uint64_t index = 0; index < memmap_req.response->entries[i]->length / 0x1000 + 1; index++)
+            {
 
-            for (uint64_t index = 0; index < memmap_req.response->entries[i]->length / 0x1000 + 1; index++){
-
-                
-
+                PagingMapMemory(page_table.entries[index], (void *)TranslateToHighHalfMemoryAddress(memmap_req.response->entries[i]->base + index * 0x1000),
+                                (void *)(memmap_req.response->entries[i]->base + index * 0x1000), PAGING_FLAG_PRESENT | PAGING_FLAG_WRITABLE);
             }
-
         }
     }
 }
