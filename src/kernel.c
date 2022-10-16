@@ -83,6 +83,11 @@ void _start(void)
 
     printf_("%s\n", "Kernel Loaded");
 
+    init_memory();
+
+    printf_("%s", "CR0: ");
+    printf_("0x%llx\n", readCRO());
+
     // Just chill until needed
     while (1)
     {
