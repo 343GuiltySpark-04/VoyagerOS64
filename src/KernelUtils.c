@@ -108,14 +108,14 @@ void init_memory()
         void *page = frame_request();
         memset(page, 0, 0x1000);
 
-        page_table = (uint64_t)page | PAGING_FLAG_PRESENT | PAGING_FLAG_WRITABLE;
+        page_table = (struct PageTable *)page;
 
         // Enable Write Protection
         writeCR0(readCRO() | (1 << 16));
 
         writeMSR(0x0277, 0x0000000005010406);
 
-        printf_("%s\n", "Mapping Whole Memory");
+        // printf_("%s\n", "Mapping Whole Memory");
 
         breakpoint();
 
@@ -128,7 +128,7 @@ void init_memory()
 
         breakpoint();
 
-        printf_("%s\n", "Mapping Memory Map");
+        // printf_("%s\n", "Mapping Memory Map");
 
         for (uint64_t i = 0; i < memmap_req.response->entry_count; i++)
         {
