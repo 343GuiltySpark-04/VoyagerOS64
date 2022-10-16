@@ -4,6 +4,7 @@
 #include <stdbool.h>
 #include <stddef.h>
 #include "include/KernelUtils.h"
+#include "include/printf.h"
 
 uint64_t freeMemory = 0;
 uint64_t reservedMemory = 0;
@@ -80,7 +81,7 @@ void read_memory_map()
 
     bitmap = (uint8_t *)largestFreeMemSegment;
 
-    for(uint64_t i = 0; i < bitmapSize * 8; i++)
+    for (uint64_t i = 0; i < bitmapSize * 8; i++)
     {
         bitmap_set(bitmap, i, true);
 
@@ -92,8 +93,15 @@ void read_memory_map()
     {
         if (memmap_req.response->entries[i]->type == LIMINE_MEMMAP_USABLE)
         {
+
+            printf("Unlocking usable pages for %p-%p (%llu pages)", memmap_req.response->entries[i]->base, memmap_req.response->entries[i]->base
+
+                                                                                                               + memmap_req.response->entries[i]->length,
+                   memmap_req.response->entries[i]->length / 0x1000);
+
             for (uint64_t index = 0, startIndex = memmap_req.response->entries[i]->base / 0x1000;
-                index < memmap_req.response->entries[i]->length / 0x1000; index++)
+                 index < memmap_req.response->entries[i]->length / 0x1000; index++)
+
             {
                 bitmap_set(bitmap, index + startIndex, false);
 
@@ -110,11 +118,12 @@ void *frame_request()
 {
     for (uint64_t i = 0; i < bitmapSize * 8; i++)
     {
-        if (bitmap_get(bitmap, i) == true) continue;
+        if (bitmap_get(bitmap, i) == true)
+            continue;
 
-        frame_lock((void*)(i * 0x1000));
+        frame_lock((void *)(i * 0x1000));
 
-        return (void*)(i * 0x1000);
+        return (void *)(i * 0x1000);
     }
 
     return NULL; // Page Frame Swap to file
@@ -128,11 +137,11 @@ void *frame_request_multiple(uint32_t count)
     {
         if (bitmap_get(bitmap, i) == false)
         {
-            if(freeCount == count)
+            if (freeCount == count)
             {
                 uint32_t index = i - count;
 
-                frame_lock_multiple((void*)((uint64_t)index * 0x1000), count);
+                frame_lock_multiple((void *)((uint64_t)index * 0x1000), count);
 
                 return (void *)((uint64_t)index * 0x1000);
             }
@@ -152,7 +161,7 @@ void frame_free(void *address)
 {
     uint64_t index = (uint64_t)address / 0x1000;
 
-    if(bitmap_get(bitmap, index) == false)
+    if (bitmap_get(bitmap, index) == false)
     {
         return;
     }
@@ -165,7 +174,7 @@ void frame_free(void *address)
 
 void frame_free_multiple(void *address, uint64_t pageCount)
 {
-    for(uint64_t t = 0; t < pageCount; t++)
+    for (uint64_t t = 0; t < pageCount; t++)
     {
         frame_free((void *)((uint64_t)address + (t * 0x1000)));
     }
@@ -188,7 +197,7 @@ void frame_lock(void *address)
 
 void frame_lock_multiple(void *address, uint64_t pageCount)
 {
-    for(uint64_t t = 0; t < pageCount; t++)
+    for (uint64_t t = 0; t < pageCount; t++)
     {
         frame_lock((void *)((uint64_t)address + (t * 0x1000)));
     }
