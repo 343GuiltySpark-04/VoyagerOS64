@@ -41,7 +41,7 @@ extern void stop_interrupts();
 extern void start_interrupts();
 extern void halt();
 
-/// @brief  following will be our kernel's entry point.
+/// \fn  following will be our kernel's entry point.
 void _start(void)
 {
     breakpoint();
