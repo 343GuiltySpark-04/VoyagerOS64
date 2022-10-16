@@ -24,9 +24,9 @@
 #define BSIZE 16
 #define HSTART 0x7c36000
 
-// The Limine requests can be placed anywhere, but it is important that
-// the compiler does not optimise them away, so, usually, they should
-// be made volatile or equivalent.
+/// @attention Limine requests can be placed anywhere, but it is important that
+/// the compiler does not optimise them away, so, usually, they should
+/// be made volatile or equivalent.
 
 volatile struct limine_kernel_address_request Kaddress_req = {
 
@@ -41,7 +41,7 @@ extern void stop_interrupts();
 extern void start_interrupts();
 extern void halt();
 
-// The following will be our kernel's entry point.
+/// @brief  following will be our kernel's entry point.
 void _start(void)
 {
     breakpoint();
@@ -60,7 +60,7 @@ void _start(void)
 
     print_memmap();
 
-    // Retrive Kernel Addresses
+    // @brief Kernel Addresses
     if (Kaddress_req.response == NULL)
     {
         printf_("%s\n", "!!!Error While Fetching Kernel Addresses!!!");
@@ -79,6 +79,7 @@ void _start(void)
 
     read_memory_map();
 
+    /// @brief print usable memory to log  
     printf("total memory: %llu\nfree memory: %llu\nused memory: %llu\nreserved memory: %llu\n", get_memory_size(), free_ram(), used_ram(), reserved_ram());
 
     init_memory();
