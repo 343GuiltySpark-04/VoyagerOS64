@@ -81,12 +81,12 @@ void _start(void)
 
     printf("total memory: %llu\nfree memory: %llu\nused memory: %llu\nreserved memory: %llu\n", get_memory_size(), free_ram(), used_ram(), reserved_ram());
 
-    printf_("%s\n", "Kernel Loaded");
-
     init_memory();
 
     printf_("%s", "CR0: ");
     printf_("0x%llx\n", readCRO());
+
+    printf_("%s\n", "Kernel Loaded");
 
     // Just chill until needed
     while (1)
