@@ -9,45 +9,61 @@ ENTRY(_start)
 /* MMU permissions */
 PHDRS
 {
+    null    PT_NULL    FLAGS(0) ;                   /* Null segment */
     text    PT_LOAD    FLAGS((1 << 0) | (1 << 2)) ; /* Execute + Read */
     rodata  PT_LOAD    FLAGS((1 << 2)) ;            /* Read only */
     data    PT_LOAD    FLAGS((1 << 1) | (1 << 2)) ; /* Write + Read */
+    dynamic PT_DYNAMIC FLAGS((1 << 1) | (1 << 2)) ; /* Dynamic segment needed for PIE */
 }
  
 SECTIONS
 {
-    /* We wanna be placed in the topmost 2GiB of the address space, for optimisations */
-    /* and because that is what the Limine spec mandates. */
-    /* Any address in this region will do, but often 0xffffffff80000000 is chosen as */
-    /* that is the beginning of the region. */
+    /* We wanna be placed in the higher half, 2MiB above 0 in physical memory. */
+    /* Since we are going to use PIE, this is just the base load address, but the */
+    /* bootloader will be able to relocate us as it sees fit. */
     . = 0xffffffff80000000;
- 
+
+    text_start_addr = .;
+    
     .text : {
-        *(.text .text.*)
+        *(.text*)
     } :text
+
+    text_end_addr = .;
  
     /* Move to the next memory page for .rodata */
-    . += CONSTANT(MAXPAGESIZE);
- 
+    . += 0x1000;
+
+    rodata_start_addr = .;
+
     .rodata : {
-        *(.rodata .rodata.*)
+        *(.rodata*)
     } :rodata
+
+    rodata_end_addr = .;
  
     /* Move to the next memory page for .data */
-    . += CONSTANT(MAXPAGESIZE);
+    . += 0x1000;
+
+    data_start_addr = .;
  
     .data : {
-        *(.data .data.*)
+        *(.data*)
     } :data
+ 
+    /* Dynamic section needed for PIE */
+    .dynamic : {
+        *(.dynamic)
+    } :data :dynamic
  
     .bss : {
         *(COMMON)
-        *(.bss .bss.*)
+        *(.bss*)
     } :data
- 
-    /* Discard .note.* and .eh_frame since they may cause issues on some hosts. */
+
+    data_end_addr = .;
+
     /DISCARD/ : {
-        *(.eh_frame)
         *(.note .note.*)
     }
 }

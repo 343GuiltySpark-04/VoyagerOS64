@@ -10,7 +10,7 @@ uint64_t freeMemory = 0;
 uint64_t reservedMemory = 0;
 uint64_t usedMemory = 0;
 bool initialized = false;
-uint8_t *bitmap = NULL;
+uint8_t *frameBitmap = NULL;
 uint64_t bitmapSize = 0;
 
 const char *MemoryMapTypeString(int type)
@@ -79,11 +79,11 @@ void read_memory_map()
 
     bitmapSize = memorySize / 0x1000 / 8 + 1;
 
-    bitmap = (uint8_t *)largestFreeMemSegment;
+    frameBitmap = (uint8_t *)largestFreeMemSegment;
 
     for (uint64_t i = 0; i < bitmapSize * 8; i++)
     {
-        bitmap_set(bitmap, i, true);
+        bitmap_set(frameBitmap, i, true);
 
         freeMemory -= 0x1000;
         reservedMemory += 0x1000;
@@ -103,7 +103,7 @@ void read_memory_map()
                  index < memmap_req.response->entries[i]->length / 0x1000; index++)
 
             {
-                bitmap_set(bitmap, index + startIndex, false);
+                bitmap_set(frameBitmap, index + startIndex, false);
 
                 freeMemory += 0x1000;
                 reservedMemory -= 0x1000;
@@ -118,8 +118,7 @@ void *frame_request()
 {
     for (uint64_t i = 0; i < bitmapSize * 8; i++)
     {
-        if (bitmap_get(bitmap, i) == true)
-            continue;
+        if (bitmap_get(frameBitmap, i) == true) continue;
 
         frame_lock((void *)(i * 0x1000));
 
@@ -135,7 +134,7 @@ void *frame_request_multiple(uint32_t count)
 
     for (uint32_t i = 0; i < bitmapSize * 8; i++)
     {
-        if (bitmap_get(bitmap, i) == false)
+        if (bitmap_get(frameBitmap, i) == false)
         {
             if (freeCount == count)
             {
@@ -161,12 +160,12 @@ void frame_free(void *address)
 {
     uint64_t index = (uint64_t)address / 0x1000;
 
-    if (bitmap_get(bitmap, index) == false)
+    if(bitmap_get(frameBitmap, index) == false)
     {
         return;
     }
 
-    bitmap_set(bitmap, index, false);
+    bitmap_set(frameBitmap, index, false);
 
     freeMemory += 0x1000;
     usedMemory -= 0x1000;
@@ -184,12 +183,12 @@ void frame_lock(void *address)
 {
     uint64_t index = (uint64_t)address / 0x1000;
 
-    if (bitmap_get(bitmap, index) == true)
+    if (bitmap_get(frameBitmap, index) == true)
     {
         return;
     }
 
-    bitmap_set(bitmap, index, true);
+    bitmap_set(frameBitmap, index, true);
 
     freeMemory -= 0x1000;
     usedMemory += 0x1000;
