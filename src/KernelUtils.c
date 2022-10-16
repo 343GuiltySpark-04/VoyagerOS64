@@ -90,6 +90,21 @@ void init_memory()
 
     printf_("%s\n", "Initializing Paging");
 
+
+    for (uint64_t i = 0; i < 512; i++){
+
+
+            PagingIdentityMap(page_table.entries[i], (void *)(uint64_t)page_table.entries[i], PAGING_FLAG_PRESENT | PAGING_FLAG_WRITABLE);
+
+
+    }
+
+
+    breakpoint();
+
+    printf_("%s\n", "Preallocating Upper Region");
+
+
     for (uint64_t i = 256; i < 512; i++)
     {
 
