@@ -109,66 +109,72 @@ void init_memory()
         memset(page, 0, 0x1000);
 
         page_table = (struct PageTable *)page;
+    }
 
-        // Enable Write Protection
-        writeCR0(readCRO() | (1 << 16));
+    // Enable Write Protection
+    writeCR0(readCRO() | (1 << 16));
 
-        writeMSR(0x0277, 0x0000000005010406);
+    writeMSR(0x0277, 0x0000000005010406);
 
-        // printf_("%s\n", "Mapping Whole Memory");
+    printf_("%s\n", "Mapping Whole Memory");
 
-        breakpoint();
+    breakpoint();
 
-        for (uint64_t index = 0; index < get_memory_size(); index += 0x1000)
+    for (uint64_t index = 0; index < get_memory_size(); index += 0x1000)
+    {
+
+        /*      printf_("%s", "Whole memmap index value: ");
+             printf_("0x%llx\n", index); */
+
+        PagingMapMemory(page_table, TranslateToHighHalfMemoryAddress(index), (void *)(index),
+                        PAGING_FLAG_PRESENT | PAGING_FLAG_WRITABLE);
+    }
+
+    breakpoint();
+
+    printf_("%s\n", "Mapping Memory Map");
+
+    for (uint64_t i = 0; i < memmap_req.response->entry_count; i++)
+    {
+
+        /*    printf_("%s", "Mapping loop count #: ");
+           printf_("%i\n", i); */
+
+        if (memmap_req.response->entries[i]->type == LIMINE_MEMMAP_KERNEL_AND_MODULES)
         {
 
-            PagingMapMemory(page_table, TranslateToHighHalfMemoryAddress(index), (void *)(index),
-                            PAGING_FLAG_PRESENT | PAGING_FLAG_WRITABLE);
-        }
-
-        breakpoint();
-
-        // printf_("%s\n", "Mapping Memory Map");
-
-        for (uint64_t i = 0; i < memmap_req.response->entry_count; i++)
-        {
-
-            if (memmap_req.response->entries[i]->type == LIMINE_MEMMAP_KERNEL_AND_MODULES)
+            for (uint64_t index = 0; index < memmap_req.response->entries[i]->length / 0x1000 + 1; index++)
             {
 
-                for (uint64_t index = 0; index < memmap_req.response->entries[i]->length / 0x1000 + 1; index++)
+                auto base = memmap_req.response->entries[i]->base;
+
+                if (TranslateToKernelMemoryAddress(memmap_req.response->entries[i]->base) <= 0xFFFFFFFF90000000)
                 {
 
-                    auto base = memmap_req.response->entries[i]->base;
-
-                    if (TranslateToKernelMemoryAddress(memmap_req.response->entries[i]->base) <= 0xFFFFFFFF90000000)
-                    {
-
-                        base = TranslateToKernelMemoryAddress(base);
-                    }
-                    else
-                    {
-
-                        base = TranslateToHighHalfMemoryAddress(base);
-                    }
-
-                    PagingMapMemory(page_table, (void *)(base + index * 0x1000), (void *)(memmap_req.response->entries[i]->base + index * 0x1000),
-                                    PAGING_FLAG_PRESENT | PAGING_FLAG_WRITABLE);
-
-                    // have Fox look at this bit.
-                    /* pageTableManager.MapMemory((void *)(base + index * 0x1000), (void *)(desc->base + index * 0x1000),
-                    PAGING_FLAG_PRESENT | PAGING_FLAG_WRITABLE); */
+                    base = TranslateToKernelMemoryAddress(base);
                 }
+                else
+                {
+
+                    base = TranslateToHighHalfMemoryAddress(base);
+                }
+
+                PagingMapMemory(page_table, (void *)(base + index * 0x1000), (void *)(memmap_req.response->entries[i]->base + index * 0x1000),
+                                PAGING_FLAG_PRESENT | PAGING_FLAG_WRITABLE);
+
+                // have Fox look at this bit.
+                /* pageTableManager.MapMemory((void *)(base + index * 0x1000), (void *)(desc->base + index * 0x1000),
+                PAGING_FLAG_PRESENT | PAGING_FLAG_WRITABLE); */
             }
-            else if (memmap_req.response->entries[i]->type != LIMINE_MEMMAP_USABLE)
+        }
+        else if (memmap_req.response->entries[i]->type != LIMINE_MEMMAP_USABLE)
+        {
+
+            for (uint64_t index = 0; index < memmap_req.response->entries[i]->length / 0x1000 + 1; index++)
             {
 
-                for (uint64_t index = 0; index < memmap_req.response->entries[i]->length / 0x1000 + 1; index++)
-                {
-
-                    PagingMapMemory(page_table, (void *)TranslateToHighHalfMemoryAddress(memmap_req.response->entries[i]->base + index * 0x1000),
-                                    (void *)(memmap_req.response->entries[i]->base + index * 0x1000), PAGING_FLAG_PRESENT | PAGING_FLAG_WRITABLE);
-                }
+                PagingMapMemory(page_table, (void *)TranslateToHighHalfMemoryAddress(memmap_req.response->entries[i]->base + index * 0x1000),
+                                (void *)(memmap_req.response->entries[i]->base + index * 0x1000), PAGING_FLAG_PRESENT | PAGING_FLAG_WRITABLE);
             }
         }
     }
