@@ -81,12 +81,13 @@ void print_memmap()
     printf_("%s\n", "--------------------------------------");
 }
 
-struct PageTable *page_table;
+static struct PageTable *page_table;
 
 void init_memory()
 {
 
     page_table = (struct PageTable *)frame_request();
+    printf_("0x%llx\n", (uint64_t)page_table);
 
     read_memory_map();
 
@@ -100,16 +101,26 @@ void init_memory()
 
     breakpoint();
 
+    printf_("0x%llx\n", (uint64_t)page_table);
+
     printf_("%s\n", "Preallocating Upper Region");
 
     for (uint64_t i = 256; i < 512; i++)
     {
 
         void *page = frame_request();
+        printf_("0x%llx\n", page);
+
         memset(page, 0, 0x1000);
 
         page_table = (struct PageTable *)page;
+
+        // printf_("0x%llx\n", (uint64_t)page_table);
+        // printf_("0x%llx\n", (uint64_t)page_table->entries[i]);
+        printf_("0x%llx\n", (uint64_t)page);
     }
+
+    printf_("0x%llx\n", (uint64_t)page_table);
 
     // Enable Write Protection
     writeCR0(readCRO() | (1 << 16));
@@ -178,4 +189,18 @@ void init_memory()
             }
         }
     }
+
+    printf_("%s", "Writing The Following Value To CR3: ");
+    printf_("0x%llx\n", (uint64_t)page_table);
+    printf_("%s", "Current Value of CR3: ");
+    printf_("0x%llx\n", readCR3());
+
+    breakpoint();
+
+    writeCR3((uint64_t)page_table);
+
+    printf_("%s", "Wrote The Following Value To CR3: ");
+    printf_("0x%llx\n", (uint64_t)page_table);
+    printf_("%s", "Current Value of CR3: ");
+    printf_("0x%llx\n", readCR3());
 }
