@@ -83,9 +83,7 @@ void _start(void)
 
     printf_("%s", "CR3: ");
     printf_("0x%llx\n", readCR3());
-
-    print_memmap();
-
+    
     printf_("%s\n", "Kernel Loaded");
 
     // Just chill until needed
