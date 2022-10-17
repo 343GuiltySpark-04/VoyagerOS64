@@ -67,14 +67,10 @@ struct style_t style = {
 void setup_terminal()
 {
 
-    printf_("0x%llx\n", fbr.address);
-
     fbr.address = fbr_req.response->framebuffers[0]->address;
     fbr.width = fbr_req.response->framebuffers[0]->width;
     fbr.height = fbr_req.response->framebuffers[0]->height;
     fbr.pitch = fbr_req.response->framebuffers[0]->pitch;
-
-    printf_("0x%llx\n", fbr.address);
 
     font.address = (uintptr_t)&vgafont;
     font.width = 8;
@@ -84,9 +80,14 @@ void setup_terminal()
     font.scale_y = 0;
 }
 
+/// @var allows me to enable or dissable or alter behavoir according to wether the kernel
+/// is fully loaded yet.
+uint32_t bootspace = 1;
+
 /// \fn  following will be our kernel's entry point.
 void _start(void)
 {
+
     breakpoint();
 
     stop_interrupts();
@@ -130,25 +131,19 @@ void _start(void)
     printf_("%s", "CR3: ");
     printf_("0x%llx\n", readCR3());
 
-    k_heapBMInit(&bmh);
-    k_heapBMAddBlock(&bmh, (uintptr_t)malloc(SIZE), SIZE, BSIZE);
-
-    printf_("%s\n", "Kernel Loaded");
-    printf("total memory: %llu\nfree memory: %llu\nused memory: %llu\nreserved memory: %llu\n", get_memory_size(), free_ram(), used_ram(), reserved_ram());
-
     setup_terminal();
-
-    printf_("0x%llx\n", fbr.address);
-
-    printf_("0x%llx\n", (uint64_t)&vgafont);
-
-    printf_("0x%llx\n", font.address);
 
     term_init(&term, NULL, true);
 
     term_vbe(&term, fbr, font, style, back);
 
-    term_print(&term, "Testing");
+    bootspace = 0;
+
+    printf("total memory: %llu\nfree memory: %llu\nused memory: %llu\nreserved memory: %llu\n", get_memory_size(), free_ram(), used_ram(), reserved_ram());
+
+    printf_("%s\n", "Kernel Loaded");
+
+    term_print(&term, "VoyagerOS64 v0.0.2");
 
     // Just chill until needed
     while (1)
