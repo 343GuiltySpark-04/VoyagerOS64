@@ -79,3 +79,19 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
+
+---------------------------------------------------------
+
+RE: liballoc.h & liballoc.c
+
+
+This code is released into the public domain. Use this code at your own 
+risk. Feel free to use it for whatever purpose you want. I take no responsibilty or
+whatever if anything goes wrong.  Use it at your own risk.
+
+If you have any fixes or patches, please email me.
+
+Durand Miller <clutter@djm.co.za>
+
+
+
