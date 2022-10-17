@@ -83,8 +83,13 @@ void _start(void)
 
     printf_("%s", "CR3: ");
     printf_("0x%llx\n", readCR3());
-    
+
+    k_heapBMInit(&bmh);
+    k_heapBMAddBlock(&bmh, (uintptr_t)malloc(SIZE), SIZE, BSIZE);
+
     printf_("%s\n", "Kernel Loaded");
+        printf("total memory: %llu\nfree memory: %llu\nused memory: %llu\nreserved memory: %llu\n", get_memory_size(), free_ram(), used_ram(), reserved_ram());
+
 
     // Just chill until needed
     while (1)
