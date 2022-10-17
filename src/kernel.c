@@ -10,6 +10,7 @@
 #include "include/kernel.h"
 #include "include/paging/frameallocator.h"
 #include "include/registers.h"
+#include "include/memUtils.h"
 
 #define White "\033[1;00m"
 #define Red "\033[1;31m"
@@ -19,10 +20,6 @@
 #define Purple "\033[1;35m"
 #define Cyan "\033[1;36m"
 #define Black "\033[1;37m"
-
-#define SIZE 0x7FE0000 - 1
-#define BSIZE 16
-#define HSTART 0x7c36000
 
 /// @attention Limine requests can be placed anywhere, but it is important that
 /// the compiler does not optimise them away, so, usually, they should
@@ -79,13 +76,15 @@ void _start(void)
 
     read_memory_map();
 
-    /// @brief print usable memory to log  
+    /// @brief print usable memory to log
     printf("total memory: %llu\nfree memory: %llu\nused memory: %llu\nreserved memory: %llu\n", get_memory_size(), free_ram(), used_ram(), reserved_ram());
 
     init_memory();
 
     printf_("%s", "CR3: ");
     printf_("0x%llx\n", readCR3());
+
+    print_memmap();
 
     printf_("%s\n", "Kernel Loaded");
 
