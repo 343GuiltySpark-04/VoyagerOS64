@@ -5,10 +5,7 @@
 // skip the define.
 #ifndef _ALLOC_SKIP_DEFINE
 
-#ifndef _HAVE_SIZE_T
-#define _HAVE_SIZE_T
-typedef unsigned int size_t;
-#endif
+#include <stddef.h>
 
 #ifndef NULL
 #define NULL 0

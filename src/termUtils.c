@@ -4,6 +4,7 @@
 #include "include/string.h"
 #include "include/kernel.h"
 #include "include/liballoc.h"
+#include <stddef.h>
 
 void *alloc_mem(size_t size)
 {
