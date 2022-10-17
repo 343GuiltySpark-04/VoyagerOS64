@@ -137,6 +137,8 @@ void _start(void)
 
     term_vbe(&term, fbr, font, style, back);
 
+    term_set_text_fg_rgb(&term, 0x0055FF55);
+
     bootspace = 0;
 
     printf("total memory: %llu\nfree memory: %llu\nused memory: %llu\nreserved memory: %llu\n", get_memory_size(), free_ram(), used_ram(), reserved_ram());
