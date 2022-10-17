@@ -1,3 +1,4 @@
 #pragma once
+#include <stdint.h>
 
-#include "heap.h"
+extern uint32_t bootspace;
