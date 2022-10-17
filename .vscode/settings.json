@@ -4,7 +4,8 @@
         "tty.h": "c",
         "kheap.h": "c",
         "new": "c",
-        "typeinfo": "c"
+        "typeinfo": "c",
+        "kernelutils.h": "c"
     },
     "C_Cpp.errorSquiggles": "Enabled"
 }
