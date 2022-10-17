@@ -17,7 +17,8 @@ void _putchar(char character)
     }
     else
     {
-
+        // Enable when needed
+        // serial_debug(character);
         term_putchar(&term, character);
     }
 }
