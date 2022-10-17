@@ -20,6 +20,13 @@ volatile struct limine_memmap_request memmap_req = {
     .id = LIMINE_MEMMAP_REQUEST,
     .revision = 0};
 
+volatile struct limine_framebuffer_request fbr_req = {
+
+    .id = LIMINE_FRAMEBUFFER_REQUEST,
+    .revision = 0
+
+};
+
 extern volatile struct limine_kernel_address_request Kaddress_req;
 
 uint64_t get_memory_size()
@@ -127,8 +134,8 @@ void init_memory()
 
     printf_("%s\n", "Mapping Memory Map");
 
-    #define ALIGN_DOWN(value, align) ((value / align) * align)
-    #define ALIGN_UP(value, align) (((value + (align - 1)) / align) * align)
+#define ALIGN_DOWN(value, align) ((value / align) * align)
+#define ALIGN_UP(value, align) (((value + (align - 1)) / align) * align)
 
     uint64_t textStart = ALIGN_DOWN((uint64_t)text_start_addr, 0x1000);
     uint64_t textEnd = ALIGN_UP((uint64_t)text_end_addr, 0x1000);
@@ -139,7 +146,7 @@ void init_memory()
 
     printf_("map text\n");
 
-    for(uint64_t textAddress = textStart; textAddress < textEnd; textAddress += 0x1000)
+    for (uint64_t textAddress = textStart; textAddress < textEnd; textAddress += 0x1000)
     {
         uint64_t target = textAddress - Kaddress_req.response->virtual_base + Kaddress_req.response->physical_base;
 
@@ -148,7 +155,7 @@ void init_memory()
 
     printf_("map rodata\n");
 
-    for(uint64_t rodataAddress = rodataStart; rodataAddress < rodataEnd; rodataAddress += 0x1000)
+    for (uint64_t rodataAddress = rodataStart; rodataAddress < rodataEnd; rodataAddress += 0x1000)
     {
         uint64_t target = rodataAddress - Kaddress_req.response->virtual_base + Kaddress_req.response->physical_base;
 
@@ -157,7 +164,7 @@ void init_memory()
 
     printf_("map data\n");
 
-    for(uint64_t dataAddress = dataStart; dataAddress < dataEnd; dataAddress += 0x1000)
+    for (uint64_t dataAddress = dataStart; dataAddress < dataEnd; dataAddress += 0x1000)
     {
         uint64_t target = dataAddress - Kaddress_req.response->virtual_base + Kaddress_req.response->physical_base;
 
@@ -186,7 +193,8 @@ void init_memory()
             continue;
         }
 
-        for (uint64_t j = base; j < top; j += 0x1000) {
+        for (uint64_t j = base; j < top; j += 0x1000)
+        {
 
             if (j < 0x100000000)
             {
@@ -197,7 +205,7 @@ void init_memory()
             PagingMapMemory(page_table, TranslateToHighHalfMemoryAddress(j), j, PAGING_FLAG_PRESENT | PAGING_FLAG_WRITABLE | PAGING_FLAG_NO_EXECUTE);
         }
     }
-    
+
     frameBitmap = (uint8_t *)TranslateToHighHalfMemoryAddress(frameBitmap);
 
     breakpoint();
