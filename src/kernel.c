@@ -11,6 +11,9 @@
 #include "include/paging/frameallocator.h"
 #include "include/registers.h"
 #include "include/memUtils.h"
+#include "include/termUtils.h"
+#include "include/term.h"
+#include "include/vgafont.h"
 
 #define White "\033[1;00m"
 #define Red "\033[1;31m"
@@ -32,11 +35,54 @@ volatile struct limine_kernel_address_request Kaddress_req = {
 
 };
 
+struct term_t term;
+
 /// @brief breakpoint() Provides a magic breakpoint for debugging in Bochs
 extern void breakpoint();
 extern void stop_interrupts();
 extern void start_interrupts();
 extern void halt();
+
+struct framebuffer_t fbr;
+
+struct font_t font;
+
+struct background_t back = {
+
+    .background = NULL
+
+};
+
+struct style_t style = {
+
+    .ansi_colours = DEFAULT_ANSI_COLOURS,
+    .ansi_bright_colours = DEFAULT_ANSI_BRIGHT_COLOURS,
+    .background = DEFAULT_BACKGROUND,
+    .foreground = DEFAULT_FOREGROUND,
+    .margin = DEFAULT_MARGIN,
+    .margin_gradient = DEFAULT_MARGIN_GRADIENT
+
+};
+
+void setup_terminal()
+{
+
+    printf_("0x%llx\n", fbr.address);
+
+    fbr.address = fbr_req.response->framebuffers[0]->address;
+    fbr.width = fbr_req.response->framebuffers[0]->width;
+    fbr.height = fbr_req.response->framebuffers[0]->height;
+    fbr.pitch = fbr_req.response->framebuffers[0]->pitch;
+
+    printf_("0x%llx\n", fbr.address);
+
+    font.address = (uintptr_t)&vgafont;
+    font.width = 8;
+    font.height = 16;
+    font.spacing = 1;
+    font.scale_x = 0;
+    font.scale_y = 0;
+}
 
 /// \fn  following will be our kernel's entry point.
 void _start(void)
@@ -88,8 +134,21 @@ void _start(void)
     k_heapBMAddBlock(&bmh, (uintptr_t)malloc(SIZE), SIZE, BSIZE);
 
     printf_("%s\n", "Kernel Loaded");
-        printf("total memory: %llu\nfree memory: %llu\nused memory: %llu\nreserved memory: %llu\n", get_memory_size(), free_ram(), used_ram(), reserved_ram());
+    printf("total memory: %llu\nfree memory: %llu\nused memory: %llu\nreserved memory: %llu\n", get_memory_size(), free_ram(), used_ram(), reserved_ram());
 
+    setup_terminal();
+
+    printf_("0x%llx\n", fbr.address);
+
+    printf_("0x%llx\n", (uint64_t)&vgafont);
+
+    printf_("0x%llx\n", font.address);
+
+    term_init(&term, NULL, true);
+
+    term_vbe(&term, fbr, font, style, back);
+
+    term_print(&term, "Testing");
 
     // Just chill until needed
     while (1)

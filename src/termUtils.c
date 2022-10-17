@@ -18,10 +18,3 @@ void free_mem(void *ptr, size_t size)
     free(ptr); // i feel like theres more??
 }
 
-
-struct framebuffer_t frm = {
-   address, // Framebuffer address
-   width, // Framebuffer width
-   height, // Framebuffer height
-   pitch // Framebuffer pitch
-};
