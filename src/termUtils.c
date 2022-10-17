@@ -4,16 +4,24 @@
 #include "include/string.h"
 #include "include/kernel.h"
 #include "include/liballoc.h"
+#include "include/KernelUtils.h"
 #include <stddef.h>
 
 void *alloc_mem(size_t size)
 {
 
-    malloc((uint64_t)size);
-    // memset(); zero memory?
+    return (malloc((uint64_t)size));
 }
 void free_mem(void *ptr, size_t size)
 {
 
     free(ptr); // i feel like theres more??
 }
+
+
+struct framebuffer_t frm = {
+   address, // Framebuffer address
+   width, // Framebuffer width
+   height, // Framebuffer height
+   pitch // Framebuffer pitch
+};
