@@ -2,12 +2,17 @@
 #include <stdint.h>
 #include "global_defs.h"
 
-#define PIC1 0x20 // Master PIC
-#define PIC2 0xA0 // Slave PIC
-#define PIC1_DATA (PIC1 + 1)
-#define PIC2_DATA (PIC2 + 1)
-#define PIC_EOI 0x20 // end of interrupt
-#define IRQ_BASE 0x20
+#define PIC1 0x20
+#define PIC2 0xA0
+#define PIC1_CMD PIC1
+#define PIC2_CMD PIC2
+#define PIC1_DATA (PIC1+1)
+#define PIC2_DATA (PIC2+1)
+
+#define PIC_EOI 0x20
+
+#define ICW1 0x11
+#define ICW4_8086 0x01
 
 // Exceptions, cf. http://wiki.osdev.org/Exceptions
 #define EXCEPTION_DE 0
@@ -73,3 +78,5 @@ struct PACKED stack_state
 };
 
 void interrupt_handler();
+void pic8259_eoi(uint8_t irq);
+void pic8259_init();
