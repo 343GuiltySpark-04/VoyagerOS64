@@ -7,6 +7,10 @@
 #include <stdbool.h>
 #include "include/registers.h"
 
+
+uint64_t pic_map[16][16] = {};
+
+
 static const char *exception_messages[] =
     {
         "Division By Zero",
@@ -60,4 +64,13 @@ void isr_exception_handler(isr_xframe_t *frame)
     printf_("0x%llx\n", frame->control_registers.cr2);
 
     __asm__ volatile("cli; hlt");
+}
+
+void irq_handler(isr_xframe_t *frame);
+void irq_handler(isr_xframe_t *frame){
+
+printf_("%s\n", "IRQ TEST!");
+asm volatile("cli; hlt");
+
+
 }

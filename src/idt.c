@@ -37,8 +37,19 @@ void idt_init()
 
     for (uint8_t vector = 0; vector < IDT_CPU_EXCEPTION_COUNT; vector++)
     {
-        idt_set_descriptor(vector, isr_stub_table[vector], IDT_DESCRIPTOR_EXCEPTION, 001);
-        vectors[vector] = true;
+
+        if (vector >= 32)
+        {
+
+            idt_set_descriptor(vector, isr_stub_table[vector], IDT_DESCRIPTOR_EXTERNAL, 001);
+            vectors[vector] = true;
+        }
+        else
+        {
+
+            idt_set_descriptor(vector, isr_stub_table[vector], IDT_DESCRIPTOR_EXCEPTION, 001);
+            vectors[vector] = true;
+        }
     }
 
     __asm__ volatile("lidt %0"

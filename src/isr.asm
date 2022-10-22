@@ -1,4 +1,5 @@
 extern isr_exception_handler
+extern irq_handler
 
 %macro isr_err_stub 1
 isr_stub_%+%1:
@@ -11,6 +12,13 @@ isr_stub_%+%1:
     push 0
     push %1
     jmp isr_xframe_assembler
+%endmacro
+
+%macro isr_irq_stub 1
+isr_stub_%+%1:
+    push 0
+    push %1
+    jmp isr_irq_xframe_assembler
 %endmacro
 
 %macro pushagrd 0
@@ -79,6 +87,33 @@ isr_xframe_assembler:
     add rsp, 0x10
     iretq
 
+
+isr_irq_xframe_assembler:
+    push rbp
+    mov rbp, rsp
+    pushagrd
+    pushacrd
+    mov ax, ds
+    push rax
+    push qword 0
+    mov ax, 0x10
+    mov ds, ax
+    mov es, ax
+    mov ss, ax
+
+    lea rdi, [rsp + 0x10]
+    call irq_handler
+
+    pop rax
+    pop rax
+    mov ds, ax
+    mov es, ax
+    popacrd
+    popagrd
+    pop rbp
+    add rsp, 0x10
+    iretq
+
 isr_no_err_stub 0
 isr_no_err_stub 1
 isr_no_err_stub 2
@@ -111,11 +146,27 @@ isr_no_err_stub 28
 isr_no_err_stub 29
 isr_err_stub    30
 isr_no_err_stub 31
+isr_irq_stub 32
+isr_irq_stub 33
+isr_irq_stub 34
+isr_irq_stub 35
+isr_irq_stub 36
+isr_irq_stub 37
+isr_irq_stub 38
+isr_irq_stub 39
+isr_irq_stub 40
+isr_irq_stub 41
+isr_irq_stub 42
+isr_irq_stub 43
+isr_irq_stub 44
+isr_irq_stub 45
+isr_irq_stub 46
+isr_irq_stub 47
 
 global isr_stub_table
 isr_stub_table:
 %assign i 0 
-%rep    32 
+%rep    47
     dq isr_stub_%+i
 %assign i i+1 
 %endrep
