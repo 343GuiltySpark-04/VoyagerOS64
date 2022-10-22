@@ -1,24 +1,84 @@
+extern isr_exception_handler
+
 %macro isr_err_stub 1
 isr_stub_%+%1:
-    call exception_handler
-    iretq
+    push %1
+    jmp isr_xframe_assembler
 %endmacro
-; if writing for 64-bit, use iretq instead
+
 %macro isr_no_err_stub 1
 isr_stub_%+%1:
-    call exception_handler
-    iretq
+    push 0
+    push %1
+    jmp isr_xframe_assembler
 %endmacro
 
-%macro isr_req_stub 1
-isr_stub_%+%1:
-    call isr_handler
-    iretq
+%macro pushagrd 0
+push rax
+push rbx
+push rcx
+push rdx
+push rsi
+push rdi
 %endmacro
 
+%macro popagrd 0
+pop rdi
+pop rsi
+pop rdx
+pop rcx
+pop rbx
+pop rax
+%endmacro
 
-extern exception_handler
-extern isr_handler
+%macro pushacrd 0
+mov rax, cr0
+push rax
+mov rax, cr2
+push rax
+mov rax, cr3
+push rax
+mov rax, cr4
+push rax
+%endmacro
+
+%macro popacrd 0
+pop rax
+mov cr4, rax
+pop rax
+mov cr3, rax
+pop rax
+mov cr2, rax
+pop rax
+mov cr0, rax
+%endmacro
+
+isr_xframe_assembler:
+    push rbp
+    mov rbp, rsp
+    pushagrd
+    pushacrd
+    mov ax, ds
+    push rax
+    push qword 0
+    mov ax, 0x10
+    mov ds, ax
+    mov es, ax
+    mov ss, ax
+
+    lea rdi, [rsp + 0x10]
+    call isr_exception_handler
+
+    pop rax
+    pop rax
+    mov ds, ax
+    mov es, ax
+    popacrd
+    popagrd
+    pop rbp
+    add rsp, 0x10
+    iretq
+
 isr_no_err_stub 0
 isr_no_err_stub 1
 isr_no_err_stub 2
@@ -51,28 +111,11 @@ isr_no_err_stub 28
 isr_no_err_stub 29
 isr_err_stub    30
 isr_no_err_stub 31
-isr_req_stub 32
-isr_req_stub 33
-isr_req_stub 34
-isr_req_stub 35
-isr_req_stub 36
-isr_req_stub 37
-isr_req_stub 38
-isr_req_stub 39
-isr_req_stub 40
-isr_req_stub 41
-isr_req_stub 42
-isr_req_stub 43
-isr_req_stub 44
-isr_req_stub 45
-isr_req_stub 46
-isr_req_stub 47
-
 
 global isr_stub_table
 isr_stub_table:
 %assign i 0 
-%rep    48 
-    dq isr_stub_%+i ; use DQ instead if targeting 64-bit
+%rep    32 
+    dq isr_stub_%+i
 %assign i i+1 
 %endrep

@@ -4,53 +4,60 @@
 #include "include/printf.h"
 #include "include/interrupts.h"
 #include "include/io.h"
+#include <stdbool.h>
+#include "include/registers.h"
 
-char *exception_messages[32] = {
-    "Division By Zero",
-    "Debug",
-    "Non Maskable Interrupt",
-    "Breakpoint",
-    "Overflow",
-    "BOUND Range Exceeded",
-    "Invalid Opcode",
-    "Device Not Available (No Math Coprocessor)",
-    "Double Fault",
-    "Coprocessor Segment Overrun",
-    "Invalid TSS",
-    "Segment Not Present",
-    "Stack-Segment Fault",
-    "General Protection",
-    "Page Fault",
-    "Unknown Interrupt (intel reserved)",
-    "x87 FPU Floating-Point Error (Math Fault)",
-    "Alignment Check",
-    "Machine Check",
-    "SIMD Floating-Point Exception",
-    "Virtualization Exception",
-    "Reserved",
-    "Reserved",
-    "Reserved",
-    "Reserved",
-    "Reserved",
-    "Reserved",
-    "Reserved",
-    "Reserved",
-    "Reserved",
-    "Reserved",
-    "Reserved"};
+static const char *exception_messages[] =
+    {
+        "Division By Zero",
+        "Debug",
+        "Non Maskable Interrupt",
+        "Breakpoint",
+        "Into Detected Overflow",
+        "Out of Bounds",
+        "Invalid Opcode",
+        "No Coprocessor",
 
-void isr_handler()
+        "Double Fault",
+        "Coprocessor Segment Overrun",
+        "Bad TSS",
+        "Segment Not Present",
+        "Stack Fault",
+        "General Protection Fault",
+        "Page Fault",
+        "Unknown Interrupt",
+
+        "Coprocessor Fault",
+        "Alignment Check",
+        "Machine Check",
+        "Reserved",
+        "Reserved",
+        "Reserved",
+        "Reserved",
+        "Reserved",
+
+        "Reserved",
+        "Reserved",
+        "Reserved",
+        "Reserved",
+        "Reserved",
+        "Reserved",
+        "Reserved",
+        "Reserved"};
+
+void isr_exception_handler(isr_xframe_t *frame);
+void isr_exception_handler(isr_xframe_t *frame)
 {
-}
+    printf_("%s", "ERROR: CPU EXCEPTION: ");
+    printf_("%s", exception_messages[frame->base_frame.vector]);
+    printf_("%s", " @ ");
+    printf_("0x%llx\n", frame->base_frame.rip);
+    printf_("%s", "ERROR CODE: ");
+    printf_("%i\n", frame->base_frame.error_code);
+    printf_("%s", "CS REGISTER: ");
+    printf_("0x%llx\n", frame->base_frame.cs);
+    printf_("%s", "CR2 REGISTER: ");
+    printf_("0x%llx\n", frame->control_registers.cr2);
 
-void pic8259_init(){
-
-
-outb(PIC1_CMD, ICW1);
-outb(PIC2_CMD, ICW1);
-
-
-
-
-
+    __asm__ volatile("cli; hlt");
 }

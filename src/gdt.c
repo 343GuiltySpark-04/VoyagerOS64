@@ -104,6 +104,7 @@ void LoadGDT_Stage1()
     printf_("%s\n", "--------------------------------------");
 
     tss.rsp0 = (uint64_t)TssStack + sizeof(TssStack);
+    tss.ist1 = (uint64_t)ist1Stack + sizeof(ist1Stack);
 
     __asm__ volatile("lgdt %0"
                      :

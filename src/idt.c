@@ -6,64 +6,38 @@
 #include "include/printf.h"
 #include "include/gdt.h"
 #include "include/registers.h"
+#include "include/interrupts.h"
 
-extern void halt();
-
-ALIGN_16BIT static idt_entry_t idt[IDT_ENTRIES];
+static ALIGN_16BIT
+    idt_desc_t idt[IDT_MAX_DESCRIPTORS];
 
 static idtr_t idtr;
 
-static bool vectors[IDT_ENTRIES];
+static bool vectors[IDT_MAX_DESCRIPTORS];
 
-void int_handler()
+extern uint64_t isr_stub_table[];
+
+void idt_set_descriptor(uint8_t vector, uintptr_t isr, uint8_t flags, uint8_t ist)
 {
+    idt_desc_t *descriptor = &idt[vector];
 
-    printf_("%s\n", "!!!KERNEL PANIC!!!");
-    printf_("%s", "INTERRUPT HANDLING NOT AVIAL!");
-}
-
-void irq_handler()
-{
-
-    printf_("%s\n", "!!!KERNEL PANIC!!!");
-    printf_("%s", "INTERRUPT HANDLING NOT AVIAL!");
-}
-
-void exception_handler()
-{
-
-    printf_("%s\n", "!!!KERNEL PANIC!!!");
-    printf_("%s", "INTERRUPT HANDLING NOT AVIAL!");
-    printf_("%s\n", "In case it's Page Fault here's the CR2 contents.");
-    printf_("%s", "CR2: ");
-    printf_("0x%llx\n", readCR2());
-
-    halt();
-}
-
-void idt_set_descriptor(uint8_t vector, void *isr, uint8_t flags)
-{
-    idt_entry_t *descriptor = &idt[vector];
-
-    descriptor->base_low = (uint64_t)isr & 0xFFFF;
+    descriptor->base_low = isr & 0xFFFF;
     descriptor->cs = GDTKernelBaseSelector;
-    descriptor->ist = 0;
+    descriptor->ist = ist;
     descriptor->attributes = flags;
-    descriptor->base_mid = ((uint64_t)isr >> 16) & 0xFFFF;
-    descriptor->base_high = ((uint64_t)isr >> 32) & 0xFFFFFFFF;
+    descriptor->base_mid = (isr >> 16) & 0xFFFF;
+    descriptor->base_high = (isr >> 32) & 0xFFFFFFFF;
     descriptor->rsv0 = 0;
 }
-
-extern void *isr_stub_table[];
 
 void idt_init()
 {
     idtr.base = (uintptr_t)&idt[0];
-    idtr.limit = (uint16_t)sizeof(idt_entry_t) * IDT_ENTRIES - 1;
+    idtr.limit = (uint16_t)sizeof(idt_desc_t) * IDT_MAX_DESCRIPTORS - 1;
 
-    for (uint8_t vector = 0; vector < 48; vector++)
+    for (uint8_t vector = 0; vector < IDT_CPU_EXCEPTION_COUNT; vector++)
     {
-        idt_set_descriptor(vector, isr_stub_table[vector], 0x8E);
+        idt_set_descriptor(vector, isr_stub_table[vector], IDT_DESCRIPTOR_EXCEPTION, 001);
         vectors[vector] = true;
     }
 
@@ -71,4 +45,24 @@ void idt_init()
                      :
                      : "m"(idtr)); // load the new IDT
     __asm__ volatile("sti");       // set the interrupt flag
+}
+
+uint8_t idt_allocate_vector()
+{
+    for (unsigned int i = 0; i < IDT_MAX_DESCRIPTORS; i++)
+    {
+        if (!vectors[i])
+        {
+            vectors[i] = true;
+            return (uint8_t)i;
+        }
+    }
+
+    return 0;
+}
+
+void idt_free_vector(uint8_t vector)
+{
+    idt_set_descriptor(vector, 0, 0, 0);
+    vectors[vector] = false;
 }
