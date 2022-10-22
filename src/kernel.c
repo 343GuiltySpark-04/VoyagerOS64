@@ -104,8 +104,6 @@ void _start(void)
 
    pic_enable();
 
-   pic_unmask_irq(0x09);
-
     printf_("%s\n", "Loaded IDT");
 
     print_memmap();
