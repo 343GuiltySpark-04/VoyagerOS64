@@ -35,7 +35,7 @@ void idt_init()
     idtr.base = (uintptr_t)&idt[0];
     idtr.limit = (uint16_t)sizeof(idt_desc_t) * IDT_MAX_DESCRIPTORS - 1;
 
-    for (uint8_t vector = 0; vector < IDT_CPU_EXCEPTION_COUNT; vector++)
+    for (uint8_t vector = 0; vector < IDT_CPU_EXCEPTION_COUNT + IDT_HDW_INTERRUPT_COUNT; vector++)
     {
 
         if (vector >= 32)
@@ -43,6 +43,9 @@ void idt_init()
 
             idt_set_descriptor(vector, isr_stub_table[vector], IDT_DESCRIPTOR_EXTERNAL, 001);
             vectors[vector] = true;
+
+            printf_("%i\n", vector);
+
         }
         else
         {
