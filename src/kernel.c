@@ -14,6 +14,7 @@
 #include "include/termUtils.h"
 #include "include/term.h"
 #include "include/vgafont.h"
+#include "include/pic.h"
 
 #define White "\033[1;00m"
 #define Red "\033[1;31m"
@@ -99,6 +100,9 @@ void _start(void)
     breakpoint();
 
     idt_init();
+    
+
+   pic_enable();
 
     printf_("%s\n", "Loaded IDT");
 
