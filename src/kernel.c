@@ -15,6 +15,7 @@
 #include "include/term.h"
 #include "include/vgafont.h"
 #include "include/pic.h"
+#include "include/drivers/keyboard/keyboard.h"
 
 #define White "\033[1;00m"
 #define Red "\033[1;31m"
@@ -100,9 +101,10 @@ void _start(void)
     breakpoint();
 
     idt_init();
-    
 
-   pic_enable();
+    pic_enable();
+
+    printf_("%s\n", "PICs Online");
 
     printf_("%s\n", "Loaded IDT");
 
@@ -145,11 +147,13 @@ void _start(void)
 
     bootspace = 0;
 
+    keyboard_init();
+
     printf("total memory: %llu\nfree memory: %llu\nused memory: %llu\nreserved memory: %llu\n", get_memory_size(), free_ram(), used_ram(), reserved_ram());
 
     printf_("%s\n", "Kernel Loaded");
 
-    term_print(&term, "VoyagerOS64 v0.0.2");
+    term_print(&term, "VoyagerOS64 v0.0.3");
 
     // Just chill until needed
     while (1)

@@ -3,12 +3,14 @@ extern irq_handler
 
 %macro isr_err_stub 1
 isr_stub_%+%1:
+    cli
     push %1
     jmp isr_xframe_assembler
 %endmacro
 
 %macro isr_no_err_stub 1
 isr_stub_%+%1:
+    cli
     push 0
     push %1
     jmp isr_xframe_assembler
@@ -16,6 +18,7 @@ isr_stub_%+%1:
 
 %macro isr_irq_stub 1
 isr_stub_%+%1:
+    cli
     push 0
     push %1
     jmp isr_irq_xframe_assembler
@@ -85,6 +88,7 @@ isr_xframe_assembler:
     popagrd
     pop rbp
     add rsp, 0x10
+    sti
     iretq
 
 
@@ -112,6 +116,7 @@ isr_irq_xframe_assembler:
     popagrd
     pop rbp
     add rsp, 0x10
+    sti
     iretq
 
 isr_no_err_stub 0
