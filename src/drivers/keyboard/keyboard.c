@@ -21,7 +21,7 @@ void keyboard_handler()
             return;
         }
 
-        term_print(&term, keyboard_map[keycode]);
+        printf_("%c\n", keyboard_map[keycode]);
         return;
     }
 }
