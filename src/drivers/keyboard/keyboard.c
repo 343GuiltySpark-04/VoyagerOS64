@@ -3,8 +3,6 @@
 #include "../../include/io.h"
 #include "../../include/pic.h"
 #include "../../include/printf.h"
-#include "../../include/term.h"
-#include "../../include/termUtils.h"
 
 void keyboard_handler()
 {

@@ -11,8 +11,6 @@
 #include "include/paging/frameallocator.h"
 #include "include/registers.h"
 #include "include/memUtils.h"
-#include "include/termUtils.h"
-#include "include/term.h"
 #include "include/vgafont.h"
 #include "include/pic.h"
 #include "include/drivers/keyboard/keyboard.h"
@@ -38,7 +36,6 @@ volatile struct limine_kernel_address_request Kaddress_req = {
 
 };
 
-struct term_t term;
 
 /// @brief breakpoint() Provides a magic breakpoint for debugging in Bochs
 extern void breakpoint();
@@ -46,42 +43,7 @@ extern void stop_interrupts();
 extern void start_interrupts();
 extern void halt();
 
-struct framebuffer_t fbr;
 
-struct font_t font;
-
-struct background_t back = {
-
-    .background = NULL
-
-};
-
-struct style_t style = {
-
-    .ansi_colours = DEFAULT_ANSI_COLOURS,
-    .ansi_bright_colours = DEFAULT_ANSI_BRIGHT_COLOURS,
-    .background = DEFAULT_BACKGROUND,
-    .foreground = DEFAULT_FOREGROUND,
-    .margin = DEFAULT_MARGIN,
-    .margin_gradient = DEFAULT_MARGIN_GRADIENT
-
-};
-
-void setup_terminal()
-{
-
-    fbr.address = fbr_req.response->framebuffers[0]->address;
-    fbr.width = fbr_req.response->framebuffers[0]->width;
-    fbr.height = fbr_req.response->framebuffers[0]->height;
-    fbr.pitch = fbr_req.response->framebuffers[0]->pitch;
-
-    font.address = (uintptr_t)&vgafont;
-    font.width = 8;
-    font.height = 16;
-    font.spacing = 1;
-    font.scale_x = 0;
-    font.scale_y = 0;
-}
 
 /// @var allows me to enable or dissable or alter behavoir according to wether the kernel
 /// is fully loaded yet.
@@ -138,11 +100,7 @@ void _start(void)
     printf_("%s", "CR3: ");
     printf_("0x%llx\n", readCR3());
 
-    setup_terminal();
-
-    term_init(&term, NULL, true);
-
-    term_vbe(&term, fbr, font, style, back);
+    
 
    // term_set_text_fg_rgb(&term, 0x0055FF55);
 
@@ -154,7 +112,6 @@ void _start(void)
 
     printf_("%s\n", "Kernel Loaded");
 
-    term_print(&term, "VoyagerOS64 v0.0.3");
 
     // Just chill until needed
     while (1)
