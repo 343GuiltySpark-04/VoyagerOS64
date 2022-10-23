@@ -1,8 +1,6 @@
 #include "include/printf.h"
 #include "include/serial.h"
 #include "include/kernel.h"
-#include "include/term.h"
-#include "include/termUtils.h"
 
 void _putchar(char character)
 {
@@ -19,7 +17,7 @@ void _putchar(char character)
      {
          // Enable when needed
          // serial_debug(character);
-         term_putchar(&term, character);
+       
 
      } */
 

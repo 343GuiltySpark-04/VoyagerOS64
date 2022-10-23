@@ -5,7 +5,8 @@
         "kheap.h": "c",
         "new": "c",
         "typeinfo": "c",
-        "kernelutils.h": "c"
+        "kernelutils.h": "c",
+        "limine.h": "c"
     },
     "C_Cpp.errorSquiggles": "Enabled"
 }
