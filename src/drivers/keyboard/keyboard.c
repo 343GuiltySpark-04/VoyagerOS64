@@ -3,6 +3,8 @@
 #include "../../include/io.h"
 #include "../../include/pic.h"
 #include "../../include/printf.h"
+#include "../../include/term.h"
+#include "../../include/termUtils.h"
 
 void keyboard_handler()
 {
@@ -19,7 +21,7 @@ void keyboard_handler()
             return;
         }
 
-        printf_("%c\n", keyboard_map[keycode]);
+        term_print(&term, keyboard_map[keycode]);
         return;
     }
 }

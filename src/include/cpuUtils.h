@@ -99,3 +99,5 @@ enum {
     CPUID_FEAT_EDX_IA64         = 1 << 30,
     CPUID_FEAT_EDX_PBE          = 1 << 31
 };
+
+ int get_model(void);

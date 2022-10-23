@@ -16,6 +16,7 @@
 #include "include/vgafont.h"
 #include "include/pic.h"
 #include "include/drivers/keyboard/keyboard.h"
+#include "include/cpuUtils.h"
 
 #define White "\033[1;00m"
 #define Red "\033[1;31m"
@@ -143,7 +144,7 @@ void _start(void)
 
     term_vbe(&term, fbr, font, style, back);
 
-    term_set_text_fg_rgb(&term, 0x0055FF55);
+   // term_set_text_fg_rgb(&term, 0x0055FF55);
 
     bootspace = 0;
 
