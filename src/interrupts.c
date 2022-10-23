@@ -116,4 +116,3 @@ void sys_clock_handler()
 
     printf_("%s\n", "Devs first handler fire!");
 }
-
