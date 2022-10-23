@@ -45,7 +45,6 @@ void idt_init()
             vectors[vector] = true;
 
             printf_("%i\n", vector);
-
         }
         else
         {
