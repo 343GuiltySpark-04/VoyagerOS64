@@ -75,5 +75,5 @@ void pic_enable()
 {
     pic_remap_offsets(0x20);
     for (uint8_t irq = 0; irq < 16; irq++)
-        pic_unmask_irq(irq);
+        pic_mask_irq(irq);
 }

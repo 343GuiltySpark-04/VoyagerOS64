@@ -6,10 +6,10 @@
 #include "include/io.h"
 #include <stdbool.h>
 #include "include/registers.h"
-
+#include "include/pic.h"
+#include "include/drivers/keyboard/keyboard.h"
 
 uint64_t pic_map[16][16] = {};
-
 
 static const char *exception_messages[] =
     {
@@ -49,6 +49,28 @@ static const char *exception_messages[] =
         "Reserved",
         "Reserved"};
 
+static const char *irq_messages[] =
+
+    {
+        "System Timer",
+        "Keyboard",
+        "Slave PIC Link",
+        "Serial Port 1",
+        "Serial Port 2",
+        "Reserved/Sound Card",
+        "Floppy Disk Controller",
+        "Parallel Port",
+        "Real Time Clock",
+        "Master PIC Link",
+        "Reserved",
+        "Reserved",
+        "PS/2 Mouse",
+        "Math Co-Processor",
+        "Hard Disk Drive",
+        "Reserved"
+
+};
+
 void isr_exception_handler(isr_xframe_t *frame);
 void isr_exception_handler(isr_xframe_t *frame)
 {
@@ -67,10 +89,31 @@ void isr_exception_handler(isr_xframe_t *frame)
 }
 
 void irq_handler(isr_xframe_t *frame);
-void irq_handler(isr_xframe_t *frame){
+void irq_handler(isr_xframe_t *frame)
+{
 
-printf_("%s\n", "IRQ TEST!");
-asm volatile("cli; hlt");
+    uint64_t vector = frame->base_frame.vector;
 
+    printf_("%s", "IRQ RECIVED FROM: ");
+    printf_("%s\n", irq_messages[vector - 32]);
 
+    switch (vector)
+    {
+
+    case 32:
+        sys_clock_handler();
+        break;
+    case 33:
+        keyboard_handler();
+        break;
+    }
+
+    pic_send_eoi(vector - 32);
 }
+
+void sys_clock_handler()
+{
+
+    printf_("%s\n", "Devs first handler fire!");
+}
+
