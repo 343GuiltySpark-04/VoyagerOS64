@@ -2,7 +2,7 @@
 #include <cpuid.h>
 
 /* Example: Get CPU's model number */
-static int get_model(void)
+ int get_model(void)
 {
     int ebx, unused;
     __cpuid(0, unused, ebx, unused, unused);
