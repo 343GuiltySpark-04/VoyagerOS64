@@ -15,6 +15,9 @@
 #include "include/pic.h"
 #include "include/drivers/keyboard/keyboard.h"
 #include "include/cpuUtils.h"
+#include "include/terminal/framebuffer.h"
+#include "include/terminal/term.h"
+#include "include/liballoc.h"
 
 #define White "\033[1;00m"
 #define Red "\033[1;31m"
@@ -36,18 +39,42 @@ volatile struct limine_kernel_address_request Kaddress_req = {
 
 };
 
-
 /// @brief breakpoint() Provides a magic breakpoint for debugging in Bochs
 extern void breakpoint();
 extern void stop_interrupts();
 extern void start_interrupts();
 extern void halt();
 
-
-
 /// @var allows me to enable or dissable or alter behavoir according to wether the kernel
 /// is fully loaded yet.
 uint32_t bootspace = 1;
+
+static struct term_context *term_context;
+
+
+void _putchar(char character)
+{
+
+    /// @brief lets the printf function use the serial or terminal
+    /// depending if the kernel has setup memory for the terminal or not.
+    /// @param character
+     if (bootspace == 1)
+     {
+
+         serial_debug(character);
+     }
+     else
+     {
+         // Enable when needed
+         // serial_debug(character);
+         term_write(term_context, character, 1);
+       
+
+     } 
+
+    //serial_debug(character);
+}
+
 
 /// \fn  following will be our kernel's entry point.
 void _start(void)
@@ -100,9 +127,11 @@ void _start(void)
     printf_("%s", "CR3: ");
     printf_("0x%llx\n", readCR3());
 
-    
+    term_context = fbterm_init(malloc, fbr_req.response->framebuffers[0]->address, fbr_req.response->framebuffers[0]->width, fbr_req.response->framebuffers[0]->height,
 
-   // term_set_text_fg_rgb(&term, 0x0055FF55);
+                               fbr_req.response->framebuffers[0]->pitch, NULL, NULL, NULL, NULL, NULL, &vgafont, 0, 0, 0,
+
+                               1, 1, 0);
 
     bootspace = 0;
 
@@ -110,8 +139,9 @@ void _start(void)
 
     printf("total memory: %llu\nfree memory: %llu\nused memory: %llu\nreserved memory: %llu\n", get_memory_size(), free_ram(), used_ram(), reserved_ram());
 
-    printf_("%s\n", "Kernel Loaded");
+    term_write(term_context, "Test", 4);
 
+    printf_("%s\n", "Kernel Loaded");
 
     // Just chill until needed
     while (1)
