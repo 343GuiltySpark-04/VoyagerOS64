@@ -11,3 +11,5 @@ void print_memmap();
 uint64_t get_memory_size();
 
 void init_memory();
+
+static struct term_context *term_context;
