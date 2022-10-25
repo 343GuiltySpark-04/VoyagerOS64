@@ -66,8 +66,8 @@ void _putchar(char character)
      else
      {
          // Enable when needed
-         // serial_debug(character);
-         term_write(term_context, character, 1);
+          serial_debug(character);
+         //term_write(term_context, character, 1);
        
 
      } 
@@ -129,9 +129,9 @@ void _start(void)
 
     term_context = fbterm_init(malloc, fbr_req.response->framebuffers[0]->address, fbr_req.response->framebuffers[0]->width, fbr_req.response->framebuffers[0]->height,
 
-                               fbr_req.response->framebuffers[0]->pitch, NULL, NULL, NULL, NULL, NULL, &vgafont, 0, 0, 0,
+                               fbr_req.response->framebuffers[0]->pitch, NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, 0,
 
-                               1, 1, 0);
+                               1, 1, 1);
 
     bootspace = 0;
 
@@ -139,7 +139,7 @@ void _start(void)
 
     printf("total memory: %llu\nfree memory: %llu\nused memory: %llu\nreserved memory: %llu\n", get_memory_size(), free_ram(), used_ram(), reserved_ram());
 
-    term_write(term_context, "Test", 4);
+   // term_write(term_context, "Test", 4);
 
     printf_("%s\n", "Kernel Loaded");
 

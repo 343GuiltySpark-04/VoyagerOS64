@@ -3,6 +3,7 @@
 #include <stdbool.h>
 
 #include "../include/terminal/term.h"
+#include "../include/serial.h"
 
 static const uint32_t col256[] = {
     0x000000, 0x00005f, 0x000087, 0x0000af, 0x0000d7, 0x0000ff, 0x005f00, 0x005f5f,
@@ -73,6 +74,8 @@ static void term_putchar(struct term_context *ctx, uint8_t c);
 
 void term_write(struct term_context *ctx, const char *buf, size_t count)
 {
+
+
     for (size_t i = 0; i < count; i++)
     {
         term_putchar(ctx, buf[i]);

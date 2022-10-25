@@ -15,7 +15,7 @@ void outb(uint16_t port, uint8_t val)
     asm volatile("outb %1, %0" ::"dN"(port), "a"(val));
 }
 
-static inline void io_wait(void)
+ void io_wait(void)
 {
     outb(0x80, 0);
 }

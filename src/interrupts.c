@@ -78,8 +78,10 @@ void isr_exception_handler(isr_xframe_t *frame)
     printf_("%s", exception_messages[frame->base_frame.vector]);
     printf_("%s", " @ ");
     printf_("0x%llx\n", frame->base_frame.rip);
+    printf_("%s", "FROM VECTOR NUMBER: ");
+    printf_("%i\n", frame->base_frame.vector);
     printf_("%s", "ERROR CODE: ");
-    printf_("%i\n", frame->base_frame.error_code);
+    printf_("0x%llx\n", frame->base_frame.error_code);
     printf_("%s", "CS REGISTER: ");
     printf_("0x%llx\n", frame->base_frame.cs);
     printf_("%s", "CR2 REGISTER: ");
