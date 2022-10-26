@@ -18,6 +18,7 @@ void keyboard_handler()
     {
 
         char keycode = inb(KEYBOARD_DATA_PORT);
+
         inb(KEYBOARD_DATA_PORT);
 
         if (keycode < 0 || keycode >= 128)
@@ -25,7 +26,8 @@ void keyboard_handler()
             return;
         }
 
-               printf_("%c\n", keyboard_map[keycode]);
+        // printf_("0x%llx\n", keyboard_map[keycode]);
+        // printf_("0x%llx\n", keycode);
 
         if (term_context)
         {
