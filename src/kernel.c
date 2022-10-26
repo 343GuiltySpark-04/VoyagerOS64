@@ -28,6 +28,9 @@
 #define Cyan "\033[1;36m"
 #define Black "\033[1;37m"
 
+uint32_t term_fg = 0x0055ff55;
+uint32_t term_bg = 0x00000000;
+
 /// @attention Limine requests can be placed anywhere, but it is important that
 /// the compiler does not optimise them away, so, usually, they should
 /// be made volatile or equivalent.
@@ -49,32 +52,7 @@ extern void halt();
 /// is fully loaded yet.
 uint32_t bootspace = 1;
 
-static struct term_context *term_context;
-
-
-void _putchar(char character)
-{
-
-    /// @brief lets the printf function use the serial or terminal
-    /// depending if the kernel has setup memory for the terminal or not.
-    /// @param character
-     if (bootspace == 1)
-     {
-
-         serial_debug(character);
-     }
-     else
-     {
-         // Enable when needed
-          serial_debug(character);
-         //term_write(term_context, character, 1);
-       
-
-     } 
-
-    //serial_debug(character);
-}
-
+struct term_context *term_context;
 
 /// \fn  following will be our kernel's entry point.
 void _start(void)
@@ -129,7 +107,7 @@ void _start(void)
 
     term_context = fbterm_init(malloc, fbr_req.response->framebuffers[0]->address, fbr_req.response->framebuffers[0]->width, fbr_req.response->framebuffers[0]->height,
 
-                               fbr_req.response->framebuffers[0]->pitch, NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, 0,
+                               fbr_req.response->framebuffers[0]->pitch, NULL, NULL, NULL, &term_bg, &term_fg, NULL, 0, 0, 0,
 
                                1, 1, 1);
 
@@ -139,7 +117,7 @@ void _start(void)
 
     printf("total memory: %llu\nfree memory: %llu\nused memory: %llu\nreserved memory: %llu\n", get_memory_size(), free_ram(), used_ram(), reserved_ram());
 
-   // term_write(term_context, "Test", 4);
+    // term_write(term_context, "Test", 4);
 
     printf_("%s\n", "Kernel Loaded");
 
