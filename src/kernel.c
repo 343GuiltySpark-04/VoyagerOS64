@@ -117,9 +117,11 @@ void _start(void)
 
     printf("total memory: %llu\nfree memory: %llu\nused memory: %llu\nreserved memory: %llu\n", get_memory_size(), free_ram(), used_ram(), reserved_ram());
 
-    // term_write(term_context, "Test", 4);
-
     printf_("%s\n", "Kernel Loaded");
+
+    printf_("%s\n", "VoyagerOS64 v0.0.3");
+
+    printf_("%s", ":> ");
 
     // Just chill until needed
     while (1)
