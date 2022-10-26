@@ -96,8 +96,8 @@ void irq_handler(isr_xframe_t *frame)
 
     uint64_t vector = frame->base_frame.vector;
 
-    printf_("%s", "IRQ RECIVED FROM: ");
-    printf_("%s\n", irq_messages[vector - 32]);
+    // printf_("%s", "IRQ RECIVED FROM: ");
+    // printf_("%s\n", irq_messages[vector - 32]);
 
     switch (vector)
     {

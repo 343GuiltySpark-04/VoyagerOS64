@@ -17,8 +17,6 @@ void keyboard_handler()
     if (status & 0x1)
     {
 
-
-
         char keycode = inb(KEYBOARD_DATA_PORT);
         inb(KEYBOARD_DATA_PORT);
 
@@ -27,11 +25,20 @@ void keyboard_handler()
             return;
         }
 
-       // const char character = keyboard_map[keycode];
+               printf_("%c\n", keyboard_map[keycode]);
 
-        printf_("%c\n", keyboard_map[keycode]);
+        if (term_context)
+        {
 
-     term_write(term_context, keyboard_map[keycode], sizeof(char));
+            term_write(term_context, &keyboard_map[keycode], sizeof(char));
+        }
+        else
+        {
+
+            printf_("%s\n", "ERROR: TERMINAL WRITE FAILURE!");
+
+            return;
+        }
 
         return;
     }

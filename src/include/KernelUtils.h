@@ -2,6 +2,9 @@
 #include <stdint.h>
 #include "limine.h"
 
+#ifndef _KERNEL_UTILS_H
+#define _KERNEL_UTILS_H
+
 extern volatile struct limine_memmap_request memmap_req;
 
 extern volatile struct limine_framebuffer_request fbr_req;
@@ -12,4 +15,6 @@ uint64_t get_memory_size();
 
 void init_memory();
 
-static struct term_context *term_context;
+extern struct term_context *term_context;
+
+#endif
