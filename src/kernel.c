@@ -59,6 +59,8 @@ struct term_context *term_context;
 void _start(void)
 {
 
+    print_date();
+
     breakpoint();
 
     stop_interrupts();
@@ -131,6 +133,8 @@ void _start(void)
     printf_("%i", system_timer_fractions);
 
     printf_("%s\n", " ms.");
+
+    print_date();
 
     printf_("%s\n", "VoyagerOS64 v0.0.3");
 
