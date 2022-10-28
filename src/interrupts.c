@@ -8,6 +8,7 @@
 #include "include/registers.h"
 #include "include/pic.h"
 #include "include/drivers/keyboard/keyboard.h"
+#include "include/time.h"
 
 uint64_t pic_map[16][16] = {};
 
@@ -111,10 +112,4 @@ void irq_handler(isr_xframe_t *frame)
     }
 
     pic_send_eoi(vector - 32);
-}
-
-void sys_clock_handler()
-{
-
-    printf_("%s\n", "Devs first handler fire!");
 }
