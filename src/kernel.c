@@ -18,6 +18,7 @@
 #include "include/terminal/framebuffer.h"
 #include "include/terminal/term.h"
 #include "include/liballoc.h"
+#include "include/time.h"
 
 #define White "\033[1;00m"
 #define Red "\033[1;31m"
@@ -70,11 +71,13 @@ void _start(void)
 
     idt_init();
 
+    printf_("%s\n", "Loaded IDT");
+
     pic_enable();
 
     printf_("%s\n", "PICs Online");
 
-    printf_("%s\n", "Loaded IDT");
+    init_PIT();
 
     print_memmap();
 
@@ -118,6 +121,16 @@ void _start(void)
     printf("total memory: %llu\nfree memory: %llu\nused memory: %llu\nreserved memory: %llu\n", get_memory_size(), free_ram(), used_ram(), reserved_ram());
 
     printf_("%s\n", "Kernel Loaded");
+
+    printf_("%s", "Loadtime roughly: ");
+
+    printf_("%i", system_timer_ms);
+
+    printf_("%s", ".");
+
+    printf_("%i", system_timer_fractions);
+
+    printf_("%s\n", " ms.");
 
     printf_("%s\n", "VoyagerOS64 v0.0.3");
 
