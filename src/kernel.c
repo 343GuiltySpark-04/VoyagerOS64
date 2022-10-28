@@ -19,6 +19,7 @@
 #include "include/terminal/term.h"
 #include "include/liballoc.h"
 #include "include/time.h"
+#include "include/shell.h"
 
 #define White "\033[1;00m"
 #define Red "\033[1;31m"
@@ -52,6 +53,8 @@ extern void halt();
 /// @var allows me to enable or dissable or alter behavoir according to wether the kernel
 /// is fully loaded yet.
 uint32_t bootspace = 1;
+
+uint8_t kerror_mode = 0;
 
 struct term_context *term_context;
 
@@ -138,10 +141,18 @@ void _start(void)
 
     printf_("%s\n", "VoyagerOS64 v0.0.3");
 
-    printf_("%s", ":> ");
+    //printf_("%s", ":> ");
+
+    printf_("%c", k_getchar());
+
+    //vsh_loop();    
 
     // Just chill until needed
     while (1)
     {
+
+
+       
+
     }
 }

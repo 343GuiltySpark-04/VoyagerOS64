@@ -6,6 +6,9 @@
 #include "../../include/KernelUtils.h"
 #include "../../include/terminal/term.h"
 #include "../../include/liballoc.h"
+#include "../../include/serial.h"
+
+char k_char;
 
 void keyboard_handler()
 {
@@ -29,10 +32,23 @@ void keyboard_handler()
         // printf_("0x%llx\n", keyboard_map[keycode]);
         // printf_("0x%llx\n", keycode);
 
+        if (keycode == 0x1c)
+        {
+
+            k_char = '+';
+        }
+        else
+        {
+
+            k_char = keyboard_map[keycode];
+        }
+
+        //  printf_("%s\n", &k_char);
+
         if (term_context)
         {
 
-            term_write(term_context, &keyboard_map[keycode], sizeof(char));
+           // term_write(term_context, &keyboard_map[keycode], sizeof(char));
         }
         else
         {
@@ -43,6 +59,22 @@ void keyboard_handler()
         }
 
         return;
+    }
+}
+
+char k_getchar()
+{
+
+    char c;
+
+    while (k_char <= 0)
+    {
+
+        c = k_char;
+        k_char = 0;
+
+        
+        return c;
     }
 }
 
