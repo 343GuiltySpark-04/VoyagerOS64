@@ -9,6 +9,7 @@
 #include "include/pic.h"
 #include "include/drivers/keyboard/keyboard.h"
 #include "include/time.h"
+#include "include/kernel.h"
 
 uint64_t pic_map[16][16] = {};
 
@@ -75,6 +76,9 @@ static const char *irq_messages[] =
 void isr_exception_handler(isr_xframe_t *frame);
 void isr_exception_handler(isr_xframe_t *frame)
 {
+
+    kerror_mode = 1;
+
     printf_("%s", "ERROR: CPU EXCEPTION: ");
     printf_("%s", exception_messages[frame->base_frame.vector]);
     printf_("%s", " @ ");

@@ -1,6 +1,5 @@
 #pragma once
 
-
 #ifndef _TIME_H
 #define _TIME_H
 
@@ -17,5 +16,7 @@ void init_PIT();
 void read_rtc();
 
 void print_date();
+
+void print_sys_time();
 
 #endif

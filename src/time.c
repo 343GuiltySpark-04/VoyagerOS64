@@ -207,3 +207,13 @@ dayofweek(y, m, d) /* 1 <= m <= 12,  y > 1752 (in the U.K.) */
     }
     return (y + y / 4 - y / 100 + y / 400 + t[m - 1] + d) % 7;
 }
+
+void print_sys_time()
+{
+
+    printf_("%s", "Elapsed system time is: ");
+    printf_("%i", system_timer_ms);
+    printf_("%s", ".");
+    printf_("%i", system_timer_fractions);
+    printf_("%s\n", " ms.");
+}
