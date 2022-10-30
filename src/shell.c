@@ -7,6 +7,7 @@
 #include "include/printf.h"
 #include "include/drivers/keyboard/keyboard.h"
 #include "include/time.h"
+#include "include/lock.h"
 
 void vsh_loop()
 {
@@ -15,25 +16,16 @@ void vsh_loop()
 
     int status;
 
-    do
-    {
+    printf_("%s", ":> ");
 
-        printf_("%s", ":> ");
+    line = vsh_readline();
 
-        line = vsh_readline();
+    cmd_parser(line);
 
-        status = 1;
-
-        cmd_parser(line);
-
-        free(line);
-
-        status = 0;
-
-    } while (status);
+    free(line);
 }
 
-char *vsh_readline()
+char vsh_readline()
 {
 
     int bufsize = VSH_CMD_BUFFER_SIZE;
@@ -51,9 +43,15 @@ char *vsh_readline()
     while (1)
     {
 
-        c = k_getchar();
+    L1:
 
-     
+        c = kbd_pop();
+
+        if (c == 0)
+        {
+
+            goto L1;
+        }
 
         if (c == '+')
         {

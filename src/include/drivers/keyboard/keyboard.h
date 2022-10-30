@@ -8,3 +8,5 @@ void keyboard_handler();
 void keyboard_init();
 
 char k_getchar();
+
+char kbd_pop();
