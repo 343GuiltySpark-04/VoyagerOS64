@@ -141,18 +141,12 @@ void _start(void)
 
     printf_("%s\n", "VoyagerOS64 v0.0.3");
 
-    //printf_("%s", ":> ");
-
-    printf_("%c", k_getchar());
-
-    //vsh_loop();    
+    // printf_("%s", ":> ");
 
     // Just chill until needed
     while (1)
     {
 
-
-       
-
+        vsh_loop();
     }
 }
