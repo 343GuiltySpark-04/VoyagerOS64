@@ -11,6 +11,8 @@ uint8_t TssStack[0x100000];
 uint8_t ist1Stack[0x100000];
 uint8_t ist2Stack[0x100000];
 
+uint64_t rsp0;
+
 struct TSS tss = {0};
 
 ALIGN_4K struct GDT gdt = {
@@ -105,6 +107,10 @@ void LoadGDT_Stage1()
 
     tss.rsp0 = (uint64_t)TssStack + sizeof(TssStack);
     tss.ist1 = (uint64_t)ist1Stack + sizeof(ist1Stack);
+
+    rsp0 = tss.rsp0;
+
+    printf_("0x%llx\n", tss.rsp0);
 
     __asm__ volatile("lgdt %0"
                      :

@@ -62,4 +62,8 @@ struct PACKED ALIGN_4K GDT
     struct TSS_Entry tss;
 };
 
+
+extern uint64_t rsp0;
+
+
 void LoadGDT_Stage1();

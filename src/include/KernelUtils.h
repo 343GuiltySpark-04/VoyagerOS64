@@ -15,6 +15,8 @@ uint64_t get_memory_size();
 
 void init_memory();
 
+void print_memory();
+
 extern struct term_context *term_context;
 
 #endif

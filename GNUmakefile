@@ -46,7 +46,6 @@ override CFLAGS +=       \
     -mabi=sysv           \
     -mno-80387           \
     -mno-mmx             \
-    -mno-sse             \
     -mno-sse2            \
     -mno-red-zone        \
     -mcmodel=kernel      \

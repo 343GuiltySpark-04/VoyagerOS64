@@ -20,6 +20,7 @@
 #include "include/liballoc.h"
 #include "include/time.h"
 #include "include/shell.h"
+#include "include/sched.h"
 
 #define White "\033[1;00m"
 #define Red "\033[1;31m"
@@ -64,6 +65,8 @@ void _start(void)
 
     print_date();
 
+    cpuid_readout();
+
     breakpoint();
 
     stop_interrupts();
@@ -106,12 +109,16 @@ void _start(void)
     read_memory_map();
 
     /// @brief print usable memory to log
-    printf("total memory: %llu\nfree memory: %llu\nused memory: %llu\nreserved memory: %llu\n", get_memory_size(), free_ram(), used_ram(), reserved_ram());
+    print_memory();
 
     init_memory();
 
     printf_("%s", "CR3: ");
     printf_("0x%llx\n", readCR3());
+    printf_("%s", "CR0: ");
+    printf_("0x%llx\n", readCRO());
+    printf_("%s", "CR4: ");
+    printf_("0x%llx\n", readCR4());
 
     term_context = fbterm_init(malloc, fbr_req.response->framebuffers[0]->address, fbr_req.response->framebuffers[0]->width, fbr_req.response->framebuffers[0]->height,
 
@@ -123,7 +130,7 @@ void _start(void)
 
     keyboard_init();
 
-    printf("total memory: %llu\nfree memory: %llu\nused memory: %llu\nreserved memory: %llu\n", get_memory_size(), free_ram(), used_ram(), reserved_ram());
+    print_memory();
 
     printf_("%s\n", "Kernel Loaded");
 
@@ -142,6 +149,8 @@ void _start(void)
     printf_("%s\n", "VoyagerOS64 v0.0.3");
 
     // printf_("%s", ":> ");
+
+    //  init_multitasking();
 
     // Just chill until needed
     while (1)

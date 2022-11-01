@@ -1,24 +1,22 @@
 #include "include/sched.h"
 #include "include/liballoc.h"
 #include "include/printf.h"
+#include "include/tss.h"
+#include "include/registers.h"
+#include "include/gdt.h"
 
 
-void init_multitasking(){
 
-    malloc(sizeof(tcb_t));
 
-    static tcb_t seed_tcb;
+
+void init_tasking(){
+
+    static task_ctx_t ctx;
+
+    ctx.stack.base = rsp0;
 
     
 
-
-
-}
-
-
-void seed_task(){
-
-    while(1);
 
 
 }

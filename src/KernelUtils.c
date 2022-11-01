@@ -214,3 +214,16 @@ void init_memory()
 
     printf_("Wrote CR3\n");
 }
+
+void print_memory()
+{
+
+    printf_("Total Memory: %llu", get_memory_size() / 1000);
+    printf_("%s\n", "Kb.");
+    printf_("Free Memory: %llu", free_ram() / 1000);
+    printf_("%s\n", "Kb.");
+    printf_("Used Memory: %llu", used_ram() / 1000);
+    printf_("%s\n", "Kb.");
+    printf_("Reserved Memory: %llu", reserved_ram() / 1000);
+    printf_("%s\n", "Kb.");
+}
