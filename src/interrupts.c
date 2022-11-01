@@ -10,8 +10,7 @@
 #include "include/drivers/keyboard/keyboard.h"
 #include "include/time.h"
 #include "include/kernel.h"
-
-uint64_t pic_map[16][16] = {};
+#include "include/sched.h"
 
 static const char *exception_messages[] =
     {
@@ -113,7 +112,13 @@ void irq_handler(isr_xframe_t *frame)
     case 33:
         keyboard_handler();
         break;
+    case 48:
+        task_switch_handler();
     }
 
-    pic_send_eoi(vector - 32);
+    if (vector <= 47)
+    {
+
+        pic_send_eoi(vector - 32);
+    }
 }

@@ -6,16 +6,15 @@
 #include "include/gdt.h"
 
 
+uint8_t task_timer_count = 0;
 
 
 
-void init_tasking(){
+void task_switch_handler(){
 
-    static task_ctx_t ctx;
+    printf_("%s\n", "Switched!");
 
-    ctx.stack.base = rsp0;
-
-    
+    task_timer_count = 0;
 
 
 

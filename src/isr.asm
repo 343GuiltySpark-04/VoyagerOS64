@@ -170,11 +170,12 @@ isr_irq_stub 44
 isr_irq_stub 45
 isr_irq_stub 46
 isr_irq_stub 47
+isr_irq_stub 48 ; task switch (used to trigger the software task switching code
 
 global isr_stub_table
 isr_stub_table:
 %assign i 0 
-%rep    47
+%rep    48
     dq isr_stub_%+i
 %assign i i+1 
 %endrep

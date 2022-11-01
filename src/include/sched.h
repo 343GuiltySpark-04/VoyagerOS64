@@ -8,6 +8,8 @@
 #include "global_defs.h"
 #define TASK_RUNNING 1
 
+extern uint8_t task_timer_count;
+
 typedef struct
 {
 
@@ -32,5 +34,7 @@ typedef struct
     uint64_t head;
     uint64_t page_table;
 } task_ctx_t;
+
+void task_switch_handler();
 
 #endif

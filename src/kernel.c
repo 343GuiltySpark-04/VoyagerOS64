@@ -50,6 +50,7 @@ extern void breakpoint();
 extern void stop_interrupts();
 extern void start_interrupts();
 extern void halt();
+extern void task_switch_int();
 
 /// @var allows me to enable or dissable or alter behavoir according to wether the kernel
 /// is fully loaded yet.
@@ -152,10 +153,13 @@ void _start(void)
 
     //  init_multitasking();
 
+    task_switch_int();
+
     // Just chill until needed
     while (1)
     {
 
-        vsh_loop();
+
+     
     }
 }

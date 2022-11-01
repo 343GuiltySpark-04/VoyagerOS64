@@ -1,6 +1,8 @@
 #include "include/io.h"
 #include "include/printf.h"
 #include "include/pic.h"
+#include "include/sched.h"
+#include "include/kernel.h"
 #include <stdint.h>
 
 #define CHANNEL_ZERO 0x40
@@ -53,7 +55,20 @@ void sys_clock_handler()
 
     system_timer_fractions++;
     system_timer_ms++;
+    
+
 }
+
+
+
+void delta_int(uint64_t delta, uint8_t vector){
+
+
+
+
+}
+
+
 
 void init_PIT()
 {
