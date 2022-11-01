@@ -14,6 +14,20 @@ typedef int spinlock_t;
 
 #define SPINLOCK_INIT 0
 
+struct smartlock
+{
+    size_t refcount;
+    struct thread *thread;
+};
+
+#define SMARTLOCK_INIT \
+    {                  \
+        0, NULL        \
+    }
+
+void smartlock_acquire(struct smartlock *smartlock);
+void smartlock_release(struct smartlock *smartlock);
+
 static inline bool spinlock_test_and_acq(spinlock_t *lock)
 {
     return CAS(lock, 0, 1);

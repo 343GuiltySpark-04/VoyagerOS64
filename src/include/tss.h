@@ -5,7 +5,7 @@
 #ifndef _TSS_H
 #define _TSS_H
 
-typedef struct PACKED TSS
+struct PACKED TSS
 {
     uint32_t reserved0;
     uint64_t rsp0;
@@ -22,6 +22,6 @@ typedef struct PACKED TSS
     uint64_t reserved2;
     uint16_t reserved3;
     uint16_t iopbOffset;
-} tss_t;
+};
 
 #endif

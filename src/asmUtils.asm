@@ -20,6 +20,7 @@ global cpuid_check_tm
 global float_save
 global float_load
 global float_bank
+global task_switch_int
 
 extern no_sse
 extern no_xsave
@@ -32,6 +33,10 @@ float_save:
 float_load:
     xrstor [float_bank]
 
+
+task_switch_int:
+    int 0x30
+    ret
 
 ; Bochs Magic Breakpoints
 breakpoint:
