@@ -6,6 +6,9 @@ global writeCR0
 global readCR3
 global writeCR3
 global readCR2
+global readRSP
+global readCR4
+global writeCR4
 
 readCRO:
     mov rax,cr0
@@ -25,4 +28,16 @@ writeCR3:
 
 readCR2:
     mov rax,cr2
+    ret
+
+readRSP:
+    mov rax,rsp
+    ret
+
+readCR4:
+    mov rax, cr4
+    ret
+
+writeCR4:
+    mov cr4, rdi
     ret
