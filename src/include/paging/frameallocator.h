@@ -9,6 +9,8 @@
 #define FRAME_EXPORT
 #endif
 
+#define PAGE_SIZE 4096
+
 void read_memory_map();
 
 void frame_free(void *address);

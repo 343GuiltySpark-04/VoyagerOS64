@@ -8,7 +8,7 @@ void k_heapBMInit(KHEAPBM *heap)
     heap->fblock = 0;
 }
 
-int k_heapBMAddBlock(KHEAPBM *heap, uintptr_t addr, uint32_t size, uint32_t bsize)
+int k_heapBMAddBlock(KHEAPBM *heap, uintptr_t addr, uint64_t size, uint64_t bsize)
 {
     KHEAPBLOCKBM *b;
     uintptr_t bmsz;
@@ -21,15 +21,15 @@ int k_heapBMAddBlock(KHEAPBM *heap, uintptr_t addr, uint32_t size, uint32_t bsiz
     return k_heapBMAddBlockEx(heap, addr + sizeof(KHEAPBLOCKBM), size - sizeof(KHEAPBLOCKBM), bsize, b, bm, 1);
 }
 
-uintptr_t k_heapBMGetBMSize(uintptr_t size, uint32_t bsize)
+uintptr_t k_heapBMGetBMSize(uintptr_t size, uint64_t bsize)
 {
     return size / bsize;
 }
 
-int k_heapBMAddBlockEx(KHEAPBM *heap, uintptr_t addr, uint32_t size, uint32_t bsize, KHEAPBLOCKBM *b, uint8_t *bm, uint8_t isBMInside)
+int k_heapBMAddBlockEx(KHEAPBM *heap, uintptr_t addr, uint64_t size, uint64_t bsize, KHEAPBLOCKBM *b, uint8_t *bm, uint8_t isBMInside)
 {
-    uint32_t bcnt;
-    uint32_t x;
+    uint64_t bcnt;
+    uint64_t x;
 
     b->size = size;
     b->bsize = bsize;
@@ -74,20 +74,20 @@ static uint8_t k_heapBMGetNID(uint8_t a, uint8_t b)
     return c;
 }
 
-void *k_heapBMAlloc(KHEAPBM *heap, uint32_t size)
+void *k_heapBMAlloc(KHEAPBM *heap, uint64_t size)
 {
     return k_heapBMAllocBound(heap, size, 0);
 }
 
-void *k_heapBMAllocBound(KHEAPBM *heap, uint32_t size, uint32_t bound)
+void *k_heapBMAllocBound(KHEAPBM *heap, uint64_t size, uint64_t bound)
 {
     KHEAPBLOCKBM *b;
     uint8_t *bm;
-    uint32_t bcnt;
-    uint32_t x, y, z;
-    uint32_t bneed;
+    uint64_t bcnt;
+    uint64_t x, y, z;
+    uint64_t bneed;
     uint8_t nid;
-    uint32_t max;
+    uint64_t max;
 
     bound = ~(~0 << bound);
     /* iterate blocks */
@@ -155,10 +155,10 @@ void k_heapBMSet(KHEAPBM *heap, uintptr_t ptr, uintptr_t size, uint8_t rval)
 {
     KHEAPBLOCKBM *b;
     uintptr_t ptroff, endoff;
-    uint32_t bi, x, ei;
+    uint64_t bi, x, ei;
     uint8_t *bm;
     uint8_t id;
-    uint32_t max;
+    uint64_t max;
 
     for (b = heap->fblock; b; b = b->next)
     {
@@ -226,10 +226,10 @@ void k_heapBMFree(KHEAPBM *heap, void *ptr)
 {
     KHEAPBLOCKBM *b;
     uintptr_t ptroff;
-    uint32_t bi, x;
+    uint64_t bi, x;
     uint8_t *bm;
     uint8_t id;
-    uint32_t max;
+    uint64_t max;
 
     for (b = heap->fblock; b; b = b->next)
     {

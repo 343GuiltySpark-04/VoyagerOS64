@@ -1,40 +1,29 @@
-#pragma once
+/* #pragma once
 
 #ifndef _SCHED_H
 #define _SCHED_H
 
-#include <stdint.h>
-#include <stddef.h>
-#include "global_defs.h"
-#define TASK_RUNNING 1
+#ifndef _SCHED__SCHED_H
+#define _SCHED__SCHED_H
 
-extern uint8_t task_timer_count;
+#include <stdbool.h>
+#include <stdnoreturn.h>
+#include "proc.h"
 
-typedef struct
-{
+#define MAX_RUNNING_THREADS 65536
 
-    struct
-    {
+extern struct process *kernel_process;
 
-        uint64_t rdi;
-        uint64_t rsi;
-        uint64_t rdx;
-        uint64_t rcx;
-        uint64_t rbx;
-        uint64_t rax;
-    } registers;
-
-    struct {
-
-        uint64_t top;
-        uint64_t base;
-
-    } stack;
-
-    uint64_t head;
-    uint64_t page_table;
-} task_ctx_t;
-
-void task_switch_handler();
+noreturn void sched_await(void);
+void sched_yield(bool save_ctx);
+bool sched_enqueue_thread(struct thread *thread, bool by_signal);
+bool sched_dequeue_thread(struct thread *thread);
+noreturn void sched_dequeue_and_die(void);
+struct process *sched_new_process(struct process *old_proc, struct pagemap *pagemap);
+struct thread *sched_new_kernel_thread(void *pc, void *arg, bool enqueue);
+struct thread *sched_new_user_thread(struct process *proc, void *pc, void *arg, void *sp,
+                                     const char **argv, const char **envp, struct auxval *auxval, bool enqueue);
 
 #endif
+
+#endif */
