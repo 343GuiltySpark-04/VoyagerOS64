@@ -3,13 +3,15 @@
 #define MEMUTILS_H
 
 #include "heap.h"
+#include "liballoc.h"
 
-KHEAPBM       bmh;
+extern KHEAPBM     kheap;
 
 
-#define SIZE  0x100000
+#define SIZE  0x500000
 #define BSIZE 16
 
+#define ALLOC(TYPE) (malloc(sizeof(TYPE)))
 
 
 

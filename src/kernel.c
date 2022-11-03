@@ -34,6 +34,8 @@
 uint32_t term_fg = 0x0055ff55;
 uint32_t term_bg = 0x00000000;
 
+KHEAPBM     kheap;
+
 /// @attention Limine requests can be placed anywhere, but it is important that
 /// the compiler does not optimise them away, so, usually, they should
 /// be made volatile or equivalent.
@@ -127,6 +129,11 @@ void _start(void)
 
                                1, 1, 1);
 
+
+    k_heapBMInit(&kheap);
+
+    k_heapBMAddBlock(&kheap, (uintptr_t)malloc(SIZE), SIZE, BSIZE);
+
     bootspace = 0;
 
     keyboard_init();
@@ -153,13 +160,8 @@ void _start(void)
 
     //  init_multitasking();
 
-    task_switch_int();
-
     // Just chill until needed
     while (1)
     {
-
-
-     
     }
 }

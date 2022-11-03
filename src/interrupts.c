@@ -114,11 +114,10 @@ void irq_handler(isr_xframe_t *frame)
         break;
     case 48:
         task_switch_handler();
+        break;
     }
 
-    if (vector <= 47)
-    {
 
         pic_send_eoi(vector - 32);
-    }
+    
 }

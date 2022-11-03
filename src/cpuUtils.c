@@ -2,6 +2,13 @@
 #include "include/printf.h"
 #include "include/registers.h"
 #include "include/global_defs.h"
+#include "include/limine.h"
+#include "include/memUtils.h"
+#include "include/paging/frameallocator.h"
+#include "include/paging/paging.h"
+#include "include/proc.h"
+#include "include/sched.h"
+#include "include/kernel.h"
 #include <cpuid.h>
 
 extern int cpuid_check_sse();
@@ -14,6 +21,7 @@ extern int cpuid_check_mca();
 extern int cpuid_check_acpi();
 extern int cpuid_check_ds();
 extern int cpuid_check_tm();
+extern void halt();
 
 void cpuid_readout()
 {
@@ -236,4 +244,53 @@ void check_tm()
 
         printf_("%s\n", "TM: No");
     }
+}
+
+bool sysenter = false;
+
+size_t fpu_bank_size = 0;
+void (*fpu_save)(void *ctx) = NULL;
+void (*fpu_rest)(void *ctx) = NULL;
+
+#define CPU_STACK_SIZE 0x10000
+
+static size_t cores_online_i = 0;
+
+static volatile struct limine_smp_request smp_request = {
+
+    .id = LIMINE_SMP_REQUEST,
+    .revision = 0
+
+};
+
+static void single_cpu_init(struct limine_smp_info *smp_info)
+{
+
+    struct cpu_local *cpu_local = (void *)smp_info->extra_argument;
+    int cpu_number = cpu_local->cpu_number;
+
+    struct thread *idle_thread = ALLOC(struct thread);
+
+    idle_thread->self = idle_thread;
+    idle_thread->this_cpu = cpu_local;
+    //idle_thread->process = kernel_process;
+
+    cpu_local->idle_thread = idle_thread;
+
+    set_gs_base(idle_thread);
+}
+
+struct cpu_local *this_cpu(void)
+{
+
+    if (interrupt_state())
+    {
+
+        kerror_mode++;
+        printf_("%s\n", "this_cpu call with interrutps!");
+
+        halt();
+    }
+
+    return sched_current_thread()->this_cpu;
 }

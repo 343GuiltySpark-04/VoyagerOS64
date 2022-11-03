@@ -27,7 +27,7 @@ struct process
     VECTOR_TYPE(struct process *)
     children;
     mode_t umask;
-
+    char name[128];
 };
 
 struct thread
@@ -37,6 +37,7 @@ struct thread
     uint64_t errno;
 
     spinlock_t lock;
+    struct cpu_local *this_cpu;
     int running_on;
     bool enqueued;
     bool enqueued_by_signal;
@@ -47,6 +48,7 @@ struct thread
     void *gs_base;
     void *fs_base;
     uint64_t cr3;
+    void *fpu_bank_size;
     VECTOR_TYPE(void *)
     stacks;
     void *pf_stack;
