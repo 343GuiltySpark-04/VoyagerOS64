@@ -9,6 +9,7 @@
 #include "include/heap.h"
 #include "include/kernel.h"
 #include "include/paging/frameallocator.h"
+#include "include/paging/paging.h"
 #include "include/registers.h"
 #include "include/memUtils.h"
 #include "include/vgafont.h"
@@ -61,6 +62,8 @@ uint32_t bootspace = 1;
 uint8_t kerror_mode = 0;
 
 struct term_context *term_context;
+
+static struct PageTable *test_table;
 
 /// \fn  following will be our kernel's entry point.
 void _start(void)
@@ -130,9 +133,14 @@ void _start(void)
                                1, 1, 1);
 
 
-    k_heapBMInit(&kheap);
+   /*  k_heapBMInit(&kheap);
 
     k_heapBMAddBlock(&kheap, (uintptr_t)malloc(SIZE), SIZE, BSIZE);
+ */
+    printf_("%s\n", "BUG!");
+    breakpoint();
+
+    //PagingDuplicate(&page_table, &test_table);
 
     bootspace = 0;
 
