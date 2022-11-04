@@ -17,6 +17,8 @@ void init_memory();
 
 void print_memory();
 
+static struct PageTable *page_table;
+
 extern struct term_context *term_context;
 
 #endif
