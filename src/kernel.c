@@ -65,7 +65,7 @@ extern void task_switch_int();
 
 /// @var allows me to enable or dissable or alter behavoir according to wether the kernel
 /// is fully loaded yet.
-uint32_t bootspace = 1;
+uint32_t bootspace = 2;
 
 uint8_t kerror_mode = 0;
 
@@ -93,8 +93,6 @@ void _start(void)
 
     stop_interrupts();
 
-    bootspace = 1;
-
     LoadGDT_Stage1();
 
     printf_("%s\n", "Loaded GDT");
@@ -110,6 +108,8 @@ void _start(void)
     printf_("%s\n", "PICs Online");
 
     init_PIT();
+
+    bootspace = 1;
 
     print_memmap();
 
