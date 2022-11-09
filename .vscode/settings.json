@@ -6,7 +6,9 @@
         "new": "c",
         "typeinfo": "c",
         "kernelutils.h": "c",
-        "limine.h": "c"
+        "limine.h": "c",
+        "interrupts.h": "c",
+        "frameallocator.h": "c"
     },
     "C_Cpp.errorSquiggles": "Enabled"
 }

@@ -22,6 +22,7 @@
 #include "include/time.h"
 #include "include/shell.h"
 #include "include/sched.h"
+#include "include/paging/vmm.h"
 
 #define White "\033[1;00m"
 #define Red "\033[1;31m"
@@ -35,7 +36,7 @@
 uint32_t term_fg = 0x0055ff55;
 uint32_t term_bg = 0x00000000;
 
-KHEAPBM     kheap;
+KHEAPBM kheap;
 
 /// @attention Limine requests can be placed anywhere, but it is important that
 /// the compiler does not optimise them away, so, usually, they should
@@ -44,6 +45,13 @@ KHEAPBM     kheap;
 volatile struct limine_kernel_address_request Kaddress_req = {
 
     .id = LIMINE_KERNEL_ADDRESS_REQUEST,
+    .revision = 0
+
+};
+
+volatile struct limine_terminal_request early_term = {
+
+    .id = LIMINE_TERMINAL_REQUEST,
     .revision = 0
 
 };
@@ -69,6 +77,14 @@ static struct PageTable *test_table;
 void _start(void)
 {
 
+    if (early_term.response == NULL || early_term.response->terminal_count < 1)
+    {
+
+        bootspace = 1;
+
+        printf_("%s\n", "Bootloader Terminal Offline Using Serial Only!");
+    }
+
     print_date();
 
     cpuid_readout();
@@ -76,6 +92,8 @@ void _start(void)
     breakpoint();
 
     stop_interrupts();
+
+    bootspace = 1;
 
     LoadGDT_Stage1();
 
@@ -132,15 +150,14 @@ void _start(void)
 
                                1, 1, 1);
 
+    /*  k_heapBMInit(&kheap);
 
-   /*  k_heapBMInit(&kheap);
-
-    k_heapBMAddBlock(&kheap, (uintptr_t)malloc(SIZE), SIZE, BSIZE);
- */
+     k_heapBMAddBlock(&kheap, (uintptr_t)malloc(SIZE), SIZE, BSIZE);
+  */
     printf_("%s\n", "BUG!");
     breakpoint();
 
-    //PagingDuplicate(&page_table, &test_table);
+    VMM_table_clone();
 
     bootspace = 0;
 
