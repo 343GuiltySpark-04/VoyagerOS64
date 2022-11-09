@@ -170,7 +170,7 @@ isr_irq_stub 44
 isr_irq_stub 45
 isr_irq_stub 46
 isr_irq_stub 47
-isr_irq_stub 48 ; task switch (used to trigger the software task switching code
+isr_irq_stub 48 ; yield switch (used to trigger the software task switching code
 
 global isr_stub_table
 isr_stub_table:
@@ -179,3 +179,9 @@ isr_stub_table:
     dq isr_stub_%+i
 %assign i i+1 
 %endrep
+
+global proc_yield
+
+proc_yield:
+    int 0x30
+    ret
