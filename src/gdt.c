@@ -6,6 +6,7 @@
 
 extern void breakpoint();
 extern void serial_debug(int);
+extern void halt();
 
 uint8_t TssStack[0x100000];
 uint8_t ist1Stack[0x100000];
@@ -26,9 +27,46 @@ ALIGN_4K struct GDT gdt = {
         .limit_low = 0,
         .base_low = 0,
         .base_middle = 0,
-        .access_flag = GDTAccessKernelCode,
-        .limit_flags = 0xA0,
-        .base_high = 0}, // kernel code segment
+        .access_flag = GDTAccess16Code,
+        .limit_flags = 0xffff,
+        .base_high = 0 // 16 code seg
+
+    },
+    {
+        .limit_low = 0,
+        .base_low = 0,
+        .base_middle = 0,
+        .access_flag = GDTAccess16Data,
+        .limit_flags = 0xffff,
+        .base_high = 0 // 16 data seg
+
+    },
+    {
+
+        .limit_low = 0,
+        .base_low = 0,
+        .base_middle = 0,
+        .access_flag = GDTAccess32Code,
+        .limit_flags = 0xffffffff,
+        .base_high = 0 // 32 code seg
+
+    },
+    {
+
+        .limit_low = 0,
+        .base_low = 0,
+        .base_middle = 0,
+        .access_flag = GDTAccess32Data,
+        .limit_flags = 0xffffffff,
+        .base_high = 0
+
+    },
+    {.limit_low = 0,
+     .base_low = 0,
+     .base_middle = 0,
+     .access_flag = GDTAccessKernelCode,
+     .limit_flags = 0xA0,
+     .base_high = 0}, // kernel code segment
     {
         .limit_low = 0,
         .base_low = 0,
@@ -87,6 +125,14 @@ void LoadGDT_Stage1()
     printf_("%s\n", "GDT Offsets as follows: ");
     printf_("%s", "GDT NULL: ");
     printf_("0x%llx\n", (uint64_t)&gdt.null - (uint64_t)&gdt);
+    printf_("%s", "GDT 16 Bit Code Segment: ");
+    printf_("0x%llx\n", (uint64_t)&gdt.seg_16_code - (uint64_t)&gdt);
+    printf_("%s", "GDT 16 Bit Data Segment: ");
+    printf_("0x%llx\n", (uint64_t)&gdt.seg_16_data - (uint64_t)&gdt);
+    printf_("%s", "GDT 32 Bit Code Segment: ");
+    printf_("0x%llx\n", (uint64_t)&gdt.seg_32_code - (uint64_t)&gdt);
+    printf_("%s", "GDT 32 Bit Data Segment: ");
+    printf_("0x%llx\n", (uint64_t)&gdt.seg_32_data - (uint64_t)&gdt);
     printf_("%s", "GDT Kernel Code: ");
     printf_("0x%llx\n", (uint64_t)&gdt.kernelCS - (uint64_t)&gdt);
     printf_("%s", "GDT Kernel Data: ");
@@ -137,5 +183,7 @@ void LoadGDT_Stage1()
                      :
                      : "a"((uint16_t)GDTTSSSegment));
 
+    printf_("%s\n", "Test successful halting");
+    halt();
     // breakpoint();
 }

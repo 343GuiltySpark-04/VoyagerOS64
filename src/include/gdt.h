@@ -11,13 +11,17 @@ enum GDTAccessFlag
     DC = (1 << 2),
     Execute = (1 << 3),
     Segments = (1 << 4),
-    Present = (1 << 7)
+    Present = (1 << 7),
 };
 
 #define GDTKernelBaseSelector 0x08
 #define GDTUserBaseSelector 0x18
 #define GDTTSSSegment 0x30
 
+#define GDTAccess16Code 0x00009a000000ffff
+#define GDTAccess16Data 0x000093000000ffff
+#define GDTAccess32Code 0x00cf9a000000ffff
+#define GDTAccess32Data 0x00cf93000000ffff
 #define GDTAccessKernelCode (ReadWrite | Execute | Segments | Present)
 #define GDTAccessKernelData (ReadWrite | Segments | Present)
 #define GDTAccessUserCode (ReadWrite | Execute | Segments | GDTAccessDPL(3) | Present)
@@ -31,6 +35,28 @@ typedef struct PACKED GDT_Desc
 
 typedef struct PACKED GDT_Entry
 {
+    uint16_t limit_low;
+    uint16_t base_low;
+    uint8_t base_middle;
+    uint8_t access_flag;
+    uint8_t limit_flags;
+    uint8_t base_high;
+};
+
+typedef struct PACKED GDT_Entry_16
+{
+
+    uint16_t limit_low;
+    uint16_t base_low;
+    uint8_t base_middle;
+    uint8_t access_flag;
+    uint8_t limit_flags;
+    uint8_t base_high;
+};
+
+typedef struct PACKED GDT_Entry_32
+{
+
     uint16_t limit_low;
     uint16_t base_low;
     uint8_t base_middle;
@@ -54,6 +80,10 @@ typedef struct PACKED TSS_Entry
 struct PACKED ALIGN_4K GDT
 {
     struct GDT_Entry null;
+    struct GDT_Entry_16 seg_16_code;
+    struct GDT_Entry_16 seg_16_data;
+    struct GDT_Entry_32 seg_32_code;
+    struct GDT_Entry_32 seg_32_data;
     struct GDT_Entry kernelCS;
     struct GDT_Entry kernelData;
     struct GDT_Entry userNull;
@@ -62,8 +92,6 @@ struct PACKED ALIGN_4K GDT
     struct TSS_Entry tss;
 };
 
-
 extern uint64_t rsp0;
-
 
 void LoadGDT_Stage1();
