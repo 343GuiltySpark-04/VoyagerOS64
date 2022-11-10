@@ -14,14 +14,14 @@ enum GDTAccessFlag
     Present = (1 << 7),
 };
 
-#define GDTKernelBaseSelector 0x08
-#define GDTUserBaseSelector 0x18
-#define GDTTSSSegment 0x30
+#define GDTKernelBaseSelector 0x28
+#define GDTUserBaseSelector 0x48
+#define GDTTSSSegment 0x50
 
-#define GDTAccess16Code 0x00009a000000ffff
-#define GDTAccess16Data 0x000093000000ffff
-#define GDTAccess32Code 0x00cf9a000000ffff
-#define GDTAccess32Data 0x00cf93000000ffff
+#define GDTAccess16Code (ReadWrite | Execute | Segments | Present)
+#define GDTAccess16Data (ReadWrite | Segments | Present)
+#define GDTAccess32Code (ReadWrite | Execute | Segments | Present)
+#define GDTAccess32Data (ReadWrite | Segments | Present)
 #define GDTAccessKernelCode (ReadWrite | Execute | Segments | Present)
 #define GDTAccessKernelData (ReadWrite | Segments | Present)
 #define GDTAccessUserCode (ReadWrite | Execute | Segments | GDTAccessDPL(3) | Present)
