@@ -9,6 +9,7 @@
 
 extern void breakpoint();
 extern uint8_t *frameBitmap;
+extern void halt();
 
 typedef char symbol[];
 
@@ -52,7 +53,8 @@ void print_memmap()
 
     int num_useable = 0;
     int num_bad = 0;
-    int num_reclaim = 0;
+    int num_reclaim_bl = 0;
+    int num_reclaim_acpi = 0;
 
     printf_("%s\n", "--------------------------------------");
     printf_("%s\n", "|             MEMORY MAP             |");
@@ -107,10 +109,16 @@ void print_memmap()
             num_bad++;
         }
 
-        if (memmap_req.response->entries[i]->type == 2 || 5)
+        if (memmap_req.response->entries[i]->type == 5)
         {
 
-            num_reclaim++;
+            num_reclaim_bl++;
+        }
+
+        if (memmap_req.response->entries[i]->type == 2)
+        {
+
+            num_reclaim_acpi++;
         }
     }
 
@@ -118,8 +126,10 @@ void print_memmap()
     printf_("%i\n", num_useable);
     printf_("%s", "Number of Bad Entries: ");
     printf_("%i\n", num_bad);
-    printf_("%s", "Number of Reclaimable Entries: ");
-    printf_("%i\n", num_reclaim);
+    printf_("%s", "Number of Bootloader Reclaimable Entries: ");
+    printf_("%i\n", num_reclaim_bl);
+    printf_("%s", "Number of ACPI Reclaimable Entries: ");
+    printf_("%i\n", num_reclaim_acpi);
     printf_("%s", "Memory Size: ");
     printf_("0x%llx\n", get_memory_size());
     printf_("%s\n", "--------------------------------------");
@@ -144,11 +154,23 @@ void init_memory()
     for (uint64_t i = 256; i < 512; i++)
     {
 
-        printf_("%i\n", i);
+        // printf_("%i\n", i);
 
         void *page = frame_request();
 
-        printf_("0x%llx\n", page);
+        // printf_("0x%llx\n", page);
+
+        if (page == 0x0)
+        {
+
+            printf_("%s\n", "!!!Kernel Panic!!!");
+            printf_("%s", "Attempt to preallocate page with invalid address at table index: ");
+            printf_("%i\n", i);
+            printf_("%s", "Requested address: ");
+            printf_("0x%llx\n", page);
+            printf_("%s\n", "!!!Kernel Panic!!!");
+            halt();
+        }
 
         memset(page, 0, 0x1000);
 
@@ -160,10 +182,6 @@ void init_memory()
 
     // Program the PAT
     writeMSR(0x0277, 0x0000000005010406);
-
-    breakpoint();
-
-    breakpoint();
 
     printf_("%s\n", "Mapping Memory Map");
 
@@ -241,11 +259,11 @@ void init_memory()
 
     frameBitmap = (uint8_t *)TranslateToHighHalfMemoryAddress(frameBitmap);
 
-    breakpoint();
-
     writeCR3((uint64_t)page_table);
 
     printf_("Wrote CR3\n");
+
+    breakpoint();
 }
 
 void print_memory()
