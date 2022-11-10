@@ -109,8 +109,6 @@ void _start(void)
 
     init_PIT();
 
-    bootspace = 1;
-
     print_memmap();
 
     // @brief Kernel Addresses
@@ -144,6 +142,8 @@ void _start(void)
     printf_("%s", "CR4: ");
     printf_("0x%llx\n", readCR4());
 
+    bootspace = 1;
+
     term_context = fbterm_init(malloc, fbr_req.response->framebuffers[0]->address, fbr_req.response->framebuffers[0]->width, fbr_req.response->framebuffers[0]->height,
 
                                fbr_req.response->framebuffers[0]->pitch, NULL, NULL, NULL, &term_bg, &term_fg, NULL, 0, 0, 0,
@@ -158,8 +158,6 @@ void _start(void)
     breakpoint();
 
     VMM_table_clone();
-
-    bootspace = 0;
 
     keyboard_init();
 

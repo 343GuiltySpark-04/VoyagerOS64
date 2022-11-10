@@ -50,6 +50,10 @@ void print_memmap()
 {
     int size = memmap_req.response->entry_count;
 
+    int num_useable = 0;
+    int num_bad = 0;
+    int num_reclaim = 0;
+
     printf_("%s\n", "--------------------------------------");
     printf_("%s\n", "|             MEMORY MAP             |");
     printf_("%s\n", "--------------------------------------");
@@ -90,8 +94,32 @@ void print_memmap()
         printf_("%s", "Entry Type: ");
         printf_("%i\n", memmap_req.response->entries[i]->type);
         printf_("%s\n", "--------------------------------------");
+
+        if (memmap_req.response->entries[i]->type == 0)
+        {
+
+            num_useable++;
+        }
+
+        if (memmap_req.response->entries[i]->type == 4)
+        {
+
+            num_bad++;
+        }
+
+        if (memmap_req.response->entries[i]->type == 2 || 5)
+        {
+
+            num_reclaim++;
+        }
     }
 
+    printf_("%s", "Number of Usable Entries: ");
+    printf_("%i\n", num_useable);
+    printf_("%s", "Number of Bad Entries: ");
+    printf_("%i\n", num_bad);
+    printf_("%s", "Number of Reclaimable Entries: ");
+    printf_("%i\n", num_reclaim);
     printf_("%s", "Memory Size: ");
     printf_("0x%llx\n", get_memory_size());
     printf_("%s\n", "--------------------------------------");
@@ -115,7 +143,12 @@ void init_memory()
 
     for (uint64_t i = 256; i < 512; i++)
     {
+
+        printf_("%i\n", i);
+
         void *page = frame_request();
+
+        printf_("0x%llx\n", page);
 
         memset(page, 0, 0x1000);
 

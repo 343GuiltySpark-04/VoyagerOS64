@@ -23,57 +23,63 @@ ALIGN_4K struct GDT gdt = {
      .access_flag = 0x00,
      .limit_flags = 0x00,
      .base_high = 0}, // null
+
     {
-        .limit_low = 0,
+        .limit_low = 0xffff,
         .base_low = 0,
         .base_middle = 0,
         .access_flag = GDTAccess16Code,
-        .limit_flags = 0xffff,
-        .base_high = 0 // 16 code seg
+        .limit_flags = 0b00000000,
+        .base_high = 0 // kernel 16 bit code segment
 
     },
+
     {
-        .limit_low = 0,
+
+        .limit_low = 0xffff,
         .base_low = 0,
         .base_middle = 0,
         .access_flag = GDTAccess16Data,
-        .limit_flags = 0xffff,
-        .base_high = 0 // 16 data seg
+        .limit_flags = 0b00000000,
+        .base_high = 0 // kernel 16 bit data segment
 
     },
+
     {
 
-        .limit_low = 0,
+        .limit_low = 0xffff,
         .base_low = 0,
         .base_middle = 0,
         .access_flag = GDTAccess32Code,
-        .limit_flags = 0xffffffff,
-        .base_high = 0 // 32 code seg
+        .limit_flags = 0b11001111,
+        .base_high = 0 // kernel 32 bit code segment
 
     },
+
     {
 
-        .limit_low = 0,
+        .limit_low = 0xffff,
         .base_low = 0,
         .base_middle = 0,
         .access_flag = GDTAccess32Data,
-        .limit_flags = 0xffffffff,
-        .base_high = 0
+        .limit_flags = 0b11001111,
+        .base_high = 0 // kernel 32 bit data segment
 
     },
+
     {.limit_low = 0,
      .base_low = 0,
      .base_middle = 0,
      .access_flag = GDTAccessKernelCode,
      .limit_flags = 0xA0,
-     .base_high = 0}, // kernel code segment
+     .base_high = 0}, // kernel 64 bit code segment
     {
         .limit_low = 0,
         .base_low = 0,
         .base_middle = 0,
         .access_flag = GDTAccessKernelData,
         .limit_flags = 0x80,
-        .base_high = 0}, // kernel data segment
+        .base_high = 0}, // kernel 64 bit data segment
     {
         .limit_low = 0,
         .base_low = 0,
@@ -119,11 +125,11 @@ void LoadGDT_Stage1()
         .base_up = (uint32_t)(address >> 32),
     };
 
-    printf_("%s\n", "--------------------------------------");
-    printf_("%s\n", "|              GDT INFO              |");
-    printf_("%s\n", "--------------------------------------");
+    printf_("%s\n", "------------------------------------");
+    printf_("%s\n", "|              GDT INFO            |");
+    printf_("%s\n", "------------------------------------");
     printf_("%s\n", "GDT Offsets as follows: ");
-    printf_("%s", "GDT NULL: ");
+    printf_("%s", "GDT NULL Segment: ");
     printf_("0x%llx\n", (uint64_t)&gdt.null - (uint64_t)&gdt);
     printf_("%s", "GDT 16 Bit Code Segment: ");
     printf_("0x%llx\n", (uint64_t)&gdt.seg_16_code - (uint64_t)&gdt);
@@ -133,24 +139,25 @@ void LoadGDT_Stage1()
     printf_("0x%llx\n", (uint64_t)&gdt.seg_32_code - (uint64_t)&gdt);
     printf_("%s", "GDT 32 Bit Data Segment: ");
     printf_("0x%llx\n", (uint64_t)&gdt.seg_32_data - (uint64_t)&gdt);
-    printf_("%s", "GDT Kernel Code: ");
+    printf_("%s", "GDT Kernel Code Segment: ");
     printf_("0x%llx\n", (uint64_t)&gdt.kernelCS - (uint64_t)&gdt);
-    printf_("%s", "GDT Kernel Data: ");
+    printf_("%s", "GDT Kernel Data Segment: ");
     printf_("0x%llx\n", (uint64_t)&gdt.kernelData - (uint64_t)&gdt);
-    printf_("%s", "GDT User Code: ");
+    printf_("%s", "GDT User NULL Segment: ");
+    printf_("0x%llx\n", (uint64_t)&gdt.userNull - (uint64_t)&gdt);
+    printf_("%s", "GDT User Code Segment: ");
     printf_("0x%llx\n", (uint64_t)&gdt.userCode - (uint64_t)&gdt);
-    printf_("%s", "GDT User Data: ");
+    printf_("%s", "GDT User Data Segment: ");
     printf_("0x%llx\n", (uint64_t)&gdt.userData - (uint64_t)&gdt);
-    printf_("%s", "GDT TSS: ");
+    printf_("%s", "GDT TSS Segment: ");
     printf_("0x%llx\n", (uint64_t)&gdt.tss - (uint64_t)&gdt);
-    printf_("%s\n", "--------------------------------------");
+    printf_("%s\n", "------------------------------------");
     printf_("%s\n", "Expected GDTR Data as Follows: ");
     printf_("%s", "GDTR Size: ");
     printf_("0x%llx\n", (uint16_t)&desc.size);
     printf_("%s", "GDTR Offset: ");
     printf_("0x%llx\n", (uint64_t)&desc.offset);
-    printf_("%s\n", "--------------------------------------");
-
+    printf_("%s\n", "------------------------------------");
     tss.rsp0 = (uint64_t)TssStack + sizeof(TssStack);
     tss.ist1 = (uint64_t)ist1Stack + sizeof(ist1Stack);
 
@@ -162,7 +169,7 @@ void LoadGDT_Stage1()
                      :
                      : "m"(desc));
 
-    __asm__ volatile("push $0x08\n"
+    __asm__ volatile("push $0x28\n"
                      "lea 1f(%%rip), %%rax\n"
                      "push %%rax\n"
                      "lretq\n"
@@ -177,13 +184,11 @@ void LoadGDT_Stage1()
                      "mov %0, %%fs\n"
                      "mov %0, %%ss\n"
                      :
-                     : "a"((uint16_t)0x10));
+                     : "a"((uint16_t)0x30));
 
     __asm__ volatile("ltr %0"
                      :
                      : "a"((uint16_t)GDTTSSSegment));
 
-    printf_("%s\n", "Test successful halting");
-    halt();
     // breakpoint();
 }
