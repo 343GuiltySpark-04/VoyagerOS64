@@ -154,11 +154,13 @@ void init_memory()
     for (uint64_t i = 256; i < 512; i++)
     {
 
-        // printf_("%i\n", i);
+        printf_("%s", "Index: ");
+        printf_("%i\n", i);
 
         void *page = frame_request();
 
-        // printf_("0x%llx\n", page);
+        printf_("%s", "Page Addres: ");
+        printf_("0x%llx\n", page);
 
         if (page == 0x0)
         {
