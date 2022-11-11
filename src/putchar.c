@@ -32,6 +32,13 @@ void _putchar(char character)
         early_term.response->write(early_term.response->terminals[0], &character, sizeof(char));
         serial_debug(character);
     }
+
+    else if (bootspace == 3)
+    {
+
+        early_term.response->write(early_term.response->terminals[0], &character, sizeof(char));
+    }
+
     else
     {
         if (term_context)

@@ -147,6 +147,18 @@ void _start(void)
     printf_("%s", "CR4: ");
     printf_("0x%llx\n", readCR4());
 
+    printf_("%s\n", "Handing Control to Standalone Terminal...");
+
+    bootspace = 3;
+
+    for (uint64_t i = 0; i < 500; i++)
+    {
+
+        printf_("%s\n", "");
+    }
+
+    early_term.response->write(early_term.response->terminals[0], NULL, LIMINE_TERMINAL_FULL_REFRESH);
+
     bootspace = 1;
 
     term_context = fbterm_init(malloc, fbr_req.response->framebuffers[0]->address, fbr_req.response->framebuffers[0]->width, fbr_req.response->framebuffers[0]->height,
@@ -157,7 +169,7 @@ void _start(void)
 
     bootspace = 0;
 
-   // VMM_table_clone();
+    // VMM_table_clone();
 
     keyboard_init();
 
