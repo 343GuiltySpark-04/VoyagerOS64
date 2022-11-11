@@ -66,6 +66,7 @@ void read_memory_map()
 
     void *largestFreeMemSegment = NULL;
     size_t largestFreeMemSegmentSize = 0;
+    uint64_t bitmap_entry;
 
     uint64_t memorySize = get_memory_size(); // I think this will work the same?
     freeMemory = memorySize;
@@ -75,7 +76,6 @@ void read_memory_map()
     printf_("%s", "Bitmap Size is: ");
     printf_("0x%llx\n", bitmapSize);
 
-
     for (uint64_t i = 0; i < memmap_req.response->entry_count; i++)
     {
         struct limine_memmap_entry *entry = memmap_req.response->entries[i];
@@ -84,16 +84,32 @@ void read_memory_map()
         {
             largestFreeMemSegment = (void *)entry->base;
             largestFreeMemSegmentSize = entry->length;
+            bitmap_entry = i;
         }
     }
 
     if (largestFreeMemSegment == NULL)
     {
         printf_("%s\n", "!!!Kernel Panic!!!");
-        printf_("%s\n", "No Suitble Memory Map Entries Found!");
+        printf_("%s\n", "No Suitable Memory Map Entries Found!");
         printf_("%s\n", "!!!Kernel Panic!!!");
         halt();
     }
+
+    printf_("%s", "Address of Largest Free Entry: ");
+    printf_("0x%llx\n", (uint64_t)largestFreeMemSegment);
+
+    printf_("%s", "Size of Largest Free Entry: ");
+    printf_("0x%llx\n", largestFreeMemSegmentSize);
+
+    memmap_req.response->entries[bitmap_entry]->length -= bitmapSize;
+
+    largestFreeMemSegmentSize = memmap_req.response->entries[bitmap_entry]->length;
+
+    printf_("%s", "Size of Largest Free Entry Post Allocation: ");
+    printf_("0x%llx\n", largestFreeMemSegmentSize);
+
+    print_memmap();
 
     frameBitmap = (uint8_t *)largestFreeMemSegment;
 
