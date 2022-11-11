@@ -117,7 +117,5 @@ void irq_handler(isr_xframe_t *frame)
         break;
     }
 
-
-        pic_send_eoi(vector - 32);
-    
+    pic_send_eoi(vector - 32);
 }

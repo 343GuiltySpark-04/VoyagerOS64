@@ -36,7 +36,7 @@ uint64_t ReadCR3()
 
     asm("mov %%cr3, %0"
         : "=r"(outValue)
-        : );
+        :);
 
     return outValue;
     // no input
@@ -45,7 +45,7 @@ uint64_t ReadCR3()
 void WriteCR3(uint64_t value)
 {
     asm("mov %0, %%cr3"
-        : //no output
+        : // no output
         : "r"(value));
 }
 
@@ -201,7 +201,7 @@ void PagingDuplicate(struct PageTable *p4, struct PageTable *newTable)
     {
         uint64_t entry = p4Virtual->entries[i];
 
-        //printf_("0x%llx\n", entry);
+        // printf_("0x%llx\n", entry);
 
         if (entry & PAGING_FLAG_PRESENT)
         {
