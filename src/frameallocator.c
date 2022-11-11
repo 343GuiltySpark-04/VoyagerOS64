@@ -140,19 +140,7 @@ void read_memory_map()
         }
     }
 
-    for (uint64_t i = 0; i < bitmapSize * 8; i++){
-
-
-        printf_("%s", "Data For Frame Bitmap Entry: ");
-        printf_("0x%llx\n", i);
-        printf_("%s", "Data: ");
-        printf_("0x%llx\n", bitmap_get(frameBitmap, i));
-
-    }
-
-    printf_("%s\n", "------------------------------------------------");
-
-    frame_lock(bitmapSize / 0x1000 + 1);
+    frame_lock_multiple(frameBitmap, bitmapSize / 0x1000 + 1);
 }
 
 void *frame_request()
@@ -164,17 +152,28 @@ void *frame_request()
 
         frame_lock((void *)(i * 0x1000));
 
-        printf_("%s", "Data For Frame Bitmap Entry: ");
-        printf_("0x%llx\n", i);
-        printf_("%s", "Data: ");
-        printf_("0x%llx\n", bitmap_get(frameBitmap, i));
-
-        printf_("0x%llx\n", (void *)(i * 0x1000));
-
         return (void *)(i * 0x1000);
     }
 
     return NULL; // Page Frame Swap to file
+}
+
+void print_frame_bitmap()
+{
+
+    printf_("%s\n", "Frame Bitmap Readout Start");
+    printf_("%s\n", "------------------------------------------------");
+
+    for (uint64_t i = 0; i < bitmapSize * 8; i++)
+    {
+
+        printf_("%s", "Data For Frame Bitmap Entry: ");
+        printf_("0x%llx\n", i);
+        printf_("%s", "Data: ");
+        printf_("0x%llx\n", bitmap_get(frameBitmap, i));
+    }
+
+    printf_("%s\n", "------------------------------------------------");
 }
 
 void *frame_request_multiple(uint32_t count)

@@ -22,5 +22,5 @@ FRAME_EXPORT void *frame_request_multiple(uint32_t count);
 uint64_t free_ram();
 uint64_t used_ram();
 uint64_t reserved_ram();
-
+void print_frame_bitmap();
 // file contains the PMM functions
