@@ -217,7 +217,7 @@ void print_date()
 
     printf_("%s", " ");
 
-    printf_("%s", month_str[month]);
+    printf_("%s", month_str[month - 1]);
 
     printf_("%s", " ");
 
