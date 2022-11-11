@@ -106,10 +106,10 @@ void read_memory_map()
 
     largestFreeMemSegmentSize = memmap_req.response->entries[bitmap_entry]->length;
 
-    printf_("%s", "Size of Largest Free Entry Post Allocation: ");
+    printf_("%s", "Size of Largest Free Entry Post Bitmap Allocation: ");
     printf_("0x%llx\n", largestFreeMemSegmentSize);
 
-    print_memmap();
+    // print_memmap();
 
     frameBitmap = (uint8_t *)largestFreeMemSegment;
 
@@ -140,6 +140,18 @@ void read_memory_map()
         }
     }
 
+    for (uint64_t i = 0; i < bitmapSize * 8; i++){
+
+
+        printf_("%s", "Data For Frame Bitmap Entry: ");
+        printf_("0x%llx\n", i);
+        printf_("%s", "Data: ");
+        printf_("0x%llx\n", bitmap_get(frameBitmap, i));
+
+    }
+
+    printf_("%s\n", "------------------------------------------------");
+
     frame_lock(bitmapSize / 0x1000 + 1);
 }
 
@@ -151,6 +163,13 @@ void *frame_request()
             continue;
 
         frame_lock((void *)(i * 0x1000));
+
+        printf_("%s", "Data For Frame Bitmap Entry: ");
+        printf_("0x%llx\n", i);
+        printf_("%s", "Data: ");
+        printf_("0x%llx\n", bitmap_get(frameBitmap, i));
+
+        printf_("0x%llx\n", (void *)(i * 0x1000));
 
         return (void *)(i * 0x1000);
     }

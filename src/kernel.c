@@ -133,10 +133,12 @@ void _start(void)
 
     breakpoint();
 
-    read_memory_map();
+   // read_memory_map();
 
     /// @brief print usable memory to log
     print_memory();
+
+    bootspace = 1;
 
     init_memory();
 
