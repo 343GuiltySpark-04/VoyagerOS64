@@ -6,7 +6,6 @@
 #include "include/paging/paging.h"
 #include "include/string.h"
 #include "include/registers.h"
-#include "include/kernel.h"
 
 extern void breakpoint();
 extern uint8_t *frameBitmap;
@@ -155,18 +154,11 @@ void init_memory()
     for (uint64_t i = 256; i < 512; i++)
     {
 
-        printf_("%s", "Index: ");
-        printf_("%i\n", i);
-
         void *page = frame_request();
-
-        printf_("%s", "Page Address: ");
-        printf_("0x%llx\n", page);
 
         if (page == 0x0)
         {
 
-            bootspace = 2;
             printf_("%s\n", "!!!Kernel Panic!!!");
             printf_("%s", "Attempt to preallocate page with invalid address at table index: ");
             printf_("%i\n", i);

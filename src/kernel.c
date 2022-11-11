@@ -133,12 +133,10 @@ void _start(void)
 
     breakpoint();
 
-   // read_memory_map();
+    // read_memory_map();
 
     /// @brief print usable memory to log
     print_memory();
-
-    bootspace = 1;
 
     init_memory();
 
@@ -157,14 +155,9 @@ void _start(void)
 
                                1, 1, 1);
 
-    /*  k_heapBMInit(&kheap);
+    bootspace = 0;
 
-     k_heapBMAddBlock(&kheap, (uintptr_t)malloc(SIZE), SIZE, BSIZE);
-  */
-    printf_("%s\n", "BUG!");
-    breakpoint();
-
-    VMM_table_clone();
+   // VMM_table_clone();
 
     keyboard_init();
 
