@@ -55,35 +55,21 @@ void sys_clock_handler()
 
     system_timer_fractions++;
     system_timer_ms++;
-    
-
 }
-
-
 
 uint8_t task_timer_count = 0;
 
-
-
-void task_switch_handler(){
+void task_switch_handler()
+{
 
     printf_("%s\n", "Switched!");
 
     task_timer_count = 0;
-
-
-
 }
 
-
-void delta_int(uint64_t delta, uint8_t vector){
-
-
-
-
+void delta_int(uint64_t delta, uint8_t vector)
+{
 }
-
-
 
 void init_PIT()
 {
