@@ -189,9 +189,9 @@ void _start(void)
 
     print_date();
 
-    printf_("%s\n", "VoyagerOS64 v0.0.3");
+    printf_("%s\n", "VoyagerOS64 v0.0.4");
 
-    // printf_("%s", ":> ");
+    printf_("%s", ":> ");
 
     //  init_multitasking();
 
