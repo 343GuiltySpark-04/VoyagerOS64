@@ -13,6 +13,8 @@ bool initialized = false;
 uint8_t *frameBitmap = NULL;
 uint64_t bitmapSize = 0;
 
+extern void halt();
+
 const char *MemoryMapTypeString(int type)
 {
     switch (type)
@@ -65,21 +67,33 @@ void read_memory_map()
     void *largestFreeMemSegment = NULL;
     size_t largestFreeMemSegmentSize = 0;
 
+    uint64_t memorySize = get_memory_size(); // I think this will work the same?
+    freeMemory = memorySize;
+
+    bitmapSize = memorySize / 0x1000 / 8 + 1;
+
+    printf_("%s", "Bitmap Size is: ");
+    printf_("0x%llx\n", bitmapSize);
+
+
     for (uint64_t i = 0; i < memmap_req.response->entry_count; i++)
     {
         struct limine_memmap_entry *entry = memmap_req.response->entries[i];
 
-        if (entry->type == LIMINE_MEMMAP_USABLE && entry->length > largestFreeMemSegment)
+        if (entry->type == LIMINE_MEMMAP_USABLE && entry->length > bitmapSize)
         {
             largestFreeMemSegment = (void *)entry->base;
             largestFreeMemSegmentSize = entry->length;
         }
     }
 
-    uint64_t memorySize = get_memory_size(); // I think this will work the same?
-    freeMemory = memorySize;
-
-    bitmapSize = memorySize / 0x1000 / 8 + 1;
+    if (largestFreeMemSegment == NULL)
+    {
+        printf_("%s\n", "!!!Kernel Panic!!!");
+        printf_("%s\n", "No Suitble Memory Map Entries Found!");
+        printf_("%s\n", "!!!Kernel Panic!!!");
+        halt();
+    }
 
     frameBitmap = (uint8_t *)largestFreeMemSegment;
 
@@ -117,7 +131,8 @@ void *frame_request()
 {
     for (uint64_t i = 0; i < bitmapSize * 8; i++)
     {
-        if (bitmap_get(frameBitmap, i) == true) continue;
+        if (bitmap_get(frameBitmap, i) == true)
+            continue;
 
         frame_lock((void *)(i * 0x1000));
 
@@ -159,7 +174,7 @@ void frame_free(void *address)
 {
     uint64_t index = (uint64_t)address / 0x1000;
 
-    if(bitmap_get(frameBitmap, index) == false)
+    if (bitmap_get(frameBitmap, index) == false)
     {
         return;
     }

@@ -85,6 +85,11 @@ void _start(void)
         printf_("%s\n", "Bootloader Terminal Offline Using Serial Only!");
     }
 
+    printf_("%s", "Early Terminal Using Framebuffer At Physical Address: ");
+    printf_("0x%llx\n", TranslateToPhysicalMemoryAddress(early_term.response->terminals[0]->framebuffer));
+    printf_("%s", "And At Virtual Address: ");
+    printf_("0x%llx\n", early_term.response->terminals[0]->framebuffer);
+
     print_date();
 
     cpuid_readout();
