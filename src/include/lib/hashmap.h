@@ -174,7 +174,7 @@ out:                                                                            
         if (HASHMAP_INSERT_hashmap->buckets == NULL)                                                    \
         {                                                                                               \
             HASHMAP_INSERT_hashmap->buckets =                                                           \
-                malloc(HASHMAP_INSERT_hashmap->cap * sizeof(*HASHMAP_INSERT_hashmap->buckets));          \
+                malloc(HASHMAP_INSERT_hashmap->cap * sizeof(*HASHMAP_INSERT_hashmap->buckets));         \
         }                                                                                               \
                                                                                                         \
         size_t HASHMAP_INSERT_hash = hash(HASHMAP_INSERT_key_data, HASHMAP_INSERT_key_length);          \
@@ -186,7 +186,7 @@ out:                                                                            
         {                                                                                               \
             HASHMAP_INSERT_bucket->cap = 16;                                                            \
             HASHMAP_INSERT_bucket->items =                                                              \
-                malloc(HASHMAP_INSERT_bucket->cap * sizeof(*HASHMAP_INSERT_bucket->items));              \
+                malloc(HASHMAP_INSERT_bucket->cap * sizeof(*HASHMAP_INSERT_bucket->items));             \
         }                                                                                               \
                                                                                                         \
         if (HASHMAP_INSERT_bucket->filled == HASHMAP_INSERT_bucket->cap)                                \

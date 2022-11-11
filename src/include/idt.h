@@ -8,7 +8,7 @@
 
 #define IDT_MAX_DESCRIPTORS 256
 #define IDT_CPU_EXCEPTION_COUNT 32
-#define IDT_HDW_INTERRUPT_COUNT 17   //including software interrupts called using int
+#define IDT_HDW_INTERRUPT_COUNT 17 // including software interrupts called using int
 
 #define IDT_DESCRIPTOR_X16_INTERRUPT 0x06
 #define IDT_DESCRIPTOR_X16_TRAP 0x07

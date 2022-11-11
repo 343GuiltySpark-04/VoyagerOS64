@@ -8,7 +8,8 @@
         "kernelutils.h": "c",
         "limine.h": "c",
         "interrupts.h": "c",
-        "frameallocator.h": "c"
+        "frameallocator.h": "c",
+        "framebuffer.h": "c"
     },
     "C_Cpp.errorSquiggles": "Enabled"
 }
