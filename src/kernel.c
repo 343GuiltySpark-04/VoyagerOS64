@@ -23,6 +23,7 @@
 #include "include/shell.h"
 #include "include/sched.h"
 #include "include/paging/vmm.h"
+#include "include/acpi/acpi.h"
 
 #define White "\033[1;00m"
 #define Red "\033[1;31m"
@@ -147,6 +148,10 @@ void _start(void)
     printf_("%s", "CR4: ");
     printf_("0x%llx\n", readCR4());
 
+    acpi_init();
+
+    keyboard_init();
+
     printf_("%s\n", "Handing Control to Standalone Terminal...");
 
     bootspace = 3;
@@ -170,8 +175,6 @@ void _start(void)
     bootspace = 0;
 
     // VMM_table_clone();
-
-    keyboard_init();
 
     print_memory();
 

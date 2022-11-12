@@ -49,6 +49,7 @@ override CFLAGS +=       \
     -mno-sse2            \
     -mno-red-zone        \
     -mcmodel=kernel      \
+    -fms-extensions      \
     -MMD                 \
 	-DPRINTF_DISABLE_SUPPORT_FLOAT \
     -I.

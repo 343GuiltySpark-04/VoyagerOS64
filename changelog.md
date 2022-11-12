@@ -17,7 +17,7 @@
 - Proper on-screen error messaging
 
 # Version 0.0.4
-- Major Fixes To The MMU
+- Major Fixes to The MMU
 - Began Work on Multitasking
 - Added a CPU Feature Readout
 - Began Work on SMM And Friends
@@ -25,3 +25,6 @@
 - Made The GDT Compatible With The Limine Bootloader Terminal
 - Added a Few Kernel Panic Messages
 - New Terminal Font
+
+# Version 0.0.5
+- Added Support For ACPI And Relevant Kernel Panics

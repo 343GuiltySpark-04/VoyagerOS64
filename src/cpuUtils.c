@@ -1,15 +1,16 @@
 #include "include/cpuUtils.h"
-#include "include/printf.h"
-#include "include/registers.h"
 #include "include/global_defs.h"
+#include "include/kernel.h"
 #include "include/limine.h"
 #include "include/memUtils.h"
 #include "include/paging/frameallocator.h"
 #include "include/paging/paging.h"
+#include "include/printf.h"
 #include "include/proc.h"
+#include "include/registers.h"
 #include "include/sched.h"
-#include "include/kernel.h"
 #include <cpuid.h>
+#include <stdbool.h>
 
 extern int cpuid_check_sse();
 extern int cpuid_check_xsave();
@@ -22,6 +23,8 @@ extern int cpuid_check_acpi();
 extern int cpuid_check_ds();
 extern int cpuid_check_tm();
 extern void halt();
+
+bool has_ACPI;
 
 void cpuid_readout()
 {
@@ -170,9 +173,13 @@ void check_apic()
     {
 
         printf_("%s\n", "APIC: Yes");
+
+        has_ACPI = true;
     }
     else
     {
+
+        has_ACPI = false;
 
         printf_("%s\n", "APIC: No");
     }

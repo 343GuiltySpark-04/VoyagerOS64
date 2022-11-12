@@ -34,7 +34,8 @@
                     "${workspaceFolder}/**"
                 ],
                 "limitSymbolsToIncludedHeaders": true
-            }
+            },
+            "compilerArgs": []
         }
     ],
     "version": 4

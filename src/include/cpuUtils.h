@@ -2,13 +2,14 @@
 #ifndef _CPU_UTILS_H
 #define _CPU_UTILS_H
 
-#include <stdint.h>
+#include "tss.h"
 #include <stdbool.h>
 #include <stddef.h>
-#include "tss.h"
+#include <stdint.h>
 
 /* Vendor strings from CPUs. */
-#define CPUID_VENDOR_OLDAMD "AMDisbetter!" // Early engineering samples of AMD K5 processor
+#define CPUID_VENDOR_OLDAMD \
+    "AMDisbetter!" // Early engineering samples of AMD K5 processor
 #define CPUID_VENDOR_AMD "AuthenticAMD"
 #define CPUID_VENDOR_INTEL "GenuineIntel"
 #define CPUID_VENDOR_VIA "VIA VIA VIA "
@@ -36,11 +37,14 @@
 #define CPUID_VENDOR_XEN "XenVMMXenVMM"
 #define CPUID_VENDOR_HYPERV "Microsoft Hv"
 #define CPUID_VENDOR_PARALLELS " prl hyperv "
-#define CPUID_VENDOR_PARALLELS_ALT " lrpepyh vr " // Sometimes Parallels incorrectly encodes "prl hyperv" as "lrpepyh vr" due to an endianness mismatch.
+#define CPUID_VENDOR_PARALLELS_ALT \
+    " lrpepyh vr " // Sometimes Parallels incorrectly encodes "prl hyperv" as
+                   // "lrpepyh vr" due to an endianness mismatch.
 #define CPUID_VENDOR_BHYVE "bhyve bhyve "
 #define CPUID_VENDOR_QNX " QNXQVMBSQG "
 
 extern bool sysenter;
+extern bool has_ACPI;
 
 struct thread;
 
@@ -91,38 +95,34 @@ extern void (*fpu_rest)(void *ctx);
 
 static inline void xsave(void *ctx)
 {
-    asm volatile(
-        "xsave (%0)"
-        :
-        : "r"(ctx), "a"(0xffffffff), "d"(0xffffffff)
-        : "memory");
+    asm volatile("xsave (%0)"
+                 :
+                 : "r"(ctx), "a"(0xffffffff), "d"(0xffffffff)
+                 : "memory");
 }
 
 static inline void xrstor(void *ctx)
 {
-    asm volatile(
-        "xrstor (%0)"
-        :
-        : "r"(ctx), "a"(0xffffffff), "d"(0xffffffff)
-        : "memory");
+    asm volatile("xrstor (%0)"
+                 :
+                 : "r"(ctx), "a"(0xffffffff), "d"(0xffffffff)
+                 : "memory");
 }
 
 static inline void fxsave(void *ctx)
 {
-    asm volatile(
-        "fxsave (%0)"
-        :
-        : "r"(ctx)
-        : "memory");
+    asm volatile("fxsave (%0)"
+                 :
+                 : "r"(ctx)
+                 : "memory");
 }
 
 static inline void fxrstor(void *ctx)
 {
-    asm volatile(
-        "fxrstor (%0)"
-        :
-        : "r"(ctx)
-        : "memory");
+    asm volatile("fxrstor (%0)"
+                 :
+                 : "r"(ctx)
+                 : "memory");
 }
 
 static inline bool interrupt_state(void)
@@ -136,11 +136,10 @@ static inline bool interrupt_state(void)
 static inline uint64_t rdmsr(uint32_t msr)
 {
     uint32_t edx = 0, eax = 0;
-    asm volatile(
-        "rdmsr\n\t"
-        : "=a"(eax), "=d"(edx)
-        : "c"(msr)
-        : "memory");
+    asm volatile("rdmsr\n\t"
+                 : "=a"(eax), "=d"(edx)
+                 : "c"(msr)
+                 : "memory");
     return ((uint64_t)edx << 32) | eax;
 }
 
@@ -148,11 +147,10 @@ static inline uint64_t wrmsr(uint32_t msr, uint64_t val)
 {
     uint32_t eax = (uint32_t)val;
     uint32_t edx = (uint32_t)(val >> 32);
-    asm volatile(
-        "wrmsr\n\t"
-        :
-        : "a"(eax), "d"(edx), "c"(msr)
-        : "memory");
+    asm volatile("wrmsr\n\t"
+                 :
+                 : "a"(eax), "d"(edx), "c"(msr)
+                 : "memory");
     return ((uint64_t)edx << 32) | eax;
 }
 
@@ -176,15 +174,9 @@ static inline void *get_kernel_gs_base(void)
     return (void *)rdmsr(0xc0000102);
 }
 
-static inline void *get_gs_base(void)
-{
-    return (void *)rdmsr(0xc0000101);
-}
+static inline void *get_gs_base(void) { return (void *)rdmsr(0xc0000101); }
 
-static inline void *get_fs_base(void)
-{
-    return (void *)rdmsr(0xc0000100);
-}
+static inline void *get_fs_base(void) { return (void *)rdmsr(0xc0000100); }
 
 struct cpu_local *this_cpu(void);
 
