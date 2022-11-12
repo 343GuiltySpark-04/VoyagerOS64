@@ -163,7 +163,7 @@ void _start(void)
 
     term_context = fbterm_init(malloc, fbr_req.response->framebuffers[0]->address, fbr_req.response->framebuffers[0]->width, fbr_req.response->framebuffers[0]->height,
 
-                               fbr_req.response->framebuffers[0]->pitch, NULL, NULL, NULL, &term_bg, &term_fg, NULL, 0, 0, 0,
+                               fbr_req.response->framebuffers[0]->pitch, NULL, NULL, NULL, &term_bg, &term_fg, &vgafont, 8, 16, 1,
 
                                1, 1, 1);
 
