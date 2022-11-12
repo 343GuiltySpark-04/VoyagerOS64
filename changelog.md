@@ -24,3 +24,4 @@
 - Boot Log Now Prints To The Screen Using The Bootlader Terminal
 - Made The GDT Compatible With The Limine Bootloader Terminal
 - Added a Few Kernel Panic Messages
+- New Terminal Font
