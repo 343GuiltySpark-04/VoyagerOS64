@@ -42,7 +42,7 @@ override CFLAGS +=       \
     -fno-pie             \
     -fno-pic             \
     -m64                 \
-    -march=native        \
+    -march=x86-64        \
     -mabi=sysv           \
     -mno-80387           \
     -mno-mmx             \
@@ -50,7 +50,6 @@ override CFLAGS +=       \
     -mno-red-zone        \
     -mcmodel=kernel      \
     -fms-extensions      \
-    -Xassembler -mintel64 \
     -MMD                 \
 	-DPRINTF_DISABLE_SUPPORT_FLOAT \
     -I.
