@@ -44,7 +44,7 @@ void idt_init()
             idt_set_descriptor(vector, isr_stub_table[vector], IDT_DESCRIPTOR_EXTERNAL, 001);
             vectors[vector] = true;
 
-            printf_("%i\n", vector);
+            // printf_("%i\n", vector);
         }
         else
         {

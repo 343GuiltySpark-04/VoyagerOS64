@@ -9,6 +9,7 @@
 #include "include/proc.h"
 #include "include/registers.h"
 #include "include/sched.h"
+#include "include/cpu.h"
 #include <cpuid.h>
 #include <stdbool.h>
 
@@ -22,6 +23,7 @@ extern int cpuid_check_mca();
 extern int cpuid_check_acpi();
 extern int cpuid_check_ds();
 extern int cpuid_check_tm();
+extern int cpuid_check_sep();
 extern void halt();
 
 bool has_ACPI;
@@ -33,6 +35,7 @@ void cpuid_readout()
     printf_("%s\n", "CPUID Readout As Follows");
     printf_("%s\n", "-----------------------------");
 
+    check_sep();
     check_sse();
     check_xsave();
     check_pcid();
@@ -43,6 +46,7 @@ void cpuid_readout()
     check_acpi();
     check_ds();
     check_tm();
+    
 
     printf_("%s\n", "-----------------------------");
 }
@@ -67,6 +71,27 @@ void no_xsave()
 
     printf_("%s\n", "XSAVE Extensions Unavailable.");
     printf_("%s\n", "Floating Point Math will be offline.");
+}
+
+void check_sep()
+{
+
+    int found = cpuid_check_sep();
+
+    if (found == 1)
+    {
+
+        sysenter = true;
+        printf_("%s\n", "SEP (SYSENTER/EXIT): Yes");
+    }
+    else
+    {
+
+        sysenter = false;
+        printf_("%s\n", "SEP (SYSENTER/EXIT): No");
+        printf_("%s\n", "You Realized How Fucked You Are Without This? Halting Get A Better PC.");
+        halt();
+    }
 }
 
 void check_sse()
@@ -173,13 +198,9 @@ void check_apic()
     {
 
         printf_("%s\n", "APIC: Yes");
-
-        has_ACPI = true;
     }
     else
     {
-
-        has_ACPI = false;
 
         printf_("%s\n", "APIC: No");
     }
@@ -210,10 +231,14 @@ void check_acpi()
     if (found == 1)
     {
 
+        has_ACPI = true;
+
         printf_("%s\n", "ACPI: Yes");
     }
     else
     {
+
+        has_ACPI = false;
 
         printf_("%s\n", "ACPI: No");
     }

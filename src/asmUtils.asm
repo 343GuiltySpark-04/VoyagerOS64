@@ -17,6 +17,7 @@ global cpuid_check_mca
 global cpuid_check_acpi
 global cpuid_check_ds
 global cpuid_check_tm
+global cpuid_check_sep
 global float_save
 global float_load
 global float_bank
@@ -112,6 +113,9 @@ no_tm:
     mov eax, 0
     ret
 
+no_sep
+    mov eax, 0
+    ret
 
 
 
@@ -179,6 +183,14 @@ cpuid_check_tm:
     cpuid
     test edx, 1 << 29
     jz no_tm
+    mov eax, 1
+    ret
+
+cpuid_check_sep:
+    mov eax, 0x1
+    cpuid
+    test edx, 1 << 11
+    jz no_sep
     mov eax, 1
     ret
 

@@ -39,7 +39,7 @@ struct rsdt
 {
 
     struct sdt;
-    char data[0x1000];
+    char data[];
 };
 
 static struct rsdp *rsdp = NULL;
@@ -84,7 +84,7 @@ void acpi_init(void)
 
     printf_("acpi: Revision: %lu\n", rsdp->revision);
     printf_("acpi: Uses XSDT? %s\n", use_xsdt() ? "true" : "false");
-    printf_("acpi: RSDT at %lx\n", rsdt);
+    printf_("acpi: RSDT at 0x%llx\n", rsdt);
 
     struct sdt *fadt = acpi_find_sdt("FACP", 0);
     if (fadt != NULL && fadt->length >= 116)
@@ -133,7 +133,7 @@ void *acpi_find_sdt(const char signature[static 4], size_t index)
             continue;
         }
 
-        printf_("acpi: Found '%S' at %lx, length=%lu\n", signature, 4, sdt,
+        printf_("acpi: Found '%S' at 0x%llx, length=%lu\n", signature, 4, sdt,
                 sdt->length);
         return sdt;
     }
