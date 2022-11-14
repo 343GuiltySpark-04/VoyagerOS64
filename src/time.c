@@ -349,7 +349,7 @@ void print_load_time(){
 
     printf_("%s", "Loadtime roughly: ");
 
-    printf_("%i", time_mono);
+    printf_("%i", system_timer_ms);
 
     printf_("%s", ".");
 

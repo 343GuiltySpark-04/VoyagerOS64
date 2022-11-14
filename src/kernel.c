@@ -115,6 +115,8 @@ void _start(void)
 
     time_init();
 
+    idt_reg_test();
+
     print_memmap();
 
     // @brief Kernel Addresses

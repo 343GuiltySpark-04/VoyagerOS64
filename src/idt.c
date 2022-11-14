@@ -18,6 +18,8 @@ static bool vectors[IDT_MAX_DESCRIPTORS];
 
 extern uint64_t isr_stub_table[];
 
+extern void halt();
+
 void idt_set_descriptor(uint8_t vector, uintptr_t isr, uint8_t flags, uint8_t ist)
 {
     idt_desc_t *descriptor = &idt[vector];
@@ -72,11 +74,32 @@ uint8_t idt_allocate_vector()
         }
     }
 
-    return 0;
+    return NULL;
 }
+
 
 void idt_free_vector(uint8_t vector)
 {
     idt_set_descriptor(vector, 0, 0, 0);
     vectors[vector] = false;
+}
+
+
+void idt_reg_test(){
+
+ uint8_t vector = idt_allocate_vector();
+
+    if (vector == NULL){
+
+        printf_("%s\n", "Try Harder!");
+        halt();
+
+
+    }
+
+    printf_("%s", "Allocated Test ISR at Vector: ");
+    printf_("%i\n", vector);
+
+    idt_set_descriptor(vector, isr_stub_table[vector], IDT_DESCRIPTOR_EXTERNAL, 001);
+
 }

@@ -28,3 +28,5 @@
 
 # Version 0.0.5
 - Added Support For ACPI And Relevant Kernel Panics
+- Improved Timing Subsystem
+- Dynamic Interrupt Vector Allocation

@@ -171,11 +171,38 @@ isr_irq_stub 45
 isr_irq_stub 46
 isr_irq_stub 47
 isr_irq_stub 48 ; yield switch (used to trigger the software task switching code
+isr_irq_stub 49
+isr_irq_stub 50
+isr_irq_stub 51
+isr_irq_stub 52
+isr_irq_stub 53
+isr_irq_stub 54
+isr_irq_stub 55
+isr_irq_stub 56
+isr_irq_stub 57
+isr_irq_stub 58
+isr_irq_stub 59
+isr_irq_stub 60
+isr_irq_stub 61
+isr_irq_stub 62
+isr_irq_stub 63
+isr_irq_stub 64
+isr_irq_stub 65
+isr_irq_stub 66
+isr_irq_stub 67
+isr_irq_stub 68
+isr_irq_stub 69
+isr_irq_stub 70
+isr_irq_stub 71
+isr_irq_stub 72
+isr_irq_stub 73
+isr_irq_stub 74
+isr_irq_stub 75
 
 global isr_stub_table
 isr_stub_table:
 %assign i 0 
-%rep    48
+%rep    75
     dq isr_stub_%+i
 %assign i i+1 
 %endrep
