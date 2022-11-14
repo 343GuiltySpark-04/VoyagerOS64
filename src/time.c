@@ -3,6 +3,12 @@
 #include "include/pic.h"
 #include "include/sched.h"
 #include "include/kernel.h"
+#include "include/time.h"
+#include "include/lock.h"
+#include "include/liballoc.h"
+#include "include/limine.h"
+#include "include/lib/vector.h"
+#include "include/memUtils.h"
 #include <stdint.h>
 
 #define CHANNEL_ZERO 0x40
@@ -20,6 +26,77 @@ uint8_t second, minute, hour, day, month, year;
 uint64_t system_timer_ms = 0;
 
 uint64_t system_timer_fractions = 0;
+
+struct timespec time_mono = {0, 0};
+struct timespec time_real = {0, 0};
+
+static spinlock_t timers_lock = SPINLOCK_INIT;
+static VECTOR_TYPE(struct timer *) armed_timers = VECTOR_INIT;
+
+static volatile struct limine_boot_time_request boot_time_req = {
+
+    .id = LIMINE_BOOT_TIME_REQUEST,
+    .revision = 0
+
+};
+
+struct timer *timer_new(struct timespec when)
+{
+
+    struct timer *timer = ALLOC(struct timer);
+
+    if (timer == NULL)
+    {
+
+        return NULL;
+    }
+
+    timer->when = when;
+    timer_arm(timer);
+    //  return timer;
+}
+
+void timer_arm(struct timer *timer)
+{
+
+    spinlock_acquire(&timers_lock);
+
+    timer->index = armed_timers.length;
+    timer->fired = false;
+
+    VECTOR_PUSH_BACK(&armed_timers, timer);
+    spinlock_release(&timers_lock);
+}
+
+void timer_disarm(struct timer *timer)
+{
+
+    spinlock_acquire(&timers_lock);
+
+    if (armed_timers.length == 0 || timer->index == -1 || (size_t)timer->index >= armed_timers.length)
+    {
+        goto cleanup;
+    }
+
+    armed_timers.data[timer->index] = VECTOR_ITEM(&armed_timers, armed_timers.length - 1);
+    VECTOR_ITEM(&armed_timers, timer->index)->index = timer->index;
+    VECTOR_REMOVE(&armed_timers, armed_timers.length - 1);
+
+    timer->index = -1;
+
+cleanup:
+    spinlock_release(&timers_lock);
+}
+
+void time_init(void)
+{
+
+    struct limine_boot_time_response *boot_time_resp = boot_time_req.response;
+
+    time_real.tv_sec = boot_time_resp->boot_time;
+
+    init_PIT();
+}
 
 static const char *weekday[] = {
 
@@ -52,6 +129,37 @@ static const char *month_str[] = {
 
 void sys_clock_handler()
 {
+
+    struct timespec interval = {
+
+        .tv_sec = 0,
+        .tv_nsec = 1000000000 / PIT_FREQ
+
+    };
+
+    time_mono = timespec_add(time_mono, interval);
+    time_real = timespec_add(time_real, interval);
+
+    if (spinlock_test_and_acq(&timers_lock))
+    {
+        for (size_t i = 0; i < armed_timers.length; i++)
+        {
+            struct timer *timer = VECTOR_ITEM(&armed_timers, i);
+            if (timer->fired)
+            {
+                continue;
+            }
+
+            timer->when = timespec_sub(timer->when, interval);
+            if (timer->when.tv_sec == 0 && timer->when.tv_nsec == 0)
+            {
+                // event_trigger(&timer->event, false);
+                timer->fired = true;
+            }
+        }
+
+        spinlock_release(&timers_lock);
+    }
 
     system_timer_fractions++;
     system_timer_ms++;
@@ -232,4 +340,22 @@ void print_sys_time()
     printf_("%s", ".");
     printf_("%i", system_timer_fractions);
     printf_("%s\n", " ms.");
+}
+
+void print_load_time(){
+
+
+    printf_("%s\n", "Kernel Loaded");
+
+    printf_("%s", "Loadtime roughly: ");
+
+    printf_("%i", time_mono);
+
+    printf_("%s", ".");
+
+    printf_("%i", system_timer_fractions);
+
+    printf_("%s\n", " ms.");
+
+
 }

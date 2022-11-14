@@ -36,3 +36,4 @@
     } while (0)
 
 typedef int32_t mode_t;
+typedef signed long ssize_t;

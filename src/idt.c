@@ -7,6 +7,7 @@
 #include "include/gdt.h"
 #include "include/registers.h"
 #include "include/interrupts.h"
+#include "include/lock.h"
 
 static ALIGN_16BIT
     idt_desc_t idt[IDT_MAX_DESCRIPTORS];

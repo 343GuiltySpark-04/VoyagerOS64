@@ -113,7 +113,7 @@ void _start(void)
 
     printf_("%s\n", "PICs Online");
 
-    init_PIT();
+    time_init();
 
     print_memmap();
 
@@ -178,17 +178,7 @@ void _start(void)
 
     print_memory();
 
-    printf_("%s\n", "Kernel Loaded");
-
-    printf_("%s", "Loadtime roughly: ");
-
-    printf_("%i", system_timer_ms);
-
-    printf_("%s", ".");
-
-    printf_("%i", system_timer_fractions);
-
-    printf_("%s\n", " ms.");
+    print_load_time();
 
     print_date();
 
