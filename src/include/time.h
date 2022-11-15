@@ -8,7 +8,8 @@
 #include <stddef.h>
 #include "global_defs.h"
 
-#define PIT_FREQ 1000
+#define PIT_FREQ 100
+#define PIT_DIVIDEND 1193180
 
 typedef long time_t;
 
@@ -95,6 +96,10 @@ struct timer *timer_new(struct timespec when);
 void timer_arm(struct timer *timer);
 void timer_disarm(struct timer *timer);
 void print_load_time();
+
+uint16_t pit_get_current_count(void);
+void pit_set_reload_value(uint16_t new_count);
+void pit_set_frequency(uint64_t frequency);
 
 void time_init(void);
 

@@ -9,6 +9,7 @@
 #include "include/limine.h"
 #include "include/lib/vector.h"
 #include "include/memUtils.h"
+#include "include/idt.h"
 #include <stdint.h>
 
 #define CHANNEL_ZERO 0x40
@@ -127,6 +128,31 @@ static const char *month_str[] = {
 
 };
 
+uint16_t pit_get_current_count(void)
+{
+    outb(0x43, 0x00);
+    uint8_t lo = inb(0x40);
+    uint8_t hi = inb(0x40) << 8;
+    return ((uint16_t)hi << 8) | lo;
+}
+
+void pit_set_reload_value(uint16_t new_count)
+{
+    outb(0x43, 0x34);
+    outb(0x40, (uint8_t)new_count);
+    outb(0x40, (uint8_t)(new_count >> 8));
+}
+
+void pit_set_frequency(uint64_t frequency)
+{
+    uint64_t new_divisor = PIT_DIVIDEND / frequency;
+    if (PIT_DIVIDEND % frequency > frequency / 2)
+    {
+        new_divisor++;
+    }
+    pit_set_reload_value((uint16_t)new_divisor);
+}
+
 void sys_clock_handler()
 {
 
@@ -182,7 +208,7 @@ void delta_int(uint64_t delta, uint8_t vector)
 void init_PIT()
 {
 
-    config_PIT(1000);
+    pit_set_frequency(PIT_FREQ);
 
     pic_unmask_irq(0);
 
@@ -342,8 +368,8 @@ void print_sys_time()
     printf_("%s\n", " ms.");
 }
 
-void print_load_time(){
-
+void print_load_time()
+{
 
     printf_("%s\n", "Kernel Loaded");
 
@@ -356,6 +382,4 @@ void print_load_time(){
     printf_("%i", system_timer_fractions);
 
     printf_("%s\n", " ms.");
-
-
 }

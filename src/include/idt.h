@@ -26,6 +26,8 @@
 
 extern uint64_t isr_stub_table[];
 
+extern void *isr_delta[];
+
 typedef struct
 {
 	uint16_t base_low;

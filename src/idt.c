@@ -16,6 +16,8 @@ static idtr_t idtr;
 
 static bool vectors[IDT_MAX_DESCRIPTORS];
 
+void *isr_delta[256];
+
 extern uint64_t isr_stub_table[];
 
 extern void halt();
@@ -77,29 +79,41 @@ uint8_t idt_allocate_vector()
     return NULL;
 }
 
-
 void idt_free_vector(uint8_t vector)
 {
     idt_set_descriptor(vector, 0, 0, 0);
     vectors[vector] = false;
 }
 
+static void test_handler()
+{
 
-void idt_reg_test(){
+    printf_("%s\n", "Bingo");
+}
 
- uint8_t vector = idt_allocate_vector();
+extern void dyn_isr_handler(uint64_t isr);
 
-    if (vector == NULL){
+void idt_reg_test()
+{
+
+    uint8_t vector = idt_allocate_vector();
+
+    if (vector == NULL)
+    {
 
         printf_("%s\n", "Try Harder!");
         halt();
-
-
     }
+
+    isr_delta[vector] = test_handler;
+
+    printf_("%s", "ISR Delta Data: ");
+    printf_("0x%llx\n", isr_delta[vector]);
 
     printf_("%s", "Allocated Test ISR at Vector: ");
     printf_("%i\n", vector);
 
     idt_set_descriptor(vector, isr_stub_table[vector], IDT_DESCRIPTOR_EXTERNAL, 001);
 
+    //dyn_isr_handler(isr_delta[vector]);
 }

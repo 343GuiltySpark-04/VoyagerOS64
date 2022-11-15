@@ -117,6 +117,10 @@ void _start(void)
 
     idt_reg_test();
 
+    asm volatile(".intel_syntax noprefix");
+    asm volatile("int 48");
+    asm volatile(".att_syntax prefix");
+
     print_memmap();
 
     // @brief Kernel Addresses

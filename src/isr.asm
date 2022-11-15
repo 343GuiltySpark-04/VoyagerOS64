@@ -1,6 +1,7 @@
 extern isr_exception_handler
 extern irq_handler
 extern float_bank
+global dyn_isr_handler
 
 %macro isr_err_stub 1
 isr_stub_%+%1:
@@ -66,6 +67,11 @@ mov cr2, rax
 pop rax
 mov cr0, rax
 %endmacro
+
+
+dyn_isr_handler:
+    call rdi
+    ret
 
 isr_xframe_assembler:
     push rbp
@@ -198,11 +204,36 @@ isr_irq_stub 72
 isr_irq_stub 73
 isr_irq_stub 74
 isr_irq_stub 75
+isr_irq_stub 76
+isr_irq_stub 77
+isr_irq_stub 78
+isr_irq_stub 79
+isr_irq_stub 80
+isr_irq_stub 81
+isr_irq_stub 82
+isr_irq_stub 83
+isr_irq_stub 84
+isr_irq_stub 85 
+isr_irq_stub 86
+isr_irq_stub 87
+isr_irq_stub 88
+isr_irq_stub 89
+isr_irq_stub 90
+isr_irq_stub 91
+isr_irq_stub 92
+isr_irq_stub 93
+isr_irq_stub 94
+isr_irq_stub 95
+isr_irq_stub 96
+isr_irq_stub 97
+isr_irq_stub 98
+isr_irq_stub 99
+isr_irq_stub 100
 
 global isr_stub_table
 isr_stub_table:
 %assign i 0 
-%rep    75
+%rep    100
     dq isr_stub_%+i
 %assign i i+1 
 %endrep

@@ -94,6 +94,9 @@ void isr_exception_handler(isr_xframe_t *frame)
     __asm__ volatile("cli; hlt");
 }
 
+extern void halt();
+extern void dyn_isr_handler(uint64_t isr);
+
 void irq_handler(isr_xframe_t *frame);
 void irq_handler(isr_xframe_t *frame)
 {
@@ -103,18 +106,38 @@ void irq_handler(isr_xframe_t *frame)
     // printf_("%s", "IRQ RECIVED FROM: ");
     // printf_("%s\n", irq_messages[vector - 32]);
 
-    switch (vector)
+    if (vector < 48)
+    {
+        switch (vector)
+        {
+
+        case 32:
+            sys_clock_handler();
+            break;
+        case 33:
+            keyboard_handler();
+            break;
+        }
+    }
+    else
     {
 
-    case 32:
-        sys_clock_handler();
-        break;
-    case 33:
-        keyboard_handler();
-        break;
-    case 48:
-        task_switch_handler();
-        break;
+        printf_("%s", "IRQ Handoff to Dynamic Handler Using Vector: ");
+        printf_("%i", vector);
+        printf_("%s", " With Handler Located At Address: ");
+        printf_("0x%llx\n", isr_delta[vector]);
+
+        if (isr_delta[vector] == NULL)
+        {
+
+            printf_("%s\n", "Needs More Work!");
+            halt();
+        }
+        else
+        {
+
+            dyn_isr_handler(isr_delta[vector]);
+        }
     }
 
     pic_send_eoi(vector - 32);

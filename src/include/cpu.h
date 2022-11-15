@@ -190,6 +190,30 @@ static inline void *get_fs_base(void)
     return (void *)rdmsr(0xc0000100);
 }
 
+static inline void enable_interrupts(void)
+{
+    asm("sti");
+}
+
+static inline void disable_interrupts(void)
+{
+    asm("cli");
+}
+
+static inline bool interrupt_toggle(bool state)
+{
+    bool ret = interrupt_state();
+    if (state)
+    {
+        enable_interrupts();
+    }
+    else
+    {
+        disable_interrupts();
+    }
+    return ret;
+}
+
 struct cpu_local *this_cpu(void);
 
 #endif
