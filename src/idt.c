@@ -79,6 +79,16 @@ uint8_t idt_allocate_vector()
     return NULL;
 }
 
+void idt_reload(void)
+{
+
+    idtr.base = (uintptr_t)&idt[0];
+    idtr.limit = (uint16_t)sizeof(idt_desc_t) * IDT_MAX_DESCRIPTORS - 1;
+
+    asm volatile("lidt %0" ::"m"(idtr)
+                 : "memory");
+}
+
 void idt_free_vector(uint8_t vector)
 {
     idt_set_descriptor(vector, 0, 0, 0);
@@ -115,5 +125,5 @@ void idt_reg_test()
 
     idt_set_descriptor(vector, isr_stub_table[vector], IDT_DESCRIPTOR_EXTERNAL, 001);
 
-    //dyn_isr_handler(isr_delta[vector]);
+    // dyn_isr_handler(isr_delta[vector]);
 }

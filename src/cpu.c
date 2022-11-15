@@ -14,6 +14,7 @@
 #include "include/string.h"
 #include "include/cpuUtils.h"
 #include "include/limine.h"
+#include "include/apic/lapic.h"
 
 bool sysenter;
 extern void halt();

@@ -30,3 +30,4 @@
 - Added Support For ACPI And Relevant Kernel Panics
 - Improved Timing Subsystem
 - Dynamic Interrupt Vector Allocation
+- Ability to Reload The GDT, IDT And TSS

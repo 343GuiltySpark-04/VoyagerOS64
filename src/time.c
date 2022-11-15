@@ -10,6 +10,7 @@
 #include "include/lib/vector.h"
 #include "include/memUtils.h"
 #include "include/idt.h"
+#include "include/apic/lapic.h"
 #include <stdint.h>
 
 #define CHANNEL_ZERO 0x40

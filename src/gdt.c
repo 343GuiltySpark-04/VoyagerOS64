@@ -3,6 +3,7 @@
 #include <stdint.h>
 #include "include/printf.h"
 #include "include/tss.h"
+#include "include/lock.h"
 
 extern void breakpoint();
 extern void serial_debug(int);
@@ -111,6 +112,53 @@ struct GDT_Desc desc = {
 
     .size = sizeof(gdt) - 1,
     .offset = (uint64_t)&gdt};
+
+void gdt_reload(void)
+{
+
+    asm volatile(
+        "lgdt %0\n\t"
+        "push $0x28\n\t"
+        "lea 1f(%%rip), %%rax\n\t"
+        "push %%rax\n\t"
+        "lretq\n\t"
+        "1:\n\t"
+        "mov $0x30, %%eax\n\t"
+        "mov %%eax, %%ds\n\t"
+        "mov %%eax, %%es\n\t"
+        "mov %%eax, %%fs\n\t"
+        "mov %%eax, %%gs\n\t"
+        "mov %%eax, %%ss\n\t"
+        :
+        : "m"(desc)
+        : "rax", "memory");
+}
+
+void gdt_load_tss(struct TSS *tss)
+{
+
+    uintptr_t addr = (uintptr_t)tss;
+
+    static spinlock_t lock = SPINLOCK_INIT;
+
+    spinlock_acquire(&lock);
+
+    gdt.tss = (struct TSS_Entry){
+        .length = 104,
+        .base_low = (uint16_t)addr,
+        .base_mid = (uint8_t)(addr >> 16),
+        .flags = 0b10001001,
+        .base_high = (uint8_t)(addr >> 24),
+        .base_up = (uint32_t)(addr >> 32),
+    };
+
+    asm volatile("ltr %0"
+                 :
+                 : "rm"((uint16_t)0x58)
+                 : "memory");
+
+    spinlock_release(&lock);
+}
 
 void LoadGDT_Stage1()
 {

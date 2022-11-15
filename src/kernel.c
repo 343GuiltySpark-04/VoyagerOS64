@@ -24,6 +24,7 @@
 #include "include/sched.h"
 #include "include/paging/vmm.h"
 #include "include/acpi/acpi.h"
+#include "include/apic/lapic.h"
 
 #define White "\033[1;00m"
 #define Red "\033[1;31m"
@@ -115,6 +116,20 @@ void _start(void)
 
     time_init();
 
+    /*     stop_interrupts();
+
+        lapic_init();
+
+        start_interrupts(); */
+
+    asm volatile("cli");
+
+    idt_reload();
+
+    gdt_reload();
+
+    asm volatile("sti");
+
     idt_reg_test();
 
     asm volatile(".intel_syntax noprefix");
@@ -156,7 +171,7 @@ void _start(void)
 
     acpi_init();
 
-    keyboard_init();
+    //  keyboard_init();
 
     printf_("%s\n", "Handing Control to Standalone Terminal...");
 
