@@ -1,0 +1,14 @@
+[binaries]
+c = 'x86_64-elf-gcc'
+cpp = 'x86_64-elf-g++'
+ar = 'x86_64-elf-ar'
+as = 'x86_64-elf-as'
+nasm = 'nasm'
+ld = 'x86_64-elf-ld'
+strip = 'x86_64-elf-strip'
+
+[host_machine]
+system = 'generic'
+cpu_family = 'x86_64'
+cpu = 'x86_64'
+
