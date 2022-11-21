@@ -11,4 +11,4 @@ strip = 'x86_64-elf-strip'
 system = 'generic'
 cpu_family = 'x86_64'
 cpu = 'x86_64'
-
+endian = 'little'
