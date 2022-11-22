@@ -21,7 +21,12 @@ extern int cpuid_check_mca();
 extern int cpuid_check_acpi();
 extern int cpuid_check_ds();
 extern int cpuid_check_tm();
+extern int vendor_str1();
+extern int vendor_str2();
+extern int vendor_str3();
 extern void halt();
+
+char CPU_vendor = NULL;
 
 void cpuid_readout()
 {
@@ -40,6 +45,9 @@ void cpuid_readout()
     check_acpi();
     check_ds();
     check_tm();
+  //  CPU_vendor = get_vendor();
+    printf_("%s", "CPU Vendor: ");
+   // printf_("%i\n", CPU_vendor);
 
     printf_("%s\n", "-----------------------------");
 }
@@ -50,6 +58,20 @@ int get_model(void)
     int ebx, unused;
     __cpuid(0, unused, ebx, unused, unused);
     return ebx;
+}
+
+int get_vendor()
+{
+
+    int ebx, edx, ecx, complete;
+
+    ebx = vendor_str1();
+    edx = vendor_str2();
+    ecx = vendor_str3();
+
+    complete = ebx + edx + ecx;
+
+    return complete;
 }
 
 void no_sse()

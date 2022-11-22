@@ -21,10 +21,31 @@ global float_save
 global float_load
 global float_bank
 global task_switch_int
+global vendor_str1
+global vendor_str2
+global vendor_str3
 
 extern no_sse
 extern no_xsave
 
+
+vendor_str1:
+    mov eax, 0x0
+    cpuid
+    mov eax, ebx
+    ret
+
+vendor_str2:
+    mov eax, 0x0
+    cpuid
+    mov eax, edx
+    ret
+
+vendor_str3:
+    mov eax, 0x0
+    cpuid
+    mov eax, ecx
+    ret
 
 
 float_save:

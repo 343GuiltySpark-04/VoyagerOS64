@@ -42,6 +42,8 @@
 
 extern bool sysenter;
 
+//extern uint64_t CPU_vendor;
+
 struct thread;
 
 struct cpu_ctx

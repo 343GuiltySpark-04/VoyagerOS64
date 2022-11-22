@@ -150,13 +150,13 @@ void _start(void)
     printf_("%s\n", "Handing Control to Standalone Terminal...");
 
     bootspace = 3;
-
+/* 
     for (uint64_t i = 0; i < 500; i++)
     {
 
         printf_("%s\n", "");
     }
-
+ */
     early_term.response->write(early_term.response->terminals[0], NULL, LIMINE_TERMINAL_FULL_REFRESH);
 
     bootspace = 1;
@@ -168,8 +168,6 @@ void _start(void)
                                1, 1, 1);
 
     bootspace = 0;
-
-    // VMM_table_clone();
 
     keyboard_init();
 
