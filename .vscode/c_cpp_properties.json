@@ -21,7 +21,7 @@
             "name": "Linux",
             "includePath": [
                 "${workspaceFolder}/**",
-                "/home/tristan/opt/cross/lib/gcc/x86_64-elf/12.2.0/include"
+                "/home/tristan/opt/cross/lib/gcc/x86_64-elf/10.3.0/include"
             ],
             "defines": [],
             "compilerPath": "/usr/bin/gcc",

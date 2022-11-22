@@ -150,13 +150,13 @@ void _start(void)
     printf_("%s\n", "Handing Control to Standalone Terminal...");
 
     bootspace = 3;
-/* 
+
     for (uint64_t i = 0; i < 500; i++)
     {
 
         printf_("%s\n", "");
     }
- */
+
     early_term.response->write(early_term.response->terminals[0], NULL, LIMINE_TERMINAL_FULL_REFRESH);
 
     bootspace = 1;
@@ -167,11 +167,11 @@ void _start(void)
 
                                1, 1, 1);
 
-    bootspace = 0;
-
     keyboard_init();
 
-    print_memory();
+    bootspace = 0;
+
+    // print_memory();
 
     printf_("%s\n", "Kernel Loaded");
 
@@ -187,9 +187,11 @@ void _start(void)
 
     print_date();
 
-    printf_("%s\n", "VoyagerOS64 v0.0.4");
+    printf_("%s\n", "Powered by VoyagerOS64 V0.0.4");
 
-    printf_("%s", ":> ");
+    printf_("%s\n", "I suggest you check the results with the Intel and AMD dev manuals.");
+
+    cpuid_readout();
 
     //  init_multitasking();
 

@@ -21,12 +21,16 @@ extern int cpuid_check_mca();
 extern int cpuid_check_acpi();
 extern int cpuid_check_ds();
 extern int cpuid_check_tm();
+extern int cpuid_check_vmx();
+extern int cpuid_check_htt();
+extern int cpuid_check_fpu();
+extern int cpuid_check_msr();
 extern int vendor_str1();
 extern int vendor_str2();
 extern int vendor_str3();
 extern void halt();
 
-char CPU_vendor = NULL;
+char CPU_vendor[13];
 
 void cpuid_readout()
 {
@@ -35,6 +39,13 @@ void cpuid_readout()
     printf_("%s\n", "CPUID Readout As Follows");
     printf_("%s\n", "-----------------------------");
 
+    printf_("%s\n", "-----------------------------");
+    printf_("%s\n", "         Brand & Vendor      ");
+    printf_("%s\n", "-----------------------------");
+    get_vendor();
+    printf_("%s", "CPU Vendor: ");
+    printf_("%s\n", CPU_vendor);
+    printf_("%s\n", "-----------------------------");
     check_sse();
     check_xsave();
     check_pcid();
@@ -45,9 +56,12 @@ void cpuid_readout()
     check_acpi();
     check_ds();
     check_tm();
-  //  CPU_vendor = get_vendor();
-    printf_("%s", "CPU Vendor: ");
-   // printf_("%i\n", CPU_vendor);
+    check_vmx();
+    check_htt();
+    check_fpu();
+    check_msr();
+
+    // halt();
 
     printf_("%s\n", "-----------------------------");
 }
@@ -60,18 +74,20 @@ int get_model(void)
     return ebx;
 }
 
-int get_vendor()
+void get_vendor()
 {
 
-    int ebx, edx, ecx, complete;
+    uint32_t ebx, edx, ecx, eax;
 
-    ebx = vendor_str1();
-    edx = vendor_str2();
-    ecx = vendor_str3();
-
-    complete = ebx + edx + ecx;
-
-    return complete;
+    __get_cpuid(0, &eax, &ebx, &ecx, &edx);
+    for (size_t i = 0; i < 4; i++)
+    {
+        const size_t shiftor = i * 8;
+        CPU_vendor[0 + i] = (ebx >> shiftor) & 0xFF;
+        CPU_vendor[4 + i] = (edx >> shiftor) & 0xFF;
+        CPU_vendor[8 + i] = (ecx >> shiftor) & 0xFF;
+    }
+    CPU_vendor[12] = 0;
 }
 
 void no_sse()
@@ -132,12 +148,70 @@ void check_xsave()
     }
 }
 
+void check_fpu()
+{
+
+    if (cpuid_check_fpu == 1)
+    {
+
+        printf_("%s\n", "x87 FPU: Yes");
+    }
+    else
+    {
+
+        printf_("%s\n", "x87 FPU: No");
+    }
+}
+
+void check_msr()
+{
+
+    if (cpuid_check_msr == 1)
+    {
+
+        printf_("%s\n", "MSR: Yes");
+    }
+    else
+    {
+
+        printf_("%s\n", "MSR: No");
+    }
+}
+
+void check_vmx()
+{
+
+    if (cpuid_check_vmx() == 1)
+    {
+
+        printf_("%s\n", "VMX (HW Virtualization): Yes");
+    }
+    else
+    {
+
+        printf_("%s\n", "VMX (HW Virtualization): No");
+    }
+}
+
+void check_htt()
+{
+
+    if (cpuid_check_htt() == 1)
+    {
+
+        printf_("%s\n", "HTT: Yes");
+    }
+    else
+    {
+
+        printf_("%s\n", "HTT: No");
+    }
+}
+
 void check_pcid()
 {
 
-    int found = cpuid_check_pcid();
-
-    if (found == 1)
+    if (cpuid_check_pcid() == 1)
     {
 
         printf_("%s\n", "PCID: Yes");
