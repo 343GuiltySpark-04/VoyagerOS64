@@ -10,6 +10,22 @@ PIT_reload_value:        resw 1          ; Current PIT reload value
 section .text
 
 extern config_PIT
+extern count_down 
+
+
+global timer_irq
+
+
+ timer_irq:
+     push rax
+     mov rax, [count_down]
+     test rax, rax
+     jz timer_done
+     dec rax
+     mov [count_down], rax
+ timer_done:
+     pop rax
+     ret
 
 %macro pushagrd 0
 push rax

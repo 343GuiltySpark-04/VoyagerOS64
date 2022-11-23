@@ -9,6 +9,8 @@ extern uint64_t system_timer_fractions;
 
 extern uint8_t second, minute, hour, day, month, year;
 
+extern uint64_t pit_armed;
+
 void sys_clock_handler();
 
 void init_PIT();
@@ -18,5 +20,7 @@ void read_rtc();
 void print_date();
 
 void print_sys_time();
+
+void sleep(uint64_t millis);
 
 #endif

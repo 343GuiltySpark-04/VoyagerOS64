@@ -17,6 +17,8 @@ void init_memory();
 
 void print_memory();
 
+void system_readout();
+
 extern struct term_context *term_context;
 
 #endif

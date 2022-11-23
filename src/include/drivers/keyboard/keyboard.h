@@ -10,3 +10,7 @@ void keyboard_init();
 char k_getchar();
 
 char kbd_pop();
+
+void keyboard_handler_2();
+
+void read_input();

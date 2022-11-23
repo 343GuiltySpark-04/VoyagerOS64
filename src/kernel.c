@@ -73,6 +73,28 @@ struct term_context *term_context;
 
 static struct PageTable *test_table;
 
+void clear_screen()
+{
+
+    for (uint64_t i = 0; i < 500; i++)
+    {
+
+        printf_("%s\n", "");
+    }
+}
+
+void print_prompt()
+{
+
+    print_date();
+    printf_("%s\n", "Please Select an Option.");
+    printf_("%s\n", "1) Memory Map");
+    printf_("%s\n", "2) CPUID Feature Readout");
+    printf_("%s\n", "3) RAM Readout");
+    printf_("%s\n", "4) System Readout");
+    printf_("%s\n", "Please Use The Power Button to Shutdown.");
+}
+
 /// \fn  following will be our kernel's entry point.
 void _start(void)
 {
@@ -112,8 +134,6 @@ void _start(void)
 
     printf_("%s\n", "PICs Online");
 
-    init_PIT();
-
     print_memmap();
 
     // @brief Kernel Addresses
@@ -130,6 +150,8 @@ void _start(void)
         printf_("0x%llx\n", Kaddress_req.response->virtual_base);
         printf_("%s\n", "--------------------------------------");
     }
+
+    init_PIT();
 
     breakpoint();
 
@@ -151,27 +173,25 @@ void _start(void)
 
     bootspace = 3;
 
-    for (uint64_t i = 0; i < 500; i++)
-    {
-
-        printf_("%s\n", "");
-    }
-
     early_term.response->write(early_term.response->terminals[0], NULL, LIMINE_TERMINAL_FULL_REFRESH);
 
-    bootspace = 1;
+    /*    bootspace = 1;
 
-    term_context = fbterm_init(malloc, fbr_req.response->framebuffers[0]->address, fbr_req.response->framebuffers[0]->width, fbr_req.response->framebuffers[0]->height,
+       term_context = fbterm_init(malloc, fbr_req.response->framebuffers[0]->address, fbr_req.response->framebuffers[0]->width, fbr_req.response->framebuffers[0]->height,
 
-                               fbr_req.response->framebuffers[0]->pitch, NULL, NULL, NULL, &term_bg, &term_fg, NULL, 0, 0, 0,
+                                  fbr_req.response->framebuffers[0]->pitch, NULL, NULL, NULL, &term_bg, &term_fg, NULL, 0, 0, 0,
 
-                               1, 1, 1);
+                                  1, 1, 1);
+
+
+
+       bootspace = 0; */
 
     keyboard_init();
 
-    bootspace = 0;
+    clear_screen();
 
-    // print_memory();
+    print_memory();
 
     printf_("%s\n", "Kernel Loaded");
 
@@ -189,14 +209,19 @@ void _start(void)
 
     printf_("%s\n", "Powered by VoyagerOS64 V0.0.4");
 
-    printf_("%s\n", "I suggest you check the results with the Intel and AMD dev manuals.");
+    sleep(100);
 
-    cpuid_readout();
+    clear_screen();
+
+    print_prompt();
+
+    // cpuid_readout();
 
     //  init_multitasking();
 
     // Just chill until needed
     while (1)
     {
+        //  read_input();
     }
 }

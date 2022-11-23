@@ -42,7 +42,7 @@
 
 extern bool sysenter;
 
-//extern uint64_t CPU_vendor;
+extern char CPU_vendor[];
 
 struct thread;
 
@@ -192,5 +192,6 @@ struct cpu_local *this_cpu(void);
 
 int get_model(void);
 void cpuid_readout();
+void detect_cpu(void);
 
 #endif

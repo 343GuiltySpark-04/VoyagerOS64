@@ -3,6 +3,7 @@
 #include "include/pic.h"
 #include "include/sched.h"
 #include "include/kernel.h"
+#include "include/lock.h"
 #include <stdint.h>
 
 #define CHANNEL_ZERO 0x40
@@ -12,6 +13,7 @@
 #define CMOS_DATA 0x71
 
 extern void config_PIT(uint8_t freq);
+extern void timer_irq();
 
 int8_t century_register = 0x00;
 
@@ -20,6 +22,10 @@ uint8_t second, minute, hour, day, month, year;
 uint64_t system_timer_ms = 0;
 
 uint64_t system_timer_fractions = 0;
+
+volatile uint64_t count_down;
+
+uint64_t pit_armed = 0;
 
 static const char *weekday[] = {
 
@@ -50,11 +56,30 @@ static const char *month_str[] = {
 
 };
 
+void sleep(uint64_t millis)
+{
+    static spinlock_t sleep_lock = SPINLOCK_INIT;
+
+    count_down = millis;
+
+    spinlock_acquire(&sleep_lock);
+
+    while (count_down > 0)
+    {
+        // printf_("%i\n", count_down);
+        // halt();
+    }
+
+    spinlock_release(&sleep_lock);
+}
+
 void sys_clock_handler()
 {
 
     system_timer_fractions++;
     system_timer_ms++;
+
+    timer_irq();
 }
 
 uint8_t task_timer_count = 0;
@@ -77,6 +102,8 @@ void init_PIT()
     config_PIT(1000);
 
     pic_unmask_irq(0);
+
+    pit_armed = 1;
 
     printf_("%s\n", "PIT Online!");
 }

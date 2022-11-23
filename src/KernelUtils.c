@@ -6,6 +6,8 @@
 #include "include/paging/paging.h"
 #include "include/string.h"
 #include "include/registers.h"
+#include "include/time.h"
+#include "include/cpuUtils.h"
 
 extern void breakpoint();
 extern uint8_t *frameBitmap;
@@ -28,7 +30,37 @@ volatile struct limine_framebuffer_request fbr_req = {
 
 };
 
+volatile struct limine_smp_request smp_req = {
+
+    .id = LIMINE_SMP_REQUEST,
+    .revision = 0
+
+};
+
 extern volatile struct limine_kernel_address_request Kaddress_req;
+
+void system_readout()
+{
+
+    uint64_t memory_size = get_memory_size() / 1000;
+
+    uint8_t core_count = smp_req.response->cpu_count;
+
+    printf_("%s\n", "--------------------------------------");
+    printf_("%s\n", "|          System Overview           |");
+    printf_("%s\n", "--------------------------------------");
+    printf_("Total Memory: %llu", memory_size);
+    printf_("%s\n", "Kb.");
+
+    printf_("Number of Physical Cores: %lli\n", core_count);
+
+    printf_("%s\n", "--------------------------------------");
+    printf_("%s\n", "NOTE: Database is Incomplete And May Not be Accurate as a Result!");
+
+    detect_cpu();
+
+    printf_("%s\n", "--------------------------------------");
+}
 
 uint64_t get_memory_size()
 {
@@ -96,6 +128,12 @@ void print_memmap()
         printf_("%s", "Entry Type: ");
         printf_("%i\n", memmap_req.response->entries[i]->type);
         printf_("%s\n", "--------------------------------------");
+
+        if (pit_armed == 1)
+        {
+
+            //  sleep(50);
+        }
 
         if (memmap_req.response->entries[i]->type == 0)
         {

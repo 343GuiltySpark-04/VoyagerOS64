@@ -36,11 +36,11 @@ void cpuid_readout()
 {
 
     printf_("%s\n", "-----------------------------");
-    printf_("%s\n", "CPUID Readout As Follows");
+    printf_("%s\n", "|       CPUID Readout       |");
     printf_("%s\n", "-----------------------------");
 
     printf_("%s\n", "-----------------------------");
-    printf_("%s\n", "         Brand & Vendor      ");
+    printf_("%s\n", "|        Brand & Vendor     |");
     printf_("%s\n", "-----------------------------");
     get_vendor();
     printf_("%s", "CPU Vendor: ");
