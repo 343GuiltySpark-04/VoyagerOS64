@@ -18,9 +18,6 @@ void VMM_table_clone()
     static struct PageTable *current_table;
     static struct PageTable *higher_frame;
 
-    // test_proc->id = 0x0;
-    // test_proc->data = 0x15000;
-
     table_frame = (struct PageTable *)frame_request();
     current_table = (struct PageTable *)readCR3();
 

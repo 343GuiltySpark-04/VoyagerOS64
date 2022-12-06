@@ -8,7 +8,7 @@
 #include <stddef.h>
 #include "global_defs.h"
 
-#define PIT_FREQ 100
+#define PIT_FREQ 750
 #define PIT_DIVIDEND 1193180
 
 typedef long time_t;

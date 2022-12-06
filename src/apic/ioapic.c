@@ -8,6 +8,8 @@
 
 extern void halt();
 
+
+// Read From IOAPIC
 static uint32_t io_apic_read(struct madt_io_apic *io_apic, uint32_t reg)
 {
     uint64_t base = (uint64_t)io_apic->address + HIGHER_HALF_MEMORY_OFFSET;
@@ -15,6 +17,7 @@ static uint32_t io_apic_read(struct madt_io_apic *io_apic, uint32_t reg)
     return *(volatile uint32_t *)(base + 16);
 }
 
+// Write to IOAPIC
 static void io_apic_write(struct madt_io_apic *io_apic, uint32_t reg, uint32_t value)
 {
     uint64_t base = (uint64_t)io_apic->address + HIGHER_HALF_MEMORY_OFFSET;
@@ -22,11 +25,14 @@ static void io_apic_write(struct madt_io_apic *io_apic, uint32_t reg, uint32_t v
     *(volatile uint32_t *)(base + 16) = value;
 }
 
+// Get number of GSI's
 static size_t io_apic_gsi_count(struct madt_io_apic *io_apic)
 {
     return (io_apic_read(io_apic, 1) & 0xff0000) >> 16;
 }
 
+
+// create MADT 
 static struct madt_io_apic *io_apic_from_gsi(uint32_t gsi)
 {
     for (size_t i = 0; i < madt_io_apics.length; i++)
@@ -45,6 +51,8 @@ static struct madt_io_apic *io_apic_from_gsi(uint32_t gsi)
     halt();
 }
 
+
+// Setup IRQ redirects 
 void io_apic_set_irq_redirect(uint32_t lapic_id, uint8_t vector, uint8_t irq, bool status)
 {
     for (size_t i = 0; i < madt_isos.length; i++)

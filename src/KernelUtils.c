@@ -30,6 +30,8 @@ volatile struct limine_framebuffer_request fbr_req = {
 
 extern volatile struct limine_kernel_address_request Kaddress_req;
 
+
+// get avialable RAM size 
 uint64_t get_memory_size()
 {
     static uint64_t memorySize = 0;
@@ -41,7 +43,7 @@ uint64_t get_memory_size()
 
     for (uint64_t i = 0; i < memmap_req.response->entry_count; i++)
     {
-        memorySize += memmap_req.response->entries[i]->length;
+        memorySize += memmap_req.response->entries[i]->length; 
     }
 
     return memorySize;
