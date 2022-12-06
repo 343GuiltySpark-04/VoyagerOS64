@@ -9,6 +9,7 @@
 extern uint64_t next_id;
 extern bool timer_fired;
 extern const uint64_t quantum;
+extern bool sched_started;
 
 // Data structure to represent a process
 struct Process
@@ -16,6 +17,7 @@ struct Process
     int id;
     int priority;
     int allocated_time;
+    bool immortal;
 };
 
 // Data structure to represent the round-robin scheduler
@@ -28,8 +30,11 @@ struct Scheduler
     int n;
 };
 
-struct Process create_process(int id, int priority);
+struct Process create_process(int id, int priority, bool mortality);
 void add_process(struct Scheduler *scheduler, struct Process p);
 void schedule(struct Scheduler *scheduler, int time_quantum);
+void fork(struct Scheduler *scheduler);
+void exit(struct Scheduler *scheduler);
+uint64_t generate_id();
 
 #endif

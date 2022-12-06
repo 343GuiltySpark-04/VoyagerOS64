@@ -112,7 +112,7 @@ void irq_handler(isr_xframe_t *frame)
         {
 
         case 32:
-            sys_clock_handler();
+            sys_clock_handler_alt();
             break;
         case 33:
             keyboard_handler();

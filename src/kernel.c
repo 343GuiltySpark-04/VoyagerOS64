@@ -75,6 +75,18 @@ struct term_context *term_context;
 
 static struct PageTable *test_table;
 
+struct Scheduler scheduler;
+
+void hello_thread()
+{
+
+    fork(&scheduler);
+
+    printf_("%s\n", "Hello Im a Child Process!");
+
+    return;
+}
+
 /// \fn  following will be our kernel's entry point.
 void _start(void)
 {
@@ -133,6 +145,8 @@ void _start(void)
     idt_reg_test();
 
     asm volatile("int $48");
+
+    pic_mask_irq(0);
 
     print_memmap();
 
@@ -195,6 +209,8 @@ void _start(void)
 
     // VMM_table_clone();
 
+    pic_unmask_irq(0);
+
     print_memory();
 
     print_load_time();
@@ -205,12 +221,15 @@ void _start(void)
 
     printf_("%s", ":> ");
 
-    struct Scheduler scheduler;
     scheduler.processes = NULL;
     scheduler.n = 0;
 
-    add_process(&scheduler, create_process(1, 1));
-    add_process(&scheduler, create_process(2, 2));
+    add_process(&scheduler, create_process(generate_id(), 1, true));
+    printf_("%s", "Kernel PID: ");
+    printf_("%i\n", scheduler.processes[0].id);
+    sched_started = true;
+
+    int test = 0;
 
     // Just chill until needed
     while (1)
@@ -218,7 +237,30 @@ void _start(void)
 
         schedule(&scheduler, quantum);
 
-        for (int j = 0; j < scheduler.n; j++)
-            printf("Process %d allocated time: %d\n", scheduler.processes[j].id, scheduler.processes[j].allocated_time);
+
+
+        if (test == 0)
+        {
+
+            hello_thread();
+            test++;
+        }
+
+        if (test == 2){
+
+            hello_thread();
+            test++;
+
+        }
+
+        test++;
+
+            printf_("%s", "Current PID: ");
+            printf_("%i\n", scheduler.processes[0].id); 
+            printf_("%s", "Number of processes: ");
+            printf_("%i\n", scheduler.n);
+
+           for (int j = 0; j < scheduler.n; j++)
+              printf("Process %d allocated time: %d\n", scheduler.processes[j].id, scheduler.processes[j].allocated_time); 
     }
 }

@@ -100,7 +100,7 @@ void print_load_time();
 uint16_t pit_get_current_count(void);
 void pit_set_reload_value(uint16_t new_count);
 void pit_set_frequency(uint64_t frequency);
-
+void sys_clock_handler_alt();
 void time_init(void);
 
 #endif

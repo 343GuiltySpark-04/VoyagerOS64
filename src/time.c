@@ -188,10 +188,29 @@ void sys_clock_handler()
         spinlock_release(&timers_lock);
     }
 
-    timer_fired = true;
+   if (timer_fired == false){
+
+        timer_fired = true;
+
+   }
 
     system_timer_fractions++;
     system_timer_ms++;
+}
+
+
+void sys_clock_handler_alt(){
+
+
+   if (timer_fired == false){
+
+        timer_fired = true;
+
+   }
+
+    system_timer_fractions++;
+    system_timer_ms++;
+
 }
 
 uint8_t task_timer_count = 0;
