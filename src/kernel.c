@@ -205,10 +205,20 @@ void _start(void)
 
     printf_("%s", ":> ");
 
-    //  init_multitasking();
+    struct Scheduler scheduler;
+    scheduler.processes = NULL;
+    scheduler.n = 0;
+
+    add_process(&scheduler, create_process(1, 1));
+    add_process(&scheduler, create_process(2, 2));
 
     // Just chill until needed
     while (1)
     {
+
+        schedule(&scheduler, quantum);
+
+        for (int j = 0; j < scheduler.n; j++)
+            printf("Process %d allocated time: %d\n", scheduler.processes[j].id, scheduler.processes[j].allocated_time);
     }
 }

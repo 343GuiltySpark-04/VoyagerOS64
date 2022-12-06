@@ -188,6 +188,8 @@ void sys_clock_handler()
         spinlock_release(&timers_lock);
     }
 
+    timer_fired = true;
+
     system_timer_fractions++;
     system_timer_ms++;
 }
@@ -351,7 +353,7 @@ void print_date()
 /* 1 <= m <= 12,  y > 1752 (in the U.K.) */
 
 // Determane day of the week from the month year and date.
-dayofweek(y, m, d) 
+dayofweek(y, m, d)
 {
     static int t[] = {0, 3, 2, 5, 0, 3, 5, 1, 4, 6, 2, 4};
     if (m < 3)
