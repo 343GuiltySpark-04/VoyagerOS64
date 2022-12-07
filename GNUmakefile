@@ -21,7 +21,7 @@ export CC=$(HOME)/opt/cross/bin/x86_64-elf-gcc
 export LD=$(HOME)/opt/cross/bin/x86_64-elf-ld
  
 # User controllable CFLAGS.
-CFLAGS ?= -g -O2 -pipe -Wall -Wextra
+CFLAGS ?= -g -O2 -pipe -Wall -Wextra -finline-functions
  
 # User controllable preprocessor flags. We set none by default.
 CPPFLAGS ?= 

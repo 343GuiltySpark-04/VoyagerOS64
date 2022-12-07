@@ -231,6 +231,15 @@ void _start(void)
 
     int test = 0;
 
+    uint64_t hash_test = pid_hash(100);
+
+    uint64_t hash_test2 = pid_hash(hash_test);
+
+    printf_("%u\n", hash_test);
+     printf_("%u\n", hash_test2);
+
+   // halt();
+
     // Just chill until needed
     while (1)
     {
@@ -260,7 +269,9 @@ void _start(void)
             printf_("%s", "Number of processes: ");
             printf_("%i\n", scheduler.n);
 
-           for (int j = 0; j < scheduler.n; j++)
-              printf("Process %d allocated time: %d\n", scheduler.processes[j].id, scheduler.processes[j].allocated_time); 
+           for (int j = 0; j < scheduler.n; j++){
+              printf("Process %d allocated time: %d\n", scheduler.processes[j].id, scheduler.processes[j].allocated_time);
+              printf_("%i\n", j);
+           } 
     }
 }

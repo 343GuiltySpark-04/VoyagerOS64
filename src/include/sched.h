@@ -14,9 +14,10 @@ extern bool sched_started;
 // Data structure to represent a process
 struct Process
 {
-    int id;
-    int priority;
-    int allocated_time;
+    uint64_t id;
+    uint64_t priority;
+    uint64_t allocated_time;
+    uint8_t syscall;
     bool immortal;
 };
 
@@ -25,16 +26,18 @@ struct Scheduler
 {
     // Array to store processes
     struct Process *processes;
-
     // Number of processes
-    int n;
+    uint64_t n;
+
+    uint64_t current_process;
 };
 
-struct Process create_process(int id, int priority, bool mortality);
+struct Process create_process(uint64_t id, uint64_t priority, bool mortality);
 void add_process(struct Scheduler *scheduler, struct Process p);
-void schedule(struct Scheduler *scheduler, int time_quantum);
+void schedule(struct Scheduler *scheduler, uint64_t time_quantum);
 void fork(struct Scheduler *scheduler);
 void exit(struct Scheduler *scheduler);
 uint64_t generate_id();
+uint64_t pid_hash(uint64_t input);
 
 #endif
