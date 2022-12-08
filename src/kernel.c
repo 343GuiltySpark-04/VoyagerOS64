@@ -224,7 +224,7 @@ void _start(void)
     scheduler.processes = NULL;
     scheduler.n = 0;
 
-    add_process(&scheduler, create_process(generate_id(), 1, true));
+    add_process(&scheduler, create_process(generate_id(), 1, true, "Kernel_Thread"));
     printf_("%s", "Kernel PID: ");
     printf_("%i\n", scheduler.processes[0].id);
     sched_started = true;
@@ -238,6 +238,8 @@ void _start(void)
     printf_("%u\n", hash_test);
      printf_("%u\n", hash_test2);
 
+     
+
    // halt();
 
     // Just chill until needed
@@ -246,23 +248,6 @@ void _start(void)
 
         schedule(&scheduler, quantum);
 
-
-
-        if (test == 0)
-        {
-
-            hello_thread();
-            test++;
-        }
-
-        if (test == 2){
-
-            hello_thread();
-            test++;
-
-        }
-
-        test++;
 
             printf_("%s", "Current PID: ");
             printf_("%i\n", scheduler.processes[0].id); 

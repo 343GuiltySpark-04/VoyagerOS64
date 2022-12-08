@@ -5,6 +5,7 @@
 #include "include/lock.h"
 #include "include/gdt.h"
 #include "include/pic.h"
+#include "include/string.h"
 #include <stdbool.h>
 
 #define SAVE_STATE()                       \
@@ -46,19 +47,29 @@ const uint64_t quantum_limit = 50;
 extern halt();
 
 // Function to create a new process
-struct Process create_process(uint64_t id, uint64_t priority, bool mortality)
+struct Process create_process(uint64_t id, uint64_t priority, bool mortality, char name[256])
 {
+
     struct Process p;
-    p.id = id;
+
+    p.name[256] = name;
+
+    uint64_t pid = pid_hash(name);
+
     p.priority = priority;
     p.allocated_time = 0;
     p.immortal = mortality;
+    p.id = pid;
 
     return p;
 }
 
-uint64_t pid_hash(uint64_t input)
+// Generate a PID from hashing the process name
+uint64_t pid_hash(char name[256])
 {
+
+    uint64_t input = str2int(name);
+
     // Use the FNV-1a algorithm to generate a 64-bit hash value for the input
     const uint64_t FNV_PRIME = 1099511628211;
     const uint64_t FNV_OFFSET_BASIS = 14695981039346656037;
@@ -179,6 +190,9 @@ void fork(struct Scheduler *scheduler)
 
     uint64_t parent_id = scheduler->processes[scheduler->current_process - 1].id;
     uint64_t parent_index = scheduler->current_process - 1;
+    char parent_name;
+
+    parent_name = scheduler->processes[parent_index].name;
 
     // Create a new process with the the ID being a hash generated from the parent PID
     uint64_t id = pid_hash(parent_id);
@@ -189,7 +203,7 @@ void fork(struct Scheduler *scheduler)
     }
     printf_("Parent ID: %u\n", parent_id);
     printf_("Child ID: %u\n", id);
-    struct Process child = create_process(id, 2, false);
+    struct Process child = create_process(id++, 2, false, parent_name++);
 
     // Add the new process to the scheduler
     add_process(scheduler, child);

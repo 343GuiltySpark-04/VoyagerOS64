@@ -57,6 +57,6 @@ void _putchar(char character)
         }
     }
 
-    serial_debug(character);
+ //   serial_debug(character);
    
 }

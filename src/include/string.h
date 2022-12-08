@@ -14,6 +14,7 @@ extern "C"
     void *memset(void *, int, size_t);
     size_t strlen(const char *);
     int strtok(char *srcstr, char sep, char ***output);
+    int str2int(char str[]);
 
 #ifdef __cplusplus
 }
