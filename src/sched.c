@@ -44,6 +44,14 @@ const uint64_t quantum = 10;
 
 const uint64_t quantum_limit = 50;
 
+/**
+* @brief Create a new process with the given parameters
+* @param id ID of the process to create
+* @param priority Priority of the process to create
+* @param mortality Whether or not to mortal the process
+* @param name [ 256 ]
+* @return Pointer to the newly created
+*/
 extern halt();
 
 // Function to create a new process
@@ -65,6 +73,11 @@ struct Process create_process(uint64_t id, uint64_t priority, bool mortality, ch
 }
 
 // Generate a PID from hashing the process name
+/**
+* @brief This function hashes a name using FNV
+* @param name [ 256 ]
+* @return A 64 - bit hash
+*/
 uint64_t pid_hash(char name[256])
 {
 
@@ -83,6 +96,11 @@ uint64_t pid_hash(char name[256])
 }
 
 // Function to add a new process to the scheduler
+/**
+* @brief Add a process to the end of the list
+* @param * scheduler
+* @param p Pointer to the process to
+*/
 void add_process(struct Scheduler *scheduler, struct Process p)
 {
     // Increase size of array to store processes
@@ -95,6 +113,12 @@ void add_process(struct Scheduler *scheduler, struct Process p)
 }
 
 // Function to remove a process from the scheduler
+/**
+* @brief Remove a process from the list
+* @param * scheduler
+* @param id ID of the process to be removed
+* @return void Removal is done in - place
+*/
 void remove_process(struct Scheduler *scheduler, uint64_t id)
 {
     // Find the index of the process to be removed
@@ -122,6 +146,11 @@ void remove_process(struct Scheduler *scheduler, uint64_t id)
 }
 
 // Function to perform scheduling
+/**
+* @brief Schedules a process to run.
+* @param * scheduler
+* @param time_quantum Time in milliseconds to reserve
+*/
 void schedule(struct Scheduler *scheduler, uint64_t time_quantum)
 {
     pic_mask_irq(0);
@@ -172,6 +201,10 @@ void schedule(struct Scheduler *scheduler, uint64_t time_quantum)
 uint64_t next_id = 2;
 
 // Function to generate a seed ID
+/**
+* @brief Generates a new ID for the object
+* @return The ID of the new
+*/
 uint64_t generate_id()
 {
     // Get the next available ID
@@ -185,6 +218,10 @@ uint64_t generate_id()
 }
 
 // Function to create a new child process
+/**
+* @brief Fork a process from the current process
+* @param * scheduler
+*/
 void fork(struct Scheduler *scheduler)
 {
 
@@ -210,6 +247,11 @@ void fork(struct Scheduler *scheduler)
 }
 
 // Function to exit the current process
+/**
+* @brief This function is called when the scheduler is shutting down.
+* @param * scheduler
+* @return Returns nothing. The scheduler must be stopped
+*/
 void exit(struct Scheduler *scheduler)
 {
     // Get the ID of the current process

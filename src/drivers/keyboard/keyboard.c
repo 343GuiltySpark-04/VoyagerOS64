@@ -18,6 +18,10 @@ char kbd_stack[KBD_STACK_SIZE];
 
 int kbd_top = -1;
 
+/**
+* @brief Push a character onto the keyboard stack
+* @param data The character to push onto
+*/
 void kbd_push(char data)
 {
 
@@ -38,6 +42,10 @@ void kbd_push(char data)
     }
 }
 
+/**
+* @brief Pop a character from the kbd stack
+* @return character that was popped
+*/
 char kbd_pop()
 {
 
@@ -59,6 +67,10 @@ char kbd_pop()
     }
 }
 
+/**
+* @brief This is the keyboard interrupt handler. It reads the status and pushes the keycode to the keyboard stack.
+* @return Returns nothing. If there is an error it returns
+*/
 void keyboard_handler()
 {
 
@@ -113,6 +125,10 @@ void keyboard_handler()
     }
 }
 
+/**
+* @brief Get a character from k_char.
+* @return The character or 0 if none
+*/
 char k_getchar()
 {
 
@@ -128,6 +144,10 @@ char k_getchar()
     return c;
 }
 
+/**
+* @brief \ brief Initializes the keyboard. Unmask IRQ and print message.
+* @return 0 on success non - zero
+*/
 void keyboard_init()
 {
 

@@ -73,6 +73,10 @@ static const char *irq_messages[] =
 };
 
 void isr_exception_handler(isr_xframe_t *frame);
+/**
+* @brief This is the ISR handler.
+* @param * frame
+*/
 void isr_exception_handler(isr_xframe_t *frame)
 {
 
@@ -98,6 +102,10 @@ extern void halt();
 extern void dyn_isr_handler(uint64_t isr);
 
 void irq_handler(isr_xframe_t *frame);
+/**
+* @brief The handler for IRQs.
+* @param * frame
+*/
 void irq_handler(isr_xframe_t *frame)
 {
 

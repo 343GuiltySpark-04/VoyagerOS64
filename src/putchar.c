@@ -4,6 +4,10 @@
 #include "include/terminal/term.h"
 #include "include/KernelUtils.h"
 
+/**
+* @brief This function writes a character to the terminal
+* @param character character to be written to
+*/
 void _putchar(char character)
 {
 
