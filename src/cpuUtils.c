@@ -32,6 +32,9 @@ extern void halt();
 
 char CPU_vendor[13];
 
+/**
+* @brief Print a message to the standard output. This is called from cpuid_read ()
+*/
 void cpuid_readout()
 {
 
@@ -67,6 +70,10 @@ void cpuid_readout()
 }
 
 /* Example: Get CPU's model number */
+/**
+* @brief Get the CPUID model.
+* @return The number of EBX
+*/
 int get_model(void)
 {
     int ebx, unused;
@@ -74,6 +81,10 @@ int get_model(void)
     return ebx;
 }
 
+/**
+* @brief Get vendor information from CPUID
+* @return 0 on success - 1 on
+*/
 void get_vendor()
 {
 
@@ -90,6 +101,10 @@ void get_vendor()
     CPU_vendor[12] = 0;
 }
 
+/**
+* @brief Print message to indicate SSE extensions are unavailable.
+* @return non - zero for success zero for
+*/
 void no_sse()
 {
 
@@ -97,6 +112,10 @@ void no_sse()
     printf_("%s\n", "Floating Point Math will be offline.");
 }
 
+/**
+* @brief Display message to indicate XSAVE extensions are unavailable.
+* @return non - zero if message was displayed
+*/
 void no_xsave()
 {
 
@@ -104,6 +123,10 @@ void no_xsave()
     printf_("%s\n", "Floating Point Math will be offline.");
 }
 
+/**
+* @brief Check SSE extensions and print results if they are available.
+* @return 1 if SSE extensions are available 0
+*/
 void check_sse()
 {
 
@@ -128,6 +151,10 @@ void check_sse()
     }
 }
 
+/**
+* @brief Check if XSAVE is available
+* @return 1 if XSAVE is
+*/
 void check_xsave()
 {
 
@@ -148,6 +175,9 @@ void check_xsave()
     }
 }
 
+/**
+* @brief Check if FPU is enabled or
+*/
 void check_fpu()
 {
 
@@ -163,6 +193,10 @@ void check_fpu()
     }
 }
 
+/**
+* @brief Check MSR on / off
+* @return true if MSR is
+*/
 void check_msr()
 {
 
@@ -178,6 +212,9 @@ void check_msr()
     }
 }
 
+/**
+* @brief Check VMX is enabled or
+*/
 void check_vmx()
 {
 
@@ -193,6 +230,10 @@ void check_vmx()
     }
 }
 
+/**
+* @brief Check if HTT is enabled
+* @return true if HTT is
+*/
 void check_htt()
 {
 
@@ -208,6 +249,10 @@ void check_htt()
     }
 }
 
+/**
+* @brief Check if CPUID is available
+* @return Yes if available No
+*/
 void check_pcid()
 {
 
@@ -223,6 +268,10 @@ void check_pcid()
     }
 }
 
+/**
+* @brief Check if PAE is installed
+* @return true if installed false
+*/
 void check_pae()
 {
 
@@ -240,6 +289,10 @@ void check_pae()
     }
 }
 
+/**
+* @brief Check if MCE is enabled
+* @return true if enabled false
+*/
 void check_mce()
 {
 
@@ -257,6 +310,10 @@ void check_mce()
     }
 }
 
+/**
+* @brief Check if APIC is available
+* @return true if it is
+*/
 void check_apic()
 {
 
@@ -274,6 +331,10 @@ void check_apic()
     }
 }
 
+/**
+* @brief Check if MCA is installed
+* @return true if MCA is
+*/
 void check_mca()
 {
 
@@ -291,6 +352,10 @@ void check_mca()
     }
 }
 
+/**
+* @brief Check if CPUID has ACPI installed
+* @return Yes if installed No
+*/
 void check_acpi()
 {
 
@@ -308,6 +373,10 @@ void check_acpi()
     }
 }
 
+/**
+* @brief Check if cpuid_check_ds is available
+* @return true if cpuid_check_ds is
+*/
 void check_ds()
 {
 
@@ -325,6 +394,10 @@ void check_ds()
     }
 }
 
+/**
+* @brief Check TM and print yes / no.
+* @return Yes if TM is set
+*/
 void check_tm()
 {
 

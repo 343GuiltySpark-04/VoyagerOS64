@@ -11,5 +11,7 @@
         "frameallocator.h": "c",
         "framebuffer.h": "c"
     },
-    "C_Cpp.errorSquiggles": "Enabled"
+    "C_Cpp.errorSquiggles": "Enabled",
+    "docify.programmingLanguage": "c",
+    "docify.docstringFormat": "Doxygen"
 }

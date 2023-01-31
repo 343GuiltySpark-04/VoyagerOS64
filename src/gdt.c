@@ -112,6 +112,9 @@ struct GDT_Desc desc = {
     .size = sizeof(gdt) - 1,
     .offset = (uint64_t)&gdt};
 
+/**
+* @brief Stage 1 of GDT loading
+*/
 void LoadGDT_Stage1()
 {
     uint64_t address = (uint64_t)&tss;

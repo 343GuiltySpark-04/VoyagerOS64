@@ -21,6 +21,10 @@ int kbd_top = -1;
 
 static spinlock_t reader_lock = SPINLOCK_INIT;
 
+/**
+* @brief Push a character onto the keyboard stack
+* @param data The character to push onto
+*/
 void kbd_push(char data)
 {
 
@@ -41,6 +45,10 @@ void kbd_push(char data)
     }
 }
 
+/**
+* @brief Pop a character from the kbd stack
+* @return character that was popped
+*/
 char kbd_pop()
 {
 
@@ -62,6 +70,10 @@ char kbd_pop()
     }
 }
 
+/**
+* @brief This is the keyboard interrupt handler. It reads the status and pushes the keycode to the keyboard stack.
+* @return Returns nothing. If there is an error it returns
+*/
 void keyboard_handler()
 {
 
@@ -116,6 +128,10 @@ void keyboard_handler()
     }
 }
 
+/**
+* @brief Keyboard handler for 2. 0 and later
+* @return none
+*/
 void keyboard_handler_2()
 {
 
@@ -151,6 +167,9 @@ void keyboard_handler_2()
     }
 }
 
+/**
+* @brief Read input from the keyboard
+*/
 void read_input()
 {
 
@@ -198,6 +217,10 @@ void read_input()
     // printf_("%s\n", &option);
 }
 
+/**
+* @brief Get a character from k_char.
+* @return The character or 0 if none
+*/
 char k_getchar()
 {
 
@@ -213,6 +236,10 @@ char k_getchar()
     return c;
 }
 
+/**
+* @brief Initialize the keyboard. Unmask IRQ and read keyboard data.
+* @return 0 on success non - zero
+*/
 void keyboard_init()
 {
 
