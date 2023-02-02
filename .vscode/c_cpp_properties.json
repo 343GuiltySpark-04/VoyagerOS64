@@ -24,7 +24,7 @@
                 "/home/tristan/opt/cross/lib/gcc/x86_64-elf/10.3.0/include"
             ],
             "defines": [],
-            "compilerPath": "/usr/bin/gcc",
+            "compilerPath": "/bin/gcc",
             "cStandard": "gnu11",
             "cppStandard": "gnu++11",
             "intelliSenseMode": "linux-gcc-x64",

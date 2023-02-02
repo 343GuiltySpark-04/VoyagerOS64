@@ -32,9 +32,7 @@ extern volatile struct limine_kernel_address_request Kaddress_req;
 
 
 // get avialable RAM size 
-* @brief Calculates the size of the memory in bytes.
-* @return The size of the memory in bytes
-*/
+
 uint64_t get_memory_size()
     static uint64_t memorySize = 0;
 
@@ -51,10 +49,6 @@ uint64_t get_memory_size()
     return memorySize;
 }
 
-/**
-* @brief Print information about the memory map
-* @return void ( cannot fail
-*/
 void print_memmap()
 {
     int size = memmap_req.response->entry_count;
@@ -145,9 +139,7 @@ void print_memmap()
 
 static struct PageTable *page_table;
 
-/**
-* @brief Initialize memory. This is called at boot time
-*/
+
 void init_memory()
 {
     read_memory_map();
@@ -273,10 +265,7 @@ void init_memory()
     breakpoint();
 }
 
-/**
-* @brief Print memory information to stdout.
-* @return void. Side effects : None
-*/
+
 void print_memory()
 {
 
