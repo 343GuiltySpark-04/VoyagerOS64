@@ -1,5 +1,12 @@
 #include "include/string.h"
 
+/**
+* @brief Copies size bytes from srcptr to dstptr.
+* @param * restrict dstptr
+* @param void
+* @param size Number of bytes to copy.
+* @return Pointer to destination buffer ( same as srcptr
+*/
 void *memcpy(void *restrict dstptr, const void *restrict srcptr, size_t size)
 {
     unsigned char *dst = (unsigned char *)dstptr;

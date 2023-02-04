@@ -1,5 +1,12 @@
 #include "include/string.h"
 
+/**
+* @brief Copies size bytes from srcptr to dstptr.
+* @param * dstptr
+* @param void
+* @param size Number of bytes to copy.
+* @return Pointer to destination memory which may be different
+*/
 void *memmove(void *dstptr, const void *srcptr, size_t size)
 {
     unsigned char *dst = (unsigned char *)dstptr;

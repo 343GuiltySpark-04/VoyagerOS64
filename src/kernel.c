@@ -58,14 +58,12 @@ volatile struct limine_terminal_request early_term = {
 
 };
 
-/// @brief breakpoint() Provides a magic breakpoint for debugging in Bochs
 extern void breakpoint();
 extern void stop_interrupts();
 extern void start_interrupts();
 extern void halt();
 extern void task_switch_int();
 
-/// @var allows me to enable or dissable or alter behavoir according to wether the kernel
 /// is fully loaded yet.
 uint32_t bootspace = 2;
 
@@ -87,7 +85,6 @@ void hello_thread()
     return;
 }
 
-/// \fn  following will be our kernel's entry point.
 void _start(void)
 {
 
@@ -150,7 +147,6 @@ void _start(void)
 
     print_memmap();
 
-    // @brief Kernel Addresses
     if (Kaddress_req.response == NULL)
     {
         printf_("%s\n", "!!!Error While Fetching Kernel Addresses!!!");
@@ -169,7 +165,6 @@ void _start(void)
 
     // read_memory_map();
 
-    /// @brief print usable memory to log
     print_memory();
 
     init_memory();
@@ -219,7 +214,7 @@ void _start(void)
 
     printf_("%s\n", "VoyagerOS64 v0.0.4");
 
-    printf_("%s", ":> ");
+    printf_("%s\n", ":> ");
 
     scheduler.processes = NULL;
     scheduler.n = 0;
@@ -227,36 +222,51 @@ void _start(void)
     add_process(&scheduler, create_process(generate_id(), 1, true, "Kernel_Thread"));
     printf_("%s", "Kernel PID: ");
     printf_("%i\n", scheduler.processes[0].id);
+    printf_("%s", "Kernel Process Name: ");
+    printf_("%s\n", scheduler.processes[0].name);
+    add_process(&scheduler, create_process(generate_id(), 2, false, "Mortals"));
+    printf_("%s", "Mortals PID: ");
+    printf_("%i\n", scheduler.processes[1].id);
+    printf_("%s", "Mortals Process Name: ");
+    printf_("%s\n", scheduler.processes[1].name);
+
     sched_started = true;
 
     int test = 0;
 
-    uint64_t hash_test = pid_hash(100);
+    // halt();
 
-    uint64_t hash_test2 = pid_hash(hash_test);
-
-    printf_("%u\n", hash_test);
-     printf_("%u\n", hash_test2);
-
-     
-
-   // halt();
-
+    uint64_t loopcount = 0;
     // Just chill until needed
     while (1)
     {
 
         schedule(&scheduler, quantum);
 
+        printf_("%s", "Current PID: ");
+        printf_("%u\n", scheduler.processes[0].id);
+        printf_("%s", "Current Process Name: ");
+        printf_("%s\n", scheduler.processes[0].name);
+        printf_("%s", "Number of processes: ");
+        printf_("%u\n", scheduler.n);
+        printf_("%s", "Value of Current Process: ");
+        printf_("%u\n", scheduler.processes);
 
-            printf_("%s", "Current PID: ");
-            printf_("%i\n", scheduler.processes[0].id); 
-            printf_("%s", "Number of processes: ");
-            printf_("%i\n", scheduler.n);
+        if (loopcount == 3)
+        {
 
-           for (int j = 0; j < scheduler.n; j++){
-              printf("Process %d allocated time: %d\n", scheduler.processes[j].id, scheduler.processes[j].allocated_time);
-              printf_("%i\n", j);
-           } 
+            add_process(&scheduler, create_process(generate_id(), 2, false, "Meow"));
+            printf_("%s", "Meow PID: ");
+            printf_("%i\n", scheduler.processes[2].id);
+            printf_("%s", "Meow Process Name: ");
+            printf_("%s\n", scheduler.processes[2].name);
+        }
+
+        loopcount++;
+
+        if (loopcount == 5)
+        {
+            halt();
+        }
     }
 }

@@ -134,7 +134,7 @@ char k_getchar()
 
     char c;
 
-    while (k_char <= 0)
+    while (k_char > 0)
     {
 
         c = k_char;

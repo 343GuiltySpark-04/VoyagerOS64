@@ -21,6 +21,9 @@ struct madt
     char entries_data[];
 };
 
+/**
+* @brief Initialize MADT by looking for APIC
+*/
 void madt_init(void)
 {
     struct madt *madt = acpi_find_sdt("APIC", 0);

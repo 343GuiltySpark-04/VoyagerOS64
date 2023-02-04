@@ -49,6 +49,7 @@ void _putchar(char character)
         {
 
             term_write(term_context, &character, sizeof(char));
+            serial_debug(character);
         }
         else
         {

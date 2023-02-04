@@ -43,26 +43,28 @@ static spinlock_t schedlock_t = SPINLOCK_INIT;
 const uint64_t quantum = 10;
 
 const uint64_t quantum_limit = 50;
-
-/**
-* @brief Create a new process with the given parameters
-* @param id ID of the process to create
-* @param priority Priority of the process to create
-* @param mortality Whether or not to mortal the process
-* @param name [ 256 ]
-* @return Pointer to the newly created
-*/
 extern halt();
 
-// Function to create a new process
+/**
+ * @brief Create a new process with the given parameters
+ * @param id ID of the process to create
+ * @param priority Priority of the process to create
+ * @param mortality Whether or not to mortal the process
+ * @param name [ 256 ]
+ * @return Pointer to the newly created
+ */
 struct Process create_process(uint64_t id, uint64_t priority, bool mortality, char name[256])
 {
 
     struct Process p;
 
-    p.name[256] = name;
+    for (int i = 0; i < 256; i++){
 
-    uint64_t pid = pid_hash(name);
+        p.name[i] = name[i];
+
+    }
+
+    uint64_t pid = (uint64_t)pid_hash(name);
 
     p.priority = priority;
     p.allocated_time = 0;
@@ -74,33 +76,37 @@ struct Process create_process(uint64_t id, uint64_t priority, bool mortality, ch
 
 // Generate a PID from hashing the process name
 /**
-* @brief This function hashes a name using FNV
-* @param name [ 256 ]
-* @return A 64 - bit hash
-*/
+ * @brief This function hashes a name using FNV
+ * @param name [ 256 ]
+ * @return A 64 - bit hash
+ */
 uint64_t pid_hash(char name[256])
 {
 
-    uint64_t input = str2int(name);
+    uint64_t input = str2int2(&name);
 
     // Use the FNV-1a algorithm to generate a 64-bit hash value for the input
-    const uint64_t FNV_PRIME = 1099511628211;
-    const uint64_t FNV_OFFSET_BASIS = 14695981039346656037;
+    const uint64_t FNV_PRIME = 16777619;
+    const uint64_t FNV_OFFSET_BASIS = 0x811c9dc5;
     uint64_t hash = FNV_OFFSET_BASIS;
     for (int i = 0; i < sizeof(input); i++)
     {
-        hash ^= (input >> (i * 8));
-        hash *= FNV_PRIME;
-    }
-    return hash;
+        hash ^= (input & 0xff); // XOR with lower 8 bits of input 
+        input >>= 8; // Shift right by 8 bits 
+        hash *= FNV_PRIME; // Multiply by prime number 
+    } 
+
+    return hash; 
 }
+
+
 
 // Function to add a new process to the scheduler
 /**
-* @brief Add a process to the end of the list
-* @param * scheduler
-* @param p Pointer to the process to
-*/
+ * @brief Add a process to the end of the list
+ * @param * scheduler
+ * @param p Pointer to the process to
+ */
 void add_process(struct Scheduler *scheduler, struct Process p)
 {
     // Increase size of array to store processes
@@ -114,11 +120,11 @@ void add_process(struct Scheduler *scheduler, struct Process p)
 
 // Function to remove a process from the scheduler
 /**
-* @brief Remove a process from the list
-* @param * scheduler
-* @param id ID of the process to be removed
-* @return void Removal is done in - place
-*/
+ * @brief Remove a process from the list
+ * @param * scheduler
+ * @param id ID of the process to be removed
+ * @return void Removal is done in - place
+ */
 void remove_process(struct Scheduler *scheduler, uint64_t id)
 {
     // Find the index of the process to be removed
@@ -140,17 +146,17 @@ void remove_process(struct Scheduler *scheduler, uint64_t id)
     for (int i = index; i < scheduler->n - 1; i++)
         scheduler->processes[i] = scheduler->processes[i + 1];
 
-    scheduler->processes = realloc(scheduler->processes, --scheduler->n * sizeof(struct Process));
-
     scheduler->current_process--;
+
+    scheduler->processes = realloc(scheduler->processes, --scheduler->n * sizeof(struct Process));
 }
 
 // Function to perform scheduling
 /**
-* @brief Schedules a process to run.
-* @param * scheduler
-* @param time_quantum Time in milliseconds to reserve
-*/
+ * @brief Schedules a process to run.
+ * @param * scheduler
+ * @param time_quantum Time in milliseconds to reserve
+ */
 void schedule(struct Scheduler *scheduler, uint64_t time_quantum)
 {
     pic_mask_irq(0);
@@ -202,9 +208,9 @@ uint64_t next_id = 2;
 
 // Function to generate a seed ID
 /**
-* @brief Generates a new ID for the object
-* @return The ID of the new
-*/
+ * @brief Generates a new ID for the object
+ * @return The ID of the new
+ */
 uint64_t generate_id()
 {
     // Get the next available ID
@@ -219,9 +225,9 @@ uint64_t generate_id()
 
 // Function to create a new child process
 /**
-* @brief Fork a process from the current process
-* @param * scheduler
-*/
+ * @brief Fork a process from the current process
+ * @param * scheduler
+ */
 void fork(struct Scheduler *scheduler)
 {
 
@@ -240,7 +246,7 @@ void fork(struct Scheduler *scheduler)
     }
     printf_("Parent ID: %u\n", parent_id);
     printf_("Child ID: %u\n", id);
-    struct Process child = create_process(id++, 2, false, parent_name++);
+    struct Process child = create_process(id, 2, false, parent_name);
 
     // Add the new process to the scheduler
     add_process(scheduler, child);
@@ -248,10 +254,10 @@ void fork(struct Scheduler *scheduler)
 
 // Function to exit the current process
 /**
-* @brief This function is called when the scheduler is shutting down.
-* @param * scheduler
-* @return Returns nothing. The scheduler must be stopped
-*/
+ * @brief This function is called when the scheduler is shutting down.
+ * @param * scheduler
+ * @return Returns nothing. The scheduler must be stopped
+ */
 void exit(struct Scheduler *scheduler)
 {
     // Get the ID of the current process

@@ -9,6 +9,10 @@
 #include "include/time.h"
 #include "include/lock.h"
 
+/**
+ * @brief This is the vsh loop.
+ * @return 0 on success non - zero
+ */
 void vsh_loop()
 {
 
@@ -25,6 +29,10 @@ void vsh_loop()
     free(line);
 }
 
+/**
+ * @brief Read a line from VSH and return it.
+ * @return char The line that was read
+ */
 char vsh_readline()
 {
 
@@ -45,43 +53,53 @@ char vsh_readline()
 
     L1:
 
-        c = kbd_pop();
-
-        if (c == 0)
+        if (!buffer)
         {
 
-            goto L1;
+            printf_("%s\n", "vsh: Command Buffer Allocation Error!");
+            return; // Added return statement here
         }
 
-        if (c == '+')
+        while (1)
         {
 
-            return buffer;
-        }
-        else
-        {
+            while ((c = kbd_pop()) == 0)
+                ; // Replaced goto statement with while loop
 
-            buffer[pos] = c;
-        }
-
-        pos++;
-
-        if (pos >= bufsize)
-        {
-
-            bufsize += VSH_CMD_BUFFER_SIZE;
-            buffer = realloc(buffer, bufsize);
-
-            if (!buffer)
+            if (c == '+')
             {
 
-                printf_("%s\n", "vsh: Command Buffer Allocation Error!");
-                // return;
+                return buffer;
+            }
+            else
+            {
+
+                buffer[pos] = c;
+            }
+
+            pos++;
+
+            if (pos >= bufsize)
+            {
+
+                bufsize += VSH_CMD_BUFFER_SIZE;
+                buffer = realloc(buffer, bufsize);
+
+                if (!buffer)
+                {
+
+                    printf_("%s\n", "vsh: Command Buffer Allocation Error!");
+                    return; // Added return statement here
+                }
             }
         }
     }
 }
 
+/**
+ * @brief Parses and prints command.
+ * @param char
+ */
 void cmd_parser(const char str)
 {
 

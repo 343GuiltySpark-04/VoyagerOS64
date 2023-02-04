@@ -114,8 +114,8 @@ struct GDT_Desc desc = {
     .offset = (uint64_t)&gdt};
 
 /**
-* @brief Reload GDT. This is called from reload.
-*/
+ * @brief Reload GDT. This is called from reload.
+ */
 void gdt_reload(void)
 {
 
@@ -138,9 +138,9 @@ void gdt_reload(void)
 }
 
 /**
-* @brief Loads TSS into GDT.
-* @param * tss
-*/
+ * @brief Loads TSS into GDT.
+ * @param * tss
+ */
 void gdt_load_tss(struct TSS *tss)
 {
 
@@ -168,8 +168,8 @@ void gdt_load_tss(struct TSS *tss)
 }
 
 /**
-* @brief Stage 1 of GDT loading
-*/
+ * @brief Stage 1 of GDT loading
+ */
 void LoadGDT_Stage1()
 {
     uint64_t address = (uint64_t)&tss;

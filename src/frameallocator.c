@@ -16,10 +16,10 @@ uint64_t bitmapSize = 0;
 extern void halt();
 
 /**
-* @brief Convert a memory map type to a string.
-* @param type The memory map type to convert.
-* @return Pointer to a string describing the memory map type
-*/
+ * @brief Convert a memory map type to a string.
+ * @param type The memory map type to convert.
+ * @return Pointer to a string describing the memory map type
+ */
 const char *MemoryMapTypeString(int type)
 {
     switch (type)
@@ -63,9 +63,9 @@ const char *MemoryMapTypeString(int type)
 }
 
 /**
-* @brief Read and process memory map
-* @return true if successful else false
-*/
+ * @brief Read and process memory map
+ * @return true if successful else false
+ */
 void read_memory_map()
 {
     if (initialized)
@@ -153,9 +153,9 @@ void read_memory_map()
 }
 
 /**
-* @brief Request a frame from page.
-* @return Pointer to frame or NULL if none
-*/
+ * @brief Request a frame from page.
+ * @return Pointer to frame or NULL if none
+ */
 void *frame_request()
 {
     for (uint64_t i = 0; i < bitmapSize * 8; i++)
@@ -172,9 +172,9 @@ void *frame_request()
 }
 
 /**
-* @brief Print the frame bitmap to stdout.
-* @return void. Side effects : None
-*/
+ * @brief Print the frame bitmap to stdout.
+ * @return void. Side effects : None
+ */
 void print_frame_bitmap()
 {
 
@@ -194,10 +194,10 @@ void print_frame_bitmap()
 }
 
 /**
-* @brief Request multiple frames from the frame bitmap
-* @param count Number of frames to request
-* @return Pointer to frame or NULL if there isn't
-*/
+ * @brief Request multiple frames from the frame bitmap
+ * @param count Number of frames to request
+ * @return Pointer to frame or NULL if there isn't
+ */
 void *frame_request_multiple(uint32_t count)
 {
     uint32_t freeCount = 0;
@@ -227,12 +227,19 @@ void *frame_request_multiple(uint32_t count)
 }
 
 /**
-* @brief Free a frame. This is called by memory_deallocate () to indicate that it is no longer needed
-* @param * address
-* @return void * - true if
-*/
+ * @brief Free a frame. This frees the frame that was allocated by frame_alloc
+ * @param * address
+ * @return void * - returns void
+ */
 void frame_free(void *address)
 {
+
+    if (address == NULL)
+    {
+
+        return;
+    }
+
     uint64_t index = (uint64_t)address / 0x1000;
 
     if (bitmap_get(frameBitmap, index) == false)
@@ -247,23 +254,23 @@ void frame_free(void *address)
 }
 
 /**
-* @brief Free multiple pages of memory
-* @param * address
-* @param pageCount Number of pages to
-*/
+ * @brief Free multiple pages of memory
+ * @param * address
+ * @param pageCount Number of pages to
+ */
 void frame_free_multiple(void *address, uint64_t pageCount)
 {
     for (uint64_t t = 0; t < pageCount; t++)
     {
-        frame_free((void *)((uint64_t)address + (t * 0x1000)));
+        frame_free((void *)((uint64_t)address + ((uint64_t)t * 0x1000)));
     }
 }
 
 /**
-* @brief Lock the frame at the given address.
-* @param * address
-* @return True if the lock was acquired
-*/
+ * @brief Lock the frame at the given address.
+ * @param * address
+ * @return True if the lock was acquired
+ */
 void frame_lock(void *address)
 {
     uint64_t index = (uint64_t)address / 0x1000;
@@ -280,10 +287,10 @@ void frame_lock(void *address)
 }
 
 /**
-* @brief Lock a range of pages
-* @param * address
-* @param pageCount The number of pages to
-*/
+ * @brief Lock a range of pages
+ * @param * address
+ * @param pageCount The number of pages to
+ */
 void frame_lock_multiple(void *address, uint64_t pageCount)
 {
     for (uint64_t t = 0; t < pageCount; t++)
@@ -293,27 +300,27 @@ void frame_lock_multiple(void *address, uint64_t pageCount)
 }
 
 /**
-* @brief Returns the amount of free RAM in kilobytes.
-* @return Amount of free RAM in kiloby
-*/
+ * @brief Returns the amount of free RAM in kilobytes.
+ * @return Amount of free RAM in kiloby
+ */
 uint64_t free_ram()
 {
     return freeMemory;
 }
 
 /**
-* @brief Returns the amount of RAM used by the host.
-* @return The amount of RAM used by the host
-*/
+ * @brief Returns the amount of RAM used by the host.
+ * @return The amount of RAM used by the host
+ */
 uint64_t used_ram()
 {
     return usedMemory;
 }
 
 /**
-* @brief Get the amount of RAM reserved for this instance.
-* @return The amount of RAM reserved
-*/
+ * @brief Get the amount of RAM reserved for this instance.
+ * @return The amount of RAM reserved
+ */
 uint64_t reserved_ram()
 {
     return reservedMemory;

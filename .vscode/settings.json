@@ -12,9 +12,9 @@
         "framebuffer.h": "c"
     },
     "C_Cpp.errorSquiggles": "Enabled",
-    "docwriter.style": "Auto-detect",
+    "docwriter.style": "Doxygen",
     "docwriter.progress.trackFunctions": true,
     "docwriter.progress.trackMethods": true,
-    "docify.programmingLanguage": "c",
+    "docify.programmingLanguage": "auto-detect",
     "docify.docstringFormat": "Doxygen"
 }

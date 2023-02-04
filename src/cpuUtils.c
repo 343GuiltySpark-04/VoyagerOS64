@@ -28,6 +28,9 @@ extern void halt();
 
 bool has_ACPI;
 
+/**
+ * @brief Print the results of the CPUID readout
+ */
 void cpuid_readout()
 {
 
@@ -46,12 +49,15 @@ void cpuid_readout()
     check_acpi();
     check_ds();
     check_tm();
-    
 
     printf_("%s\n", "-----------------------------");
 }
 
 /* Example: Get CPU's model number */
+/**
+ * @brief Get the CPUID model.
+ * @return The number of EBX
+ */
 int get_model(void)
 {
     int ebx, unused;
@@ -59,6 +65,10 @@ int get_model(void)
     return ebx;
 }
 
+/**
+ * @brief Prints message to indicate SSE extensions are unavailable.
+ * @return void : Author Christian Schafmeister ( 1991 )
+ */
 void no_sse()
 {
 
@@ -66,6 +76,10 @@ void no_sse()
     printf_("%s\n", "Floating Point Math will be offline.");
 }
 
+/**
+ * @brief Prints a message to indicate XSAVE extensions are unavailable.
+ * @return non - zero if message was printed
+ */
 void no_xsave()
 {
 
@@ -73,6 +87,10 @@ void no_xsave()
     printf_("%s\n", "Floating Point Math will be offline.");
 }
 
+/**
+ * @brief Check if SEP is enabled
+ * @return true if it is
+ */
 void check_sep()
 {
 
@@ -94,6 +112,9 @@ void check_sep()
     }
 }
 
+/**
+ * @brief Check SSE extensions and print results if they are available
+ */
 void check_sse()
 {
 
@@ -118,6 +139,10 @@ void check_sse()
     }
 }
 
+/**
+ * @brief Check if XSAVE is available and print a message if not.
+ * @return 1 if XSAVE is
+ */
 void check_xsave()
 {
 
@@ -138,6 +163,10 @@ void check_xsave()
     }
 }
 
+/**
+ * @brief Check if PCID is available
+ * @return true if PCID is
+ */
 void check_pcid()
 {
 
@@ -155,6 +184,10 @@ void check_pcid()
     }
 }
 
+/**
+ * @brief Check if PAE is installed
+ * @return true if installed false
+ */
 void check_pae()
 {
 
@@ -172,6 +205,10 @@ void check_pae()
     }
 }
 
+/**
+ * @brief Check if MCE is enabled
+ * @return true if enabled false
+ */
 void check_mce()
 {
 
@@ -189,6 +226,10 @@ void check_mce()
     }
 }
 
+/**
+ * @brief Check if APIC is available
+ * @return true if it is
+ */
 void check_apic()
 {
 
@@ -206,6 +247,10 @@ void check_apic()
     }
 }
 
+/**
+ * @brief Check if MCA is installed
+ * @return true if MCA is
+ */
 void check_mca()
 {
 
@@ -223,6 +268,10 @@ void check_mca()
     }
 }
 
+/**
+ * @brief Check if CPUID has ACPI.
+ * @return true if it has ACPI false
+ */
 void check_acpi()
 {
 
@@ -244,6 +293,10 @@ void check_acpi()
     }
 }
 
+/**
+ * @brief Check if cpuid_check_ds is available
+ * @return true if cpuid_check_ds is
+ */
 void check_ds()
 {
 
@@ -261,6 +314,10 @@ void check_ds()
     }
 }
 
+/**
+ * @brief Check TM is installed on the CPU
+ * @return true if TM is installed
+ */
 void check_tm()
 {
 

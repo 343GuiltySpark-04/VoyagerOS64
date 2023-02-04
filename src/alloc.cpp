@@ -7,6 +7,10 @@
 
 AtomicLock liballocLock;
 
+/**
+* @brief Locks the liballoc lock.
+* @return Zero on success non - zero
+*/
 extern "C" int liballoc_lock()
 {
 
@@ -15,6 +19,10 @@ extern "C" int liballoc_lock()
     return 0;
 }
 
+/**
+* @brief Unlock liballoc's lock
+* @return Zero on success non - zero
+*/
 extern "C" int liballoc_unlock()
 {
 
@@ -23,6 +31,11 @@ extern "C" int liballoc_unlock()
     return 0;
 }
 
+/**
+* @brief Allocate memory and translate it to high half memory
+* @param pages number of pages to allocate
+* @return pointer to allocated memory or NULL if
+*/
 extern "C" void *liballoc_alloc(size_t pages)
 {
 
@@ -39,6 +52,12 @@ extern "C" void *liballoc_alloc(size_t pages)
     return realPtr;
 }
 
+/**
+* @brief Free memory allocated by liballoc.
+* @param * ptr
+* @param pages Number of pages to be freed.
+* @return Zero on success non - zero on failure
+*/
 extern "C" int liballoc_free(void *ptr, size_t pages)
 {
 

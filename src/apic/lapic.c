@@ -24,22 +24,40 @@
 
 static uint8_t timer_vec = 0;
 
+/**
+* @brief Read LAPIC HIGHER halphy register
+* @param reg Register to read from.
+* @return Value read from the register
+*/
 static inline uint32_t lapic_read(uint32_t reg)
 {
     return *((volatile uint32_t *)((uintptr_t)0xfee00000 + HIGHER_HALF_MEMORY_OFFSET + reg));
 }
 
+/**
+* @brief Write LAPIC HIGHER_HALF_MEMORY register.
+* @param reg Register to write to.
+* @param val Value to write to register
+*/
 static inline void lapic_write(uint32_t reg, uint32_t val)
 {
     *((volatile uint32_t *)((uintptr_t)0xfee00000 + HIGHER_HALF_MEMORY_OFFSET + reg)) = val;
 }
 
+/**
+* @brief stop LAPIC timer This is called from interrupt context
+*/
 static inline void lapic_timer_stop(void)
 {
     lapic_write(LAPIC_REG_TIMER_INITCNT, 0);
     lapic_write(LAPIC_REG_LVT_TIMER, 1 << 16);
 }
 
+/**
+* @brief LAPIC timer interrupt handler.
+* @param vector The interrupt that was raised.
+* @param * ctx
+*/
 static void lapic_timer_handler(int vector, struct cpu_ctx *ctx)
 {
     lapic_eoi();
@@ -49,6 +67,9 @@ static void lapic_timer_handler(int vector, struct cpu_ctx *ctx)
     }
 }
 
+/**
+* @brief Initialize LAPIC by configuring spurious IRQ
+*/
 void lapic_init(void)
 {
     ASSERT((rdmsr(0x1b) & 0xfffff000) == 0xfee00000);
@@ -74,11 +95,20 @@ void lapic_init(void)
     lapic_timer_calibrate();
 }
 
+/**
+* @brief Acknowledge end of I / O operation on LAPIC
+*/
 void lapic_eoi(void)
 {
     lapic_write(LAPIC_REG_EOI, LAPIC_EOI_ACK);
 }
 
+/**
+* @brief start a oneeshot timer
+* @param us number of microseconds to use
+* @param * function
+* @return nothing on success error
+*/
 void lapic_timer_oneshot(uint32_t us, void *function)
 {
     lapic_timer_stop();
@@ -93,6 +123,9 @@ void lapic_timer_oneshot(uint32_t us, void *function)
     lapic_write(LAPIC_REG_TIMER_INITCNT, ticks);
 }
 
+/**
+* @brief Calibrate LAPIC timer by resampling PIT
+*/
 void lapic_timer_calibrate(void)
 {
     lapic_timer_stop();
@@ -113,6 +146,10 @@ void lapic_timer_calibrate(void)
     lapic_timer_stop();
 }
 
+/**
+* @brief Get LAPIC ID This is the same as the ID register but with the exception that we don't care about the presence of the PCI bus.
+* @return Value of the LAPIC
+*/
 uint32_t lapic_get_id(void)
 {
     return lapic_read(LAPIC_REG_ID);

@@ -3,11 +3,24 @@
 #include <stdint.h>
 #include "include/heap.h"
 
+/**
+* @brief Initialize a heap. This is called at the start of a program to initialize the heap.
+* @param * heap
+* @return Returns nothing ; kheapBMInit () does nothing
+*/
 void k_heapBMInit(KHEAPBM *heap)
 {
     heap->fblock = 0;
 }
 
+/**
+* @brief Adds a block to the heap.
+* @param * heap
+* @param addr The address of the block to add.
+* @param size The size of the block in bytes.
+* @param bsize The size of the block in bytes.
+* @return 0 on success - 1 on failure
+*/
 int k_heapBMAddBlock(KHEAPBM *heap, uintptr_t addr, uint64_t size, uint64_t bsize)
 {
     KHEAPBLOCKBM *b;
@@ -21,11 +34,28 @@ int k_heapBMAddBlock(KHEAPBM *heap, uintptr_t addr, uint64_t size, uint64_t bsiz
     return k_heapBMAddBlockEx(heap, addr + sizeof(KHEAPBLOCKBM), size - sizeof(KHEAPBLOCKBM), bsize, b, bm, 1);
 }
 
+/**
+* @brief Get BM size of heap
+* @param size Size of heap in bytes
+* @param bsize Size of block allocation in bytes
+* @return Size of memory in bytes
+*/
 uintptr_t k_heapBMGetBMSize(uintptr_t size, uint64_t bsize)
 {
     return size / bsize;
 }
 
+/**
+* @brief Add a block to the heap.
+* @param * heap
+* @param addr The address of the block to add.
+* @param size The size of the block in bytes.
+* @param bsize The size of the block in bytes.
+* @param * b
+* @param * bm
+* @param isBMInside If true the block is in the bitmap.
+* @return 0 on success - 1 on failure
+*/
 int k_heapBMAddBlockEx(KHEAPBM *heap, uintptr_t addr, uint64_t size, uint64_t bsize, KHEAPBLOCKBM *b, uint8_t *bm, uint8_t isBMInside)
 {
     uint64_t bcnt;
@@ -66,6 +96,12 @@ int k_heapBMAddBlockEx(KHEAPBM *heap, uintptr_t addr, uint64_t size, uint64_t bs
     return 1;
 }
 
+/**
+* @brief Get NID of node a and node b
+* @param a Node to look for in BM
+* @param b Node to look for in A
+* @return NID of node a and
+*/
 static uint8_t k_heapBMGetNID(uint8_t a, uint8_t b)
 {
     uint8_t c;
@@ -74,11 +110,24 @@ static uint8_t k_heapBMGetNID(uint8_t a, uint8_t b)
     return c;
 }
 
+/**
+* @brief Allocate memory for a block of memory.
+* @param * heap
+* @param size The size of the memory block.
+* @return Pointer to the memory block
+*/
 void *k_heapBMAlloc(KHEAPBM *heap, uint64_t size)
 {
     return k_heapBMAllocBound(heap, size, 0);
 }
 
+/**
+* @brief Allocate space in a heap.
+* @param * heap
+* @param size The size of the memory to allocate.
+* @param bound The upper bound ( exclusive ) of the allocation.
+* @return Pointer to the memory allocated
+*/
 void *k_heapBMAllocBound(KHEAPBM *heap, uint64_t size, uint64_t bound)
 {
     KHEAPBLOCKBM *b;
@@ -151,6 +200,13 @@ void *k_heapBMAllocBound(KHEAPBM *heap, uint64_t size, uint64_t bound)
     return 0;
 }
 
+/**
+* @brief Set a value in the heap.
+* @param * heap
+* @param ptr The address of the data to set.
+* @param size The size of the data to set.
+* @param rval The value to set
+*/
 void k_heapBMSet(KHEAPBM *heap, uintptr_t ptr, uintptr_t size, uint8_t rval)
 {
     KHEAPBLOCKBM *b;
@@ -222,6 +278,11 @@ void k_heapBMSet(KHEAPBM *heap, uintptr_t ptr, uintptr_t size, uint8_t rval)
     return;
 }
 
+/**
+* @brief Free memory allocated by k_heapBMAlloc.
+* @param * heap
+* @param * ptr
+*/
 void k_heapBMFree(KHEAPBM *heap, void *ptr)
 {
     KHEAPBLOCKBM *b;

@@ -94,7 +94,7 @@ uint8_t idt_allocate_vector()
 }
 
 /**
-* @brief Reload IDT. This is called at boot time to re - load the IDT
+* @brief Reload IDT. This is called at boot time to reload the IDT
 */
 void idt_reload(void)
 {
@@ -119,7 +119,7 @@ void idt_free_vector(uint8_t vector)
 
 /**
 * @brief This is the handler for test messages.
-* @return Returns 0 on success non - zero on
+* @return Returns 0 on success
 */
 static void test_handler()
 {
