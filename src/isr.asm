@@ -178,7 +178,7 @@ isr_irq_stub 46
 isr_irq_stub 47
 isr_irq_stub 48 ; yield switch (used to trigger the software task switching code
 isr_irq_stub 49
-isr_irq_stub 50
+isr_irq_stub 50 ; High Priority Yield
 isr_irq_stub 51
 isr_irq_stub 52
 isr_irq_stub 53
@@ -240,6 +240,12 @@ isr_stub_table:
 
 global proc_yield
 
+global high_yield_int
+
 proc_yield:
-    int 0x30
+    int 0x31
+    ret
+
+high_yield_int:
+    int 0x32
     ret

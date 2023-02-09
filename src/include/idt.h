@@ -51,3 +51,4 @@ void idt_free_vector(uint8_t vector);
 void idt_set_descriptor(uint8_t vector, uintptr_t isr, uint8_t flags, uint8_t ist);
 void idt_init(void);
 void idt_reg_test();
+void yield_register();

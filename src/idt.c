@@ -22,13 +22,15 @@ extern uint64_t isr_stub_table[];
 
 extern void halt();
 
+#define YIELD_VECTOR 0x30
+
 /**
-* @brief Set the IDT attributes for a given interrupt.
-* @param vector The vector to set the descriptor for
-* @param isr The ISR to set the descriptor to
-* @param flags The flags to set the descriptor to
-* @param ist The IST to set the descriptor
-*/
+ * @brief Set the IDT attributes for a given interrupt.
+ * @param vector The vector to set the descriptor for
+ * @param isr The ISR to set the descriptor to
+ * @param flags The flags to set the descriptor to
+ * @param ist The IST to set the descriptor
+ */
 void idt_set_descriptor(uint8_t vector, uintptr_t isr, uint8_t flags, uint8_t ist)
 {
     idt_desc_t *descriptor = &idt[vector];
@@ -43,8 +45,8 @@ void idt_set_descriptor(uint8_t vector, uintptr_t isr, uint8_t flags, uint8_t is
 }
 
 /**
-* @brief Initialize IDT and set interrupt
-*/
+ * @brief Initialize IDT and set interrupt
+ */
 void idt_init()
 {
     idtr.base = (uintptr_t)&idt[0];
@@ -76,9 +78,9 @@ void idt_init()
 }
 
 /**
-* @brief Allocate a new IDT vector.
-* @return The IDT vector or NULL if none
-*/
+ * @brief Allocate a new IDT vector.
+ * @return The IDT vector or NULL if none
+ */
 uint8_t idt_allocate_vector()
 {
     for (unsigned int i = 0; i < IDT_MAX_DESCRIPTORS; i++)
@@ -94,8 +96,8 @@ uint8_t idt_allocate_vector()
 }
 
 /**
-* @brief Reload IDT. This is called at boot time to reload the IDT
-*/
+ * @brief Reload IDT. This is called at boot time to reload the IDT
+ */
 void idt_reload(void)
 {
 
@@ -107,10 +109,10 @@ void idt_reload(void)
 }
 
 /**
-* @brief Free IDT vector and its resources
-* @param vector IDT vector to free ( 0.. 15 )
-* @return True if success false if
-*/
+ * @brief Free IDT vector and its resources
+ * @param vector IDT vector to free ( 0.. 15 )
+ * @return True if success false if
+ */
 void idt_free_vector(uint8_t vector)
 {
     idt_set_descriptor(vector, 0, 0, 0);
@@ -118,20 +120,30 @@ void idt_free_vector(uint8_t vector)
 }
 
 /**
-* @brief This is the handler for test messages.
-* @return Returns 0 on success
-*/
+ * @brief This is the handler for test messages.
+ * @return Returns 0 on success
+ */
 static void test_handler()
 {
 
     printf_("%s\n", "Bingo");
 }
 
+/**
+ * @brief This test is for yield ISR.
+ * @return Returns 0 on success
+ */
+static void yield_isr_test()
+{
+
+    printf_("%s\n", "BAM!");
+}
+
 extern void dyn_isr_handler(uint64_t isr);
 
 /**
-* @brief IDT register test This is a test function for the ISR
-*/
+ * @brief IDT register test This is a test function for the ISR
+ */
 void idt_reg_test()
 {
 
@@ -155,4 +167,32 @@ void idt_reg_test()
     idt_set_descriptor(vector, isr_stub_table[vector], IDT_DESCRIPTOR_EXTERNAL, 001);
 
     // dyn_isr_handler(isr_delta[vector]);
+}
+
+/**
+ * @brief Registers a yield ISR. This is called at boot time to register an ISR to be tested by the IDT
+ */
+void yield_register()
+{
+
+    uint8_t vector = idt_allocate_vector();
+
+    if (vector == NULL)
+    {
+
+        printf_("%s\n", "!!!Kernel Panic!!!");
+        printf_("%s", "IDT VECTORS EXUSTED!");
+        printf_("%s\n", "!!!Kernel Panic!!!");
+        halt();
+    }
+
+    isr_delta[vector] = yield_isr_test;
+
+    printf_("%s", "ISR Delta Data: ");
+    printf_("0x%llx\n", isr_delta[vector]);
+
+    printf_("%s", "Allocated Test ISR at Vector: ");
+    printf_("%i\n", vector);
+
+    idt_set_descriptor(vector, isr_stub_table[vector], IDT_DESCRIPTOR_EXTERNAL, 001);
 }

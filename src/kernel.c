@@ -143,6 +143,10 @@ void _start(void)
 
     asm volatile("int $48");
 
+    yield_register();
+
+    asm volatile("int $49");
+
     pic_mask_irq(0);
 
     print_memmap();
@@ -234,7 +238,9 @@ void _start(void)
 
     int test = 0;
 
-    // halt();
+    init_sched();
+
+    //halt();
 
     uint64_t loopcount = 0;
     // Just chill until needed
@@ -264,9 +270,12 @@ void _start(void)
 
         loopcount++;
 
-        if (loopcount == 5)
+        if (loopcount == 25)
         {
             halt();
         }
+
+        asm volatile("int $50");
+
     }
 }

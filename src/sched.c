@@ -6,6 +6,7 @@
 #include "include/gdt.h"
 #include "include/pic.h"
 #include "include/string.h"
+#include "include/idt.h"
 #include <stdbool.h>
 
 #define SAVE_STATE()                       \
@@ -58,10 +59,10 @@ struct Process create_process(uint64_t id, uint64_t priority, bool mortality, ch
 
     struct Process p;
 
-    for (int i = 0; i < 256; i++){
+    for (int i = 0; i < 256; i++)
+    {
 
         p.name[i] = name[i];
-
     }
 
     uint64_t pid = (uint64_t)pid_hash(name);
@@ -72,6 +73,83 @@ struct Process create_process(uint64_t id, uint64_t priority, bool mortality, ch
     p.id = pid;
 
     return p;
+}
+
+/**
+ * @brief Create a Tube Process.
+ * @param high_priority Whether to create a high priority process
+ * @param immortal Whether to create an immortal process
+ * @param repeat Whether to repeat the process
+ * @param name [ 256 ]
+ * @return The newly created process or just fucking crash for now
+ */
+struct tube_process create_tube_process(bool high_priority, bool immortal, bool repeat, char name[256])
+{
+
+    struct tube_process p;
+
+    for (int i = 0; i < 256; i++)
+    {
+
+        p.name[i] = name[i];
+    }
+
+    uint64_t pid = (uint64_t)pid_hash(name);
+
+    p.allocated_time = 0;
+    p.immortal = immortal;
+    p.id = pid;
+
+    return p;
+}
+
+/**
+ * @brief High Yield Test. Prints a message to the standard output followed by a break.
+ * @return void ( no return value
+ */
+void high_yield()
+{
+
+    printf_("%s\n", "High Yield Test!");
+}
+
+/**
+ * @brief High Yield ISR Register. Allocates a new IDT vector and sets it as the high yield ISR.
+ * @return 0 on success non - zero on
+ */
+void high_yield_reg()
+{
+
+    uint8_t vector = idt_allocate_vector();
+
+    if (vector == NULL)
+    {
+
+        printf_("%s\n", "!!!Kernel Panic!!!");
+        printf_("%s", "IDT VECTORS EXUSTED!");
+        printf_("%s\n", "!!!Kernel Panic!!!");
+        halt();
+    }
+
+    isr_delta[vector] = high_yield;
+
+    printf_("%s", "ISR Delta Data: ");
+    printf_("0x%llx\n", isr_delta[vector]);
+
+    printf_("%s", "Allocated High Yield ISR at Vector: ");
+    printf_("%i\n", vector);
+
+    idt_set_descriptor(vector, isr_stub_table[vector], IDT_DESCRIPTOR_EXTERNAL, 001);
+}
+
+/**
+ * @brief Initialize the scheduler. This is called at boot time to set up the high - yield interrupts
+ */
+void init_sched()
+{
+
+    high_yield_reg();
+    high_yield_int();
 }
 
 // Generate a PID from hashing the process name
@@ -91,15 +169,13 @@ uint64_t pid_hash(char name[256])
     uint64_t hash = FNV_OFFSET_BASIS;
     for (int i = 0; i < sizeof(input); i++)
     {
-        hash ^= (input & 0xff); // XOR with lower 8 bits of input 
-        input >>= 8; // Shift right by 8 bits 
-        hash *= FNV_PRIME; // Multiply by prime number 
-    } 
+        hash ^= (input & 0xff); // XOR with lower 8 bits of input
+        input >>= 8;            // Shift right by 8 bits
+        hash *= FNV_PRIME;      // Multiply by prime number
+    }
 
-    return hash; 
+    return hash;
 }
-
-
 
 // Function to add a new process to the scheduler
 /**
