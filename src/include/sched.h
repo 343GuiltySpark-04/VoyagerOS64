@@ -6,6 +6,10 @@
 #include <stdint.h>
 #include <stdbool.h>
 
+#define SYSCALL_YIELD 1
+#define SYSCALL_FORK 2
+#define SYSCALL_EXIT 3
+
 extern uint64_t next_id;
 extern bool timer_fired;
 extern const uint64_t quantum;
@@ -43,6 +47,9 @@ struct tube_process
     char name[256];
     bool repeat;
     bool immortal;
+    uint8_t exit_code;
+    uint64_t child_ids[256];
+    uint64_t parent_id; // NULL if N/A
 };
 
 struct standby_tube
@@ -50,7 +57,9 @@ struct standby_tube
 
     struct tube_process *processes;
 
-    uint32_t process_count;
+    uint64_t process_count;
+
+    uint64_t current_standby;
 };
 
 struct active_tube
@@ -58,11 +67,15 @@ struct active_tube
 
     struct tube_process *processes;
 
-    uint32_t process_count;
+    uint64_t process_count;
+
+    uint64_t current_active;
 };
 
 struct Process create_process(uint64_t id, uint64_t priority, bool mortality, char name[256]);
 struct tube_process create_tube_process(bool high_priority, bool immortal, bool repeat, char name[256]);
+void add_tube_process(struct standby_tube *tube, struct tube_process p);
+void shift_active(struct standby_tube *standby_tube, struct active_tube *active_tube);
 void add_process(struct Scheduler *scheduler, struct Process p);
 void schedule(struct Scheduler *scheduler, uint64_t time_quantum);
 void fork(struct Scheduler *scheduler);

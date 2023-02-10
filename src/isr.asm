@@ -69,6 +69,7 @@ mov cr0, rax
 %endmacro
 
 
+
 dyn_isr_handler:
     call rdi
     ret
@@ -179,8 +180,8 @@ isr_irq_stub 47
 isr_irq_stub 48 ; yield switch (used to trigger the software task switching code
 isr_irq_stub 49
 isr_irq_stub 50 ; High Priority Yield
-isr_irq_stub 51
-isr_irq_stub 52
+isr_irq_stub 51 ; exit
+isr_irq_stub 52 ; fork
 isr_irq_stub 53
 isr_irq_stub 54
 isr_irq_stub 55

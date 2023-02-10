@@ -16,5 +16,7 @@
     "docwriter.progress.trackFunctions": true,
     "docwriter.progress.trackMethods": true,
     "docify.programmingLanguage": "c",
-    "docify.docstringFormat": "Doxygen"
+    "docify.docstringFormat": "Doxygen",
+    "docify.commentService.docstringFormat": "Doxygen",
+    "docify.commentService.programmingLanguage": "c"
 }

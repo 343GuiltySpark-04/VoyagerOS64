@@ -75,6 +75,10 @@ static struct PageTable *test_table;
 
 struct Scheduler scheduler;
 
+struct standby_tube standby_tube;
+
+struct active_tube active_tube;
+
 void hello_thread()
 {
 

@@ -44,6 +44,7 @@ static spinlock_t schedlock_t = SPINLOCK_INIT;
 const uint64_t quantum = 10;
 
 const uint64_t quantum_limit = 50;
+
 extern halt();
 
 /**
@@ -85,6 +86,7 @@ struct Process create_process(uint64_t id, uint64_t priority, bool mortality, ch
  */
 struct tube_process create_tube_process(bool high_priority, bool immortal, bool repeat, char name[256])
 {
+    spinlock_test_and_acq(&schedlock_t);
 
     struct tube_process p;
 
@@ -99,6 +101,10 @@ struct tube_process create_tube_process(bool high_priority, bool immortal, bool 
     p.allocated_time = 0;
     p.immortal = immortal;
     p.id = pid;
+    p.exit_code = 0;
+    p.parent_id = NULL;
+
+    spinlock_release(&schedlock_t);
 
     return p;
 }
@@ -111,6 +117,44 @@ void high_yield()
 {
 
     printf_("%s\n", "High Yield Test!");
+}
+
+/**
+ * @brief Exit Tube Function This function is called when the program is finished. In this case we print a message to the user
+ */
+void exit_tube()
+{
+
+    printf_("%s\n", "Exit Test!");
+}
+
+/**
+ * @brief Exit Tube ISR Register
+ */
+void exit_reg()
+{
+
+    uint8_t vector = idt_allocate_vector();
+
+    // Kernel Panic if vectors are exausted.
+    if (vector == NULL)
+    {
+
+        printf_("%s\n", "!!!Kernel Panic!!!");
+        printf_("%s", "IDT VECTORS EXUSTED!");
+        printf_("%s\n", "!!!Kernel Panic!!!");
+        halt();
+    }
+
+    isr_delta[vector] = exit_tube;
+
+    printf_("%s", "ISR Delta Data: ");
+    printf_("0x%llx\n", isr_delta[vector]);
+
+    printf_("%s", "Allocated High Yield ISR at Vector: ");
+    printf_("%i\n", vector);
+
+    idt_set_descriptor(vector, isr_stub_table[vector], IDT_DESCRIPTOR_EXTERNAL, 001);
 }
 
 /**
@@ -150,6 +194,8 @@ void init_sched()
 
     high_yield_reg();
     high_yield_int();
+    exit_reg();
+    asm volatile("int $51");
 }
 
 // Generate a PID from hashing the process name
@@ -192,6 +238,113 @@ void add_process(struct Scheduler *scheduler, struct Process p)
     scheduler->processes[scheduler->n - 1] = p;
 
     scheduler->current_process++;
+}
+
+/**
+ * @brief Add a standby process to a standby tube
+ * @param tube
+ * @param p The process to add to the
+ */
+void add_tube_process(struct standby_tube *tube, struct tube_process p)
+{
+
+    spinlock_test_and_acq(&schedlock_t);
+
+    tube->processes = realloc(tube->processes, ++tube->process_count * sizeof(struct tube_process));
+
+    tube->processes[tube->process_count - 1] = p;
+
+    tube->current_standby++;
+
+    spinlock_release(&schedlock_t);
+}
+
+/**
+ * @brief Shift active_tube to standby_tube
+ * @param standby_tube [ IN ] number of standby processes
+ * @param active_tube [ IN ] number of active
+ */
+void shift_active(struct standby_tube *standby_tube, struct active_tube *active_tube)
+{
+
+    spinlock_test_and_acq(&schedlock_t);
+
+    active_tube->processes = realloc(active_tube->processes, ++active_tube->process_count * sizeof(struct tube_process));
+
+    active_tube->processes[active_tube->process_count - 1] = standby_tube->processes[standby_tube->process_count - 1];
+
+    active_tube->current_active++;
+
+    standby_tube->processes = realloc(standby_tube->processes, --standby_tube->process_count * sizeof(struct tube_process));
+
+    standby_tube->current_standby--;
+
+    spinlock_release(&schedlock_t);
+}
+
+/**
+ * Shifts standby to the end of the active tube. This is used to ensure that we don't get stuck in the middle of a tube while processing jobs
+ *
+ * @param standby_tube - [ IN ] Standby tube to shift to
+ * @param active_tube - [ IN ] Active tube to shift from
+ */
+void shift_standby(struct standby_tube *standby_tube, struct active_tube *active_tube)
+{
+
+    spinlock_test_and_acq(&schedlock_t);
+
+    // Remove the active process from the active tube if repeat is false
+    if (active_tube->processes[active_tube->process_count - 1].repeat == false)
+    {
+
+        remove_active(&active_tube);
+
+        return;
+    }
+
+    standby_tube->processes = realloc(standby_tube->processes, ++standby_tube->process_count * sizeof(struct tube_process));
+
+    standby_tube->processes[standby_tube->process_count - 1] = active_tube->processes[active_tube->process_count - 1];
+
+    standby_tube->current_standby++;
+
+    active_tube->processes = realloc(active_tube->processes, --active_tube->process_count * sizeof(struct tube_process));
+
+    active_tube->current_active--;
+
+    spinlock_release(&schedlock_t);
+}
+
+/**
+ * Remove an active process from the a active tube.
+ *
+ * @param tube
+ */
+void remove_active(struct active_tube *tube)
+{
+
+    spinlock_test_and_acq(&schedlock_t);
+
+    // If the process is immortal then fail with error message
+    if (tube->processes[tube->process_count - 1].immortal == true)
+    {
+
+        printf_("%s\n", "ERROR: ATEMPT TO TERMINATE A IMMORTAL THREAD! ABORTING EXIT!");
+
+        spinlock_release(&schedlock_t);
+
+        return;
+    }
+
+    uint8_t exit_code = tube->processes[tube->process_count - 1].exit_code;
+
+    tube->processes = realloc(tube->processes, --tube->process_count * sizeof(struct tube_process));
+
+    tube->current_active--;
+
+    spinlock_release(&schedlock_t);
+
+    return exit_code;
 }
 
 // Function to remove a process from the scheduler
@@ -239,7 +392,7 @@ void schedule(struct Scheduler *scheduler, uint64_t time_quantum)
     // Check if an interrupt has been generated by the PIT
 
     printf_("%s", "The size of the processes array is: ");
-    printf_("%u\n", sizeof(scheduler->processes));
+    printf_("%u\n", scheduler->n);
 
     if (timer_fired == true)
     {
@@ -277,6 +430,80 @@ void schedule(struct Scheduler *scheduler, uint64_t time_quantum)
     printf_("%s\n", "succes");
 
     pic_unmask_irq(0);
+}
+
+/**
+ * @brief Schedule a tubes. This is called to manage processes.
+ * @param standby The tube to store processes on standby.
+ * @param active The tube to store and handle actively qeued processes.
+ * @param quantum The time in milliseconds to run the process for.
+ */
+void tube_schedule(struct standby_tube *standby, struct active_tube *active, uint64_t quantum)
+{
+
+    pic_mask_irq(0);
+
+    spinlock_acquire(&schedlock_t);
+
+    printf_("%s", "Size of the Standby Tube is: ");
+    printf_("%u\n", standby->process_count);
+    printf_("%s", "The size of the Active Tube is: ");
+    printf_("%u\n", active->process_count);
+
+    // Initalzies the algorithem on first run
+    if (!sched_started)
+    {
+
+        shift_active(&standby, &active);
+
+        sched_started = true;
+    }
+
+    // if timer fired then shift processes.
+    if (timer_fired)
+    {
+
+        struct tube_process *current = &active->processes[active->current_active];
+        current->allocated_time += quantum;
+
+        // check for syscall requests.
+        if (current->syscall != 0)
+        {
+
+            // find the current syscall and service it.
+            switch (current->syscall)
+            {
+
+            case SYSCALL_YIELD:
+                asm volatile("int $50");
+                break;
+            case SYSCALL_FORK:
+                asm volatile("int $52");
+                break;
+            case SYSCALL_EXIT:
+                asm volatile("int $51");
+                break;
+            default:
+                printf_("%s", "ERROR: Invalid Syscall: ");
+                printf_("%u\n", current->syscall);
+                break;
+            }
+        }
+
+        // shift standby and active processes.
+        if (current->allocated_time >= quantum_limit)
+        {
+
+            current->allocated_time = 0;
+
+            shift_standby(&standby, &active);
+            shift_active(&standby, &active);
+        }
+
+        timer_fired = false;
+    }
+
+    spinlock_release(&schedlock_t);
 }
 
 // Global variable to store the next available ID
