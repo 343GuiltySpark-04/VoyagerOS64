@@ -45,6 +45,8 @@ const uint64_t quantum = 10;
 
 const uint64_t quantum_limit = 50;
 
+extern breakpoint();
+
 extern halt();
 
 /**
@@ -189,13 +191,19 @@ void high_yield_reg()
 /**
  * @brief Initialize the scheduler. This is called at boot time to set up the high - yield interrupts
  */
-void init_sched()
+void init_sched(struct standby_tube *s_tube, struct active_tube *a_tube)
 {
 
     high_yield_reg();
     high_yield_int();
     exit_reg();
     asm volatile("int $51");
+
+    uint64_t size = (1 + sizeof(struct tube_process)) * 3;
+
+    s_tube->processes = malloc(size);
+
+    a_tube->processes = malloc(size);
 }
 
 // Generate a PID from hashing the process name
@@ -269,9 +277,11 @@ void shift_active(struct standby_tube *standby_tube, struct active_tube *active_
 
     spinlock_test_and_acq(&schedlock_t);
 
-    active_tube->processes = realloc(active_tube->processes, ++active_tube->process_count * sizeof(struct tube_process));
+    uint64_t space_inc = (active_tube->process_count + 1) * sizeof(struct tube_process);
 
-    active_tube->processes[active_tube->process_count - 1] = standby_tube->processes[standby_tube->process_count - 1];
+    active_tube->processes = realloc(active_tube->processes, space_inc);
+
+    active_tube->processes[active_tube->process_count] = standby_tube->processes[standby_tube->process_count - 1];
 
     active_tube->current_active++;
 
@@ -298,6 +308,8 @@ void shift_standby(struct standby_tube *standby_tube, struct active_tube *active
     {
 
         remove_active(&active_tube);
+
+        spinlock_release(&schedlock_t);
 
         return;
     }
@@ -455,6 +467,8 @@ void tube_schedule(struct standby_tube *standby, struct active_tube *active, uin
     {
 
         shift_active(&standby, &active);
+
+        //  halt();
 
         sched_started = true;
     }

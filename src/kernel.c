@@ -109,7 +109,7 @@ void _start(void)
 
     cpuid_readout();
 
-    breakpoint();
+   // breakpoint();
 
     stop_interrupts();
 
@@ -117,7 +117,7 @@ void _start(void)
 
     printf_("%s\n", "Loaded GDT");
 
-    breakpoint();
+   // breakpoint();
 
     idt_init();
 
@@ -169,7 +169,7 @@ void _start(void)
         printf_("%s\n", "--------------------------------------");
     }
 
-    breakpoint();
+   // breakpoint();
 
     // read_memory_map();
 
@@ -224,62 +224,41 @@ void _start(void)
 
     printf_("%s\n", ":> ");
 
-    scheduler.processes = NULL;
-    scheduler.n = 0;
+    bootspace = 3;
 
-    add_process(&scheduler, create_process(generate_id(), 1, true, "Kernel_Thread"));
-    printf_("%s", "Kernel PID: ");
-    printf_("%i\n", scheduler.processes[0].id);
-    printf_("%s", "Kernel Process Name: ");
-    printf_("%s\n", scheduler.processes[0].name);
-    add_process(&scheduler, create_process(generate_id(), 2, false, "Mortals"));
-    printf_("%s", "Mortals PID: ");
-    printf_("%i\n", scheduler.processes[1].id);
-    printf_("%s", "Mortals Process Name: ");
-    printf_("%s\n", scheduler.processes[1].name);
+    init_sched(&standby_tube, &active_tube);
 
-    sched_started = true;
+    bootspace = 0;
 
-    int test = 0;
+    add_tube_process(&standby_tube, create_tube_process(false, true, true, "Kernel_Thread"));
 
-    init_sched();
-
-    //halt();
+    // halt();
 
     uint64_t loopcount = 0;
     // Just chill until needed
     while (1)
     {
 
-        schedule(&scheduler, quantum);
+        
+
+        tube_schedule(&standby_tube, &active_tube, quantum);
+
+        //halt();
 
         printf_("%s", "Current PID: ");
-        printf_("%u\n", scheduler.processes[0].id);
+        printf_("%u\n", active_tube.processes[active_tube.process_count - 1].id);
         printf_("%s", "Current Process Name: ");
-        printf_("%s\n", scheduler.processes[0].name);
-        printf_("%s", "Number of processes: ");
-        printf_("%u\n", scheduler.n);
-        printf_("%s", "Value of Current Process: ");
-        printf_("%u\n", scheduler.processes);
-
-        if (loopcount == 3)
-        {
-
-            add_process(&scheduler, create_process(generate_id(), 2, false, "Meow"));
-            printf_("%s", "Meow PID: ");
-            printf_("%i\n", scheduler.processes[2].id);
-            printf_("%s", "Meow Process Name: ");
-            printf_("%s\n", scheduler.processes[2].name);
-        }
+        printf_("%s\n", active_tube.processes[active_tube.process_count - 1].name);
+        printf_("%s", "Number of processes (Active and Standby Tubes): ");
+        printf_("%u\n", active_tube.current_active + standby_tube.current_standby);
+        printf_("%s", "Quantum Value of Current Process: ");
+        printf_("%u\n", active_tube.processes[active_tube.process_count - 1].allocated_time);
 
         loopcount++;
 
-        if (loopcount == 25)
+        if (loopcount == 10)
         {
             halt();
         }
-
-        asm volatile("int $50");
-
     }
 }

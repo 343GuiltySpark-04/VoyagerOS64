@@ -31,3 +31,7 @@
 - Improved Timing Subsystem
 - Dynamic Interrupt Vector Allocation
 - Ability to Reload The GDT, IDT And TSS
+
+# Version 0.0.6
+- Added a scheduler of my own design
+- Greatly improved documentation
