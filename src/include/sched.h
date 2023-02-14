@@ -50,7 +50,7 @@ struct PACKED tube_process
     bool immortal;
     uint8_t exit_code;
     uint64_t child_ids[256];
-    uint64_t parent_id; // NULL if N/A
+    uint64_t *parent; // NULL if N/A
 };
 
 struct PACKED standby_tube
@@ -84,6 +84,7 @@ void shift_active(struct standby_tube *standby_tube, struct active_tube *active_
 void add_process(struct Scheduler *scheduler, struct Process p);
 void schedule(struct Scheduler *scheduler, uint64_t time_quantum);
 void tube_schedule(struct standby_tube *standby, struct active_tube *active, uint64_t quantum);
+void add_active_tube_process(struct active_tube *tube, struct tube_process p);
 void fork(struct Scheduler *scheduler);
 void exit(struct Scheduler *scheduler);
 uint64_t generate_id();

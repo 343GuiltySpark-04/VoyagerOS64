@@ -109,7 +109,7 @@ void _start(void)
 
     cpuid_readout();
 
-   // breakpoint();
+    // breakpoint();
 
     stop_interrupts();
 
@@ -117,7 +117,7 @@ void _start(void)
 
     printf_("%s\n", "Loaded GDT");
 
-   // breakpoint();
+    // breakpoint();
 
     idt_init();
 
@@ -169,7 +169,7 @@ void _start(void)
         printf_("%s\n", "--------------------------------------");
     }
 
-   // breakpoint();
+    // breakpoint();
 
     // read_memory_map();
 
@@ -230,7 +230,8 @@ void _start(void)
 
     bootspace = 0;
 
-    add_tube_process(&standby_tube, create_tube_process(false, true, true, "Kernel_Thread"));
+    add_active_tube_process(&active_tube, create_tube_process(false, true, true, "Kernel_Thread"));
+    add_tube_process(&standby_tube, create_tube_process(false, true, true, "Kernel_Thread_2"));
 
     // halt();
 
@@ -239,11 +240,9 @@ void _start(void)
     while (1)
     {
 
-        
-
         tube_schedule(&standby_tube, &active_tube, quantum);
 
-        //halt();
+        // halt();
 
         printf_("%s", "Current PID: ");
         printf_("%u\n", active_tube.processes[active_tube.process_count - 1].id);
@@ -256,7 +255,16 @@ void _start(void)
 
         loopcount++;
 
-        if (loopcount == 5)
+        print_memory();
+
+        if (loopcount == 4){
+
+            print_memmap();
+
+
+        }
+
+        if (loopcount == 50)
         {
             halt();
         }

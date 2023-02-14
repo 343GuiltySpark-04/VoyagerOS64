@@ -204,9 +204,9 @@ void init_sched(struct standby_tube *s_tube, struct active_tube *a_tube)
 
     uint64_t size = (1 + sizeof(struct tube_process)) * 3;
 
-    // s_tube->processes = malloc(size);
+     s_tube->processes = malloc(size);
 
-    // a_tube->processes = malloc(size);
+     a_tube->processes = malloc(size);
 }
 
 // Generate a PID from hashing the process name
@@ -282,6 +282,54 @@ void add_tube_process(struct standby_tube *tube, struct tube_process p)
     tube->processes[tube->process_count - 1] = p;
 
     tube->current_standby++;
+
+    uint8_t index = tube->process_count - 1;
+
+    printf_("%s\n", "New process data (in the tube) as follows.");
+    printf_("%s\n", "----------------------------------------");
+    printf("%s", "Process Name: ");
+    printf_("%s\n", tube->processes[index].name);
+    printf_("%s", "PID: ");
+    printf_("%u\n", tube->processes[index].id);
+    printf_("%s", "Repeat flag: ");
+    printf_("%u\n", tube->processes[index].repeat);
+    printf_("%s", "Immortal flag: ");
+    printf_("%u\n", tube->processes[index].immortal);
+    printf_("%s", "The size of the process is: ");
+    printf_("%u", sizeof(tube->processes[index]));
+    printf_("%s", " or ");
+    printf_("0x%llx\n", sizeof(tube->processes[index]));
+    printf_("%s\n", "----------------------------------------");
+
+    spinlock_release(&schedlock_t);
+}
+
+void add_active_tube_process(struct active_tube *tube, struct tube_process p)
+{
+
+    spinlock_test_and_acq(&schedlock_t);
+
+    printf_("%s\n", "New process data as follows.");
+    printf_("%s\n", "----------------------------------------");
+    printf("%s", "Process Name: ");
+    printf_("%s\n", p.name);
+    printf_("%s", "PID: ");
+    printf_("%u\n", p.id);
+    printf_("%s", "Repeat flag: ");
+    printf_("%u\n", p.repeat);
+    printf_("%s", "Immortal flag: ");
+    printf_("%u\n", p.immortal);
+    printf_("%s", "The size of the process is: ");
+    printf_("%u", sizeof(p));
+    printf_("%s", " or ");
+    printf_("0x%llx\n", sizeof(p));
+    printf_("%s\n", "----------------------------------------");
+
+    tube->processes = realloc(tube->processes, ++tube->process_count * sizeof(struct tube_process));
+
+    tube->processes[tube->process_count - 1] = p;
+
+    tube->current_active++;
 
     uint8_t index = tube->process_count - 1;
 
@@ -507,11 +555,11 @@ void tube_schedule(struct standby_tube *standby, struct active_tube *active, uin
     printf_("%s\n", "----------------------------------------");
 
     // Initalzies the algorithem on first run
-    if (!sched_started)
+    if (sched_started != true)
     {
 
-        active->process_count = 0;
-        active->current_active = 0;
+        //   active->process_count = 0;
+        // active->current_active = 0;
 
         /*         printf_("%s", "The size of all standby tube processes is: ");
                 printf_("%u", sizeof(standby->processes));
@@ -547,34 +595,6 @@ void tube_schedule(struct standby_tube *standby, struct active_tube *active, uin
 
         // uint64_t space_inc = (active->process_count + 1) * sizeof(struct tube_process);
 
-        index = standby->process_count - 1;
-
-        printf_("%s\n", "New process data (in the tube) as follows.");
-        printf_("%s\n", "----------------------------------------");
-        printf("%s", "Process Name: ");
-        printf_("%s\n", standby->processes[index].name);
-        printf_("%s", "PID: ");
-        printf_("%u\n", standby->processes[index].id);
-        printf_("%s", "Repeat flag: ");
-        printf_("%u\n", standby->processes[index].repeat);
-        printf_("%s", "Immortal flag: ");
-        printf_("%u\n", standby->processes[index].immortal);
-        printf_("%s", "The size of the process is: ");
-        printf_("%u", sizeof(standby->processes[index]));
-        printf_("%s", " or ");
-        printf_("0x%llx\n", sizeof(standby->processes[index]));
-        printf_("%s\n", "----------------------------------------");
-
-        active->processes = realloc(active->processes, (++active->process_count) * sizeof(struct tube_process));
-
-        active->processes[active->process_count] = standby->processes[standby->process_count - 1];
-
-        active->current_active++;
-
-        standby->processes = realloc(standby->processes, (--standby->process_count) * sizeof(struct tube_process));
-
-        standby->current_standby--;
-
         index = active->process_count - 1;
 
         printf_("%s\n", "New process data (in the tube) as follows.");
@@ -609,10 +629,10 @@ void tube_schedule(struct standby_tube *standby, struct active_tube *active, uin
     }
 
     // if timer fired then shift processes.
-    if (timer_fired)
+    if (timer_fired == true)
     {
 
-        struct tube_process *current = &active->processes[active->current_active];
+        struct tube_process *current = &active->processes[active->process_count - 1];
         current->allocated_time += quantum;
 
         // check for syscall requests.
@@ -733,9 +753,16 @@ void tube_schedule(struct standby_tube *standby, struct active_tube *active, uin
         }
 
         timer_fired = false;
+
+        printf_("%s\n", "Timer reset!");
     }
 
     spinlock_release(&schedlock_t);
+    printf_("%s\n", "Spinlock realeased!");
+
+    pic_unmask_irq(0);
+
+    printf_("%s\n", "IRQ Unmasked!");
 }
 
 // Global variable to store the next available ID
