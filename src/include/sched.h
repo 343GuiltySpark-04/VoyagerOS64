@@ -5,6 +5,7 @@
 
 #include <stdint.h>
 #include <stdbool.h>
+#include "global_defs.h"
 
 #define SYSCALL_YIELD 1
 #define SYSCALL_FORK 2
@@ -37,7 +38,7 @@ struct Scheduler
     uint64_t current_process;
 };
 
-struct tube_process
+struct PACKED tube_process
 {
 
     uint64_t id;
@@ -52,7 +53,7 @@ struct tube_process
     uint64_t parent_id; // NULL if N/A
 };
 
-struct standby_tube
+struct PACKED standby_tube
 {
 
     struct tube_process *processes;
@@ -62,7 +63,7 @@ struct standby_tube
     uint64_t current_standby;
 };
 
-struct active_tube
+struct PACKED active_tube
 {
 
     struct tube_process *processes;
@@ -70,6 +71,8 @@ struct active_tube
     uint64_t process_count;
 
     uint64_t current_active;
+
+    uint8_t prev_exit_code;
 };
 
 struct Process create_process(uint64_t id, uint64_t priority, bool mortality, char name[256]);

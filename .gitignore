@@ -71,3 +71,4 @@ limine/*
 limine/
 latex/*
 html/*
+*.img

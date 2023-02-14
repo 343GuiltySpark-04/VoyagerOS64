@@ -21,13 +21,13 @@ export CC=$(HOME)/opt/cross/bin/x86_64-elf-gcc
 export LD=$(HOME)/opt/cross/bin/x86_64-elf-ld
  
 # User controllable CFLAGS.
-CFLAGS ?= -g -O2 -pipe -Wall -Wextra -finline-functions
+CFLAGS ?= -g -O1 -pipe -Wall -Wextra -finline-functions
  
 # User controllable preprocessor flags. We set none by default.
 CPPFLAGS ?= 
  
 # User controllable nasm flags.
-NASMFLAGS ?= -O2 -F dwarf -g
+NASMFLAGS ?= -O1 -F dwarf -g
  
 # User controllable linker flags. We set none by default.
 LDFLAGS ?=

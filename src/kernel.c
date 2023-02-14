@@ -75,9 +75,9 @@ static struct PageTable *test_table;
 
 struct Scheduler scheduler;
 
-struct standby_tube standby_tube;
+volatile struct standby_tube standby_tube;
 
-struct active_tube active_tube;
+volatile struct active_tube active_tube;
 
 void hello_thread()
 {
@@ -256,7 +256,7 @@ void _start(void)
 
         loopcount++;
 
-        if (loopcount == 10)
+        if (loopcount == 5)
         {
             halt();
         }
