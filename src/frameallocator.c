@@ -12,6 +12,7 @@ uint64_t usedMemory = 0;
 bool initialized = false;
 uint8_t *frameBitmap = NULL;
 uint64_t bitmapSize = 0;
+temp = 0;
 
 extern void halt();
 
@@ -80,7 +81,7 @@ void read_memory_map()
     uint64_t memorySize = get_memory_size(); // I think this will work the same?
     freeMemory = memorySize;
 
-    bitmapSize = memorySize / 0x1000 / 8 + 1;
+    bitmapSize = (memorySize / 0x1000) / 8 + 1;
 
     printf_("%s", "Bitmap Size is: ");
     printf_("0x%llx\n", bitmapSize);
@@ -154,7 +155,7 @@ void read_memory_map()
 
 /**
  * @brief Request a frame from page.
- * @return Pointer to frame or NULL if none
+ * @return Pointer to frame or NULL if none (and in the future page swap)
  */
 void *frame_request()
 {
@@ -168,7 +169,7 @@ void *frame_request()
         return (void *)(i * 0x1000);
     }
 
-    return NULL; // Page Frame Swap to file
+    return NULL; // just fucking page fault 
 }
 
 /**
@@ -196,7 +197,7 @@ void print_frame_bitmap()
 /**
  * @brief Request multiple frames from the frame bitmap
  * @param count Number of frames to request
- * @return Pointer to frame or NULL if there isn't
+ * @return Pointer to frame or NULL if there isn't (and in the future page swap)
  */
 void *frame_request_multiple(uint32_t count)
 {
@@ -223,7 +224,7 @@ void *frame_request_multiple(uint32_t count)
         }
     }
 
-    return NULL;
+    return NULL; // in the future page swap to file, for now just fucking page fault.
 }
 
 /**
@@ -242,8 +243,17 @@ void frame_free(void *address)
 
     uint64_t index = (uint64_t)address / 0x1000;
 
+    // if (temp == 1){
+
+    printf_("%s", "!!!!!INFO!!!!! BITMAP DATA ADDRESS: ");
+    printf_("0x%llx\n", index);
+
+    // }
+
     if (bitmap_get(frameBitmap, index) == false)
     {
+
+        printf_("%s\n", "Warning: already freed!");
         return;
     }
 
@@ -260,6 +270,12 @@ void frame_free(void *address)
  */
 void frame_free_multiple(void *address, uint64_t pageCount)
 {
+
+    printf_("%s", "INFO: Freeing at address: ");
+    printf_("0x%llx", address);
+    printf_("%s", " for this number of pages: ");
+    printf_("%u\n", pageCount);
+
     for (uint64_t t = 0; t < pageCount; t++)
     {
         frame_free((void *)((uint64_t)address + ((uint64_t)t * 0x1000)));

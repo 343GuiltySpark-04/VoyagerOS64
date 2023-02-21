@@ -35,3 +35,6 @@
 # Version 0.0.6
 - Added a scheduler of my own design
 - Greatly improved documentation
+- Fixed a typo that stopped SE extension detection from working
+- Added stack tracing on faults that can be toggled
+- Added a kmode struct containing behavior toggles

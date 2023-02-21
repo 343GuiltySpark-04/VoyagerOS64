@@ -24,6 +24,7 @@ extern int cpuid_check_acpi();
 extern int cpuid_check_ds();
 extern int cpuid_check_tm();
 extern int cpuid_check_sep();
+extern int cpuid_check_htt();
 extern void halt();
 
 bool has_ACPI;
@@ -38,6 +39,7 @@ void cpuid_readout()
     printf_("%s\n", "CPUID Readout As Follows");
     printf_("%s\n", "-----------------------------");
 
+    check_htt();
     check_sep();
     check_sse();
     check_xsave();
@@ -202,6 +204,26 @@ void check_pae()
     {
 
         printf_("%s\n", "PAE: No");
+    }
+}
+
+/**
+ * @brief cpuid_check_htt Description : Checks to see if HTT is
+ */
+void check_htt()
+{
+
+    int found = cpuid_check_htt();
+
+    if (found == 1)
+    {
+
+        printf_("%s\n", "HTT: Yes");
+    }
+    else
+    {
+
+        printf_("%s\n", "HTT: No");
     }
 }
 

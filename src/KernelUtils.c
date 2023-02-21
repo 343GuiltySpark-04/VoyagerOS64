@@ -28,6 +28,13 @@ volatile struct limine_framebuffer_request fbr_req = {
 
 };
 
+const struct kswitches k_mode = {
+
+    .stack_trace_size = 16,
+    .stack_trace_on_fault = 1
+
+};
+
 extern volatile struct limine_kernel_address_request Kaddress_req;
 
 // get avialable RAM size

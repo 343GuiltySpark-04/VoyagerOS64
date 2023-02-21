@@ -75,6 +75,16 @@ struct PACKED active_tube
     uint8_t prev_exit_code;
 };
 
+struct PACKED hot_tube
+{
+
+    struct tube_process *processes;
+
+    uint64_t process_count;
+
+    uint64_t current_waiting;
+};
+
 struct Process create_process(uint64_t id, uint64_t priority, bool mortality, char name[256]);
 struct tube_process create_tube_process(bool high_priority, bool immortal, bool repeat, char name[256]);
 void shift_standby(struct standby_tube *standby_tube, struct active_tube *active_tube);
@@ -83,12 +93,12 @@ void add_tube_process(struct standby_tube *tube, struct tube_process p);
 void shift_active(struct standby_tube *standby_tube, struct active_tube *active_tube);
 void add_process(struct Scheduler *scheduler, struct Process p);
 void schedule(struct Scheduler *scheduler, uint64_t time_quantum);
-void tube_schedule(struct standby_tube *standby, struct active_tube *active, uint64_t quantum);
+void tube_schedule(struct standby_tube *standby, struct active_tube *active, struct hot_tube *hot, uint64_t quantum);
 void add_active_tube_process(struct active_tube *tube, struct tube_process p);
 void fork(struct Scheduler *scheduler);
 void exit(struct Scheduler *scheduler);
 uint64_t generate_id();
 uint64_t pid_hash(char name[256]);
-void init_sched(struct standby_tube *s_tube, struct active_tube *a_tube);
+void init_sched(struct standby_tube *s_tube, struct active_tube *a_tube, struct hot_tube *h_tube);
 
 #endif

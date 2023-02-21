@@ -4,6 +4,7 @@
 #include "include/paging/frameallocator.h"
 #include "include/paging/paging.h"
 #include "include/lock.hpp"
+#include "include/printf.h"
 
 AtomicLock liballocLock;
 
@@ -61,7 +62,13 @@ extern "C" void *liballoc_alloc(size_t pages)
 extern "C" int liballoc_free(void *ptr, size_t pages)
 {
 
+    printf_("%s", "INFO: liballoc_free ptr: ");
+    printf_("0x%llx\n", ptr);
+
     void *realPtr = (void *)TranslateToPhysicalMemoryAddress((uint64_t)ptr);
+
+    printf_("%s", "INFO: realptr: ");
+    printf_("0x%llx\n", realPtr);
 
     frame_free_multiple(realPtr, pages);
 

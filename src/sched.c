@@ -8,6 +8,7 @@
 #include "include/string.h"
 #include "include/idt.h"
 #include <stdbool.h>
+#include "include/stack_trace.h"
 
 #define SAVE_STATE()                       \
     asm volatile("pushq %rax");            \
@@ -41,9 +42,9 @@ bool sched_started = false;
 
 static spinlock_t schedlock_t = SPINLOCK_INIT;
 
-const uint64_t quantum = 10;
+const uint64_t quantum = 5;
 
-const uint64_t quantum_limit = 50;
+const uint64_t quantum_limit = 15;
 
 extern breakpoint();
 
@@ -194,7 +195,7 @@ void high_yield_reg()
 /**
  * @brief Initialize the scheduler. This is called at boot time to set up the high - yield interrupts
  */
-void init_sched(struct standby_tube *s_tube, struct active_tube *a_tube)
+void init_sched(struct standby_tube *s_tube, struct active_tube *a_tube, struct hot_tube *h_tube)
 {
 
     high_yield_reg();
@@ -204,9 +205,13 @@ void init_sched(struct standby_tube *s_tube, struct active_tube *a_tube)
 
     uint64_t size = (1 + sizeof(struct tube_process)) * 3;
 
-     s_tube->processes = malloc(size);
+    uint64_t hot_size = (1 + sizeof(struct tube_process)) * 256;
 
-     a_tube->processes = malloc(size);
+    h_tube->processes = malloc(hot_size);
+
+    s_tube->processes = malloc(size);
+
+    a_tube->processes = malloc(size);
 }
 
 // Generate a PID from hashing the process name
@@ -304,6 +309,11 @@ void add_tube_process(struct standby_tube *tube, struct tube_process p)
     spinlock_release(&schedlock_t);
 }
 
+/**
+ * @brief Add a process to a tube. This is a blocking call and will block until the process is added to the tube
+ * @param tube
+ * @param p pointer to the process to add to the active
+ */
 void add_active_tube_process(struct active_tube *tube, struct tube_process p)
 {
 
@@ -353,7 +363,7 @@ void add_active_tube_process(struct active_tube *tube, struct tube_process p)
 }
 
 /**
- * @brief Shift active_tube to standby_tube
+ * @brief [DEPRECIATED] Shift active_tube to standby_tube
  * @param standby_tube [ IN ] number of standby processes
  * @param active_tube [ IN ] number of active
  */
@@ -378,7 +388,7 @@ void shift_active(struct standby_tube *s_tube, struct active_tube *a_tube)
 }
 
 /**
- * Shifts standby to the end of the active tube. This is used to ensure that we don't get stuck in the middle of a tube while processing jobs
+ * @brief [DEPRECIATED] standby to the end of the active tube. This is used to ensure that we don't get stuck in the middle of a tube while processing jobs
  *
  * @param standby_tube - [ IN ] Standby tube to shift to
  * @param active_tube - [ IN ] Active tube to shift from
@@ -413,7 +423,7 @@ void shift_standby(struct standby_tube *standby_tube, struct active_tube *active
 }
 
 /**
- * Remove an active process from the a active tube.
+ * @brief [DEPRECIATED] an active process from the a active tube.
  *
  * @param tube
  */
@@ -535,7 +545,7 @@ void schedule(struct Scheduler *scheduler, uint64_t time_quantum)
  * @param active The tube to store and handle actively qeued processes.
  * @param quantum The time in milliseconds to run the process for.
  */
-void tube_schedule(struct standby_tube *standby, struct active_tube *active, uint64_t quantum)
+void tube_schedule(struct standby_tube *standby, struct active_tube *active, struct hot_tube *hot, uint64_t quantum)
 {
 
     pic_mask_irq(0);
@@ -555,45 +565,8 @@ void tube_schedule(struct standby_tube *standby, struct active_tube *active, uin
     printf_("%s\n", "----------------------------------------");
 
     // Initalzies the algorithem on first run
-    if (sched_started != true)
+    if (sched_started == false)
     {
-
-        //   active->process_count = 0;
-        // active->current_active = 0;
-
-        /*         printf_("%s", "The size of all standby tube processes is: ");
-                printf_("%u", sizeof(standby->processes));
-                printf_("%s", " or ");
-                printf_("0x%llx\n", sizeof(standby->processes));
-                printf_("%s", "The size of all active tube processes is: ");
-                printf_("%u", sizeof(active->processes));
-                printf_("%s", " or ");
-                printf_("0x%llx\n", sizeof(active->processes));
-                printf_("%s", "The size of a process is: ");
-                printf_("%u", sizeof(struct tube_process));
-                printf_("%s", " or ");
-                printf_("0x%llx\n", sizeof(struct tube_process));
-                printf_("%s", "The size of the standby tube struct is: ");
-                printf_("%u", sizeof(sizeof(standby)));
-                printf_("%s", " or ");
-                printf_("0x%llx\n", sizeof(standby));
-                printf_("%s", "The size of the active tube struct is: ");
-                printf_("%u", sizeof(active));
-                printf_("%s", " or ");
-                printf_("0x%llx\n", sizeof(active));
-                printf_("%s", "The size of base size of an standby tube struct is: ");
-                printf_("%u", sizeof(struct standby_tube));
-                printf_("%s", " or ");
-                printf_("0x%llx\n", sizeof(struct standby_tube));
-                printf_("%s", "The size of base size of an active tube struct is: ");
-                printf_("%u", sizeof(struct active_tube));
-                printf_("%s", " or ");
-                printf_("0x%llx\n", sizeof(struct active_tube));
-                printf_("%s\n", "----------------------------------------");
-         */
-        // shift_active(&standby, &active);
-
-        // uint64_t space_inc = (active->process_count + 1) * sizeof(struct tube_process);
 
         index = active->process_count - 1;
 
@@ -623,9 +596,73 @@ void tube_schedule(struct standby_tube *standby, struct active_tube *active, uin
         printf_("0x%llx\n", sizeof(struct tube_process));
         printf_("%s\n", "----------------------------------------");
 
-        // halt();
-
         sched_started = true;
+    }
+
+    uint64_t a_cap = active->process_count - 1;
+
+    uint64_t s_cap = standby->process_count - 1;
+
+    uint64_t a_index = 0;
+
+    uint64_t s_index = 0;
+
+    printf_("%s\n", "INFO: Data for all active tube processes as follows: ");
+    printf_("%s\n", "-------------------------------------------------------");
+
+    while (a_index <= a_cap)
+    {
+
+        struct tube_process *a_spec = &active->processes[a_index];
+
+        printf_("%s\n", "New process data as follows.");
+        printf_("%s\n", "----------------------------------------");
+        printf_("%s", "Active Index Number: ");
+        printf_("%u\n", a_index);
+        printf("%s", "Process Name: ");
+        printf_("%s\n", a_spec->name);
+        printf_("%s", "PID: ");
+        printf_("%u\n", a_spec->id);
+        printf_("%s", "Repeat flag: ");
+        printf_("%u\n", a_spec->repeat);
+        printf_("%s", "Immortal flag: ");
+        printf_("%u\n", a_spec->immortal);
+        printf_("%s", "The size of the process is: ");
+        printf_("%u", sizeof(*a_spec));
+        printf_("%s", " or ");
+        printf_("0x%llx\n", sizeof(*a_spec));
+        printf_("%s\n", "----------------------------------------");
+
+        a_index++;
+    }
+
+    printf_("%s\n", "INFO: Data for all standby tube processes as follows: ");
+    printf_("%s\n", "-------------------------------------------------------");
+
+    while (s_index <= s_cap)
+    {
+
+        struct tube_process *s_spec = &standby->processes[s_index];
+
+        printf_("%s\n", "New process data as follows.");
+        printf_("%s\n", "----------------------------------------");
+        printf_("%s", "Standby Index Number: ");
+        printf_("%u\n", s_index);
+        printf("%s", "Process Name: ");
+        printf_("%s\n", s_spec->name);
+        printf_("%s", "PID: ");
+        printf_("%u\n", s_spec->id);
+        printf_("%s", "Repeat flag: ");
+        printf_("%u\n", s_spec->repeat);
+        printf_("%s", "Immortal flag: ");
+        printf_("%u\n", s_spec->immortal);
+        printf_("%s", "The size of the process is: ");
+        printf_("%u", sizeof(*s_spec));
+        printf_("%s", " or ");
+        printf_("0x%llx\n", sizeof(*s_spec));
+        printf_("%s\n", "----------------------------------------");
+
+        s_index++;
     }
 
     // if timer fired then shift processes.
@@ -665,8 +702,6 @@ void tube_schedule(struct standby_tube *standby, struct active_tube *active, uin
 
             current->allocated_time = 0;
 
-            // shift_standby(&standby, &active);
-
             printf_("%s", "Size of the Standby Tube is: ");
             printf_("%u\n", standby->process_count);
             printf_("%s", "The size of the Active Tube is: ");
@@ -681,17 +716,11 @@ void tube_schedule(struct standby_tube *standby, struct active_tube *active, uin
             if (active->processes[active->process_count - 1].repeat == false)
             {
 
-                // remove_active(&active_tube);
-
                 // If the process is immortal then fail with error message
                 if (active->processes[active->process_count - 1].immortal == true)
                 {
 
                     printf_("%s\n", "ERROR: ATEMPT TO TERMINATE A IMMORTAL THREAD! ABORTING EXIT!");
-
-                    /// spinlock_release(&schedlock_t);
-
-                    goto L1;
                 }
 
                 active->prev_exit_code = active->processes[active->process_count - 1].exit_code;
@@ -710,46 +739,147 @@ void tube_schedule(struct standby_tube *standby, struct active_tube *active, uin
                 printf_("%s", " or ");
                 printf_("0x%llx\n", sizeof(struct tube_process));
                 printf_("%s\n", "----------------------------------------");
-
-                // spinlock_release(&schedlock_t);
-
-                // return;
             }
+            else if (current->id == NULL || 0)
+            {
 
-        L1:
+                printf_("%s\n", "!!!Kernel Panic!!!");
+                printf_("%s", "PROCESS WITH NULL DATA!");
+                printf_("%s\n", "!!!Kernel Panic!!!");
+                halt();
+            }
+            else
+            {
 
-            standby->processes = realloc(standby->processes, (++standby->process_count) * sizeof(struct tube_process));
+                // Swap the first indexed processes
 
-            standby->processes[standby->process_count - 1] = active->processes[active->process_count - 1];
+                active->processes = realloc(active->processes, (++active->process_count) * sizeof(struct tube_process));
 
-            standby->current_standby++;
+                active->processes[active->process_count - 1] = standby->processes[0];
 
-            active->processes = realloc(active->processes, (--active->process_count) * sizeof(struct tube_process));
+                standby->processes = realloc(standby->processes, (++standby->process_count) * sizeof(struct tube_process));
 
-            active->current_active--;
+                standby->processes[standby->process_count - 1] = active->processes[0];
 
-            // shift_active(&standby, &active);
+                // Shift the indexes to the new order
 
-            active->processes = realloc(active->processes, (++active->process_count) * sizeof(struct tube_process));
+                for (uint64_t i = active->process_count - 1; i > 0; i--)
+                {
 
-            active->processes[active->process_count] = standby->processes[standby->process_count - 1];
+                    active->processes[i - 1] = active->processes[i];
+                }
 
-            active->current_active++;
+                for (uint64_t i = standby->process_count - 1; i > 0; i--)
+                {
 
-            standby->processes = realloc(standby->processes, (--standby->process_count) * sizeof(struct tube_process));
+                    standby->processes[i - 1] = standby->processes[i];
+                }
 
-            standby->current_standby--;
+                // finally realloc to the size minus the orignal process
 
-            printf_("%s\n", "!!L1 marker!!");
-            printf_("%s", "Size of the Standby Tube is: ");
-            printf_("%u\n", standby->process_count);
-            printf_("%s", "The size of the Active Tube is: ");
-            printf_("%u\n", active->process_count);
-            printf_("%s", "The size of a process is: ");
-            printf_("%u", sizeof(struct tube_process));
-            printf_("%s", " or ");
-            printf_("0x%llx\n", sizeof(struct tube_process));
-            printf_("%s\n", "----------------------------------------");
+                standby->processes = realloc(standby->processes, (standby->process_count - 1) * sizeof(struct tube_process));
+
+                active->processes = realloc(active->processes, (active->process_count - 1) * sizeof(struct tube_process));
+
+                /*                 standby->processes = realloc(standby->processes, (++standby->process_count) * sizeof(struct tube_process));
+
+                                standby->processes[standby->process_count - 1] = active->processes[active->process_count - 1];
+
+                                standby->current_standby++;
+
+                                active->processes = realloc(active->processes, (--active->process_count) * sizeof(struct tube_process));
+
+                                active->current_active--;
+
+                                active->processes = realloc(active->processes, (++active->process_count) * sizeof(struct tube_process));
+
+                                active->processes[active->process_count - 1] = standby->processes[standby->process_count - 1];
+
+                                active->current_active++; */
+
+                a_cap = active->process_count - 1;
+
+                s_cap = standby->process_count - 1;
+
+                a_index = 0;
+
+                s_index = 0;
+
+                printf_("%s\n", "INFO: Data for all active tube processes as follows: ");
+                printf_("%s\n", "-------------------------------------------------------");
+
+                while (a_index <= a_cap)
+                {
+
+                    struct tube_process *a_spec = &active->processes[a_index];
+
+                    printf_("%s\n", "New process data as follows.");
+                    printf_("%s\n", "----------------------------------------");
+                    printf_("%s", "Active Index Number: ");
+                    printf_("%u\n", a_index);
+                    printf("%s", "Process Name: ");
+                    printf_("%s\n", a_spec->name);
+                    printf_("%s", "PID: ");
+                    printf_("%u\n", a_spec->id);
+                    printf_("%s", "Repeat flag: ");
+                    printf_("%u\n", a_spec->repeat);
+                    printf_("%s", "Immortal flag: ");
+                    printf_("%u\n", a_spec->immortal);
+                    printf_("%s", "The size of the process is: ");
+                    printf_("%u", sizeof(*a_spec));
+                    printf_("%s", " or ");
+                    printf_("0x%llx\n", sizeof(*a_spec));
+                    printf_("%s\n", "----------------------------------------");
+
+                    a_index++;
+                }
+
+                printf_("%s\n", "INFO: Data for all standby tube processes as follows: ");
+                printf_("%s\n", "-------------------------------------------------------");
+
+                while (s_index <= s_cap)
+                {
+
+                    struct tube_process *s_spec = &standby->processes[s_index];
+
+                    printf_("%s\n", "New process data as follows.");
+                    printf_("%s\n", "----------------------------------------");
+                    printf_("%s", "Standby Index Number: ");
+                    printf_("%u\n", s_index);
+                    printf("%s", "Process Name: ");
+                    printf_("%s\n", s_spec->name);
+                    printf_("%s", "PID: ");
+                    printf_("%u\n", s_spec->id);
+                    printf_("%s", "Repeat flag: ");
+                    printf_("%u\n", s_spec->repeat);
+                    printf_("%s", "Immortal flag: ");
+                    printf_("%u\n", s_spec->immortal);
+                    printf_("%s", "The size of the process is: ");
+                    printf_("%u", sizeof(*s_spec));
+                    printf_("%s", " or ");
+                    printf_("0x%llx\n", sizeof(*s_spec));
+                    printf_("%s\n", "----------------------------------------");
+
+                    s_index++;
+                }
+
+                // shift all processes down the tube
+                /*
+                                standby->processes = realloc(standby->processes, (--standby->process_count) * sizeof(struct tube_process));
+
+                                standby->current_standby--;
+                 */
+                printf_("%s\n", "!!L1 marker!!");
+                printf_("%s", "Size of the Standby Tube is: ");
+                printf_("%u\n", standby->process_count);
+                printf_("%s", "The size of the Active Tube is: ");
+                printf_("%u\n", active->process_count);
+                printf_("%s", "The size of a process is: ");
+                printf_("%u", sizeof(struct tube_process));
+                printf_("%s", " or ");
+                printf_("0x%llx\n", sizeof(struct tube_process));
+                printf_("%s\n", "----------------------------------------");
+            }
         }
 
         timer_fired = false;

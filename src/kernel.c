@@ -25,6 +25,7 @@
 #include "include/paging/vmm.h"
 #include "include/acpi/acpi.h"
 #include "include/apic/lapic.h"
+#include "include/stack_trace.h"
 
 #define White "\033[1;00m"
 #define Red "\033[1;31m"
@@ -63,6 +64,7 @@ extern void stop_interrupts();
 extern void start_interrupts();
 extern void halt();
 extern void task_switch_int();
+extern uint64_t walk_stack(uint64_t *array, uint64_t max);
 
 /// is fully loaded yet.
 uint32_t bootspace = 2;
@@ -75,9 +77,11 @@ static struct PageTable *test_table;
 
 struct Scheduler scheduler;
 
-volatile struct standby_tube standby_tube;
+struct standby_tube standby_tube;
 
-volatile struct active_tube active_tube;
+struct active_tube active_tube;
+
+struct hot_tube hot_tube;
 
 void hello_thread()
 {
@@ -97,13 +101,15 @@ void _start(void)
 
         bootspace = 1;
 
-        printf_("%s\n", "Bootloader Terminal Offline Using Serial Only!");
+        printf_("%s\n", "WARNING: Bootloader Terminal Offline Using Serial Only!");
     }
 
     printf_("%s", "Early Terminal Using Framebuffer At Physical Address: ");
     printf_("0x%llx\n", TranslateToPhysicalMemoryAddress(early_term.response->terminals[0]->framebuffer));
     printf_("%s", "And At Virtual Address: ");
     printf_("0x%llx\n", early_term.response->terminals[0]->framebuffer);
+
+    print_stack_size();
 
     print_date();
 
@@ -220,13 +226,18 @@ void _start(void)
 
     print_date();
 
+    stack_trace(NULL);
+
+    print_stack_size();
+
     printf_("%s\n", "VoyagerOS64 v0.0.4");
 
     printf_("%s\n", ":> ");
 
-    bootspace = 3;
+        bootspace = 1;
 
-    init_sched(&standby_tube, &active_tube);
+    init_sched(&standby_tube, &active_tube, &hot_tube);
+    // print_frame_bitmap();
 
     bootspace = 0;
 
@@ -240,31 +251,29 @@ void _start(void)
     while (1)
     {
 
-        tube_schedule(&standby_tube, &active_tube, quantum);
+        tube_schedule(&standby_tube, &active_tube, &hot_tube, quantum);
 
-        // halt();
-
+        printf_("%u\n", loopcount);
         printf_("%s", "Current PID: ");
-        printf_("%u\n", active_tube.processes[active_tube.process_count - 1].id);
+        printf_("%u\n", active_tube.processes[0].id);
         printf_("%s", "Current Process Name: ");
-        printf_("%s\n", active_tube.processes[active_tube.process_count - 1].name);
+        printf_("%s\n", active_tube.processes[0].name);
         printf_("%s", "Number of processes (Active and Standby Tubes): ");
         printf_("%u\n", active_tube.current_active + standby_tube.current_standby);
         printf_("%s", "Quantum Value of Current Process: ");
-        printf_("%u\n", active_tube.processes[active_tube.process_count - 1].allocated_time);
+        printf_("%u\n", active_tube.processes[0].allocated_time);
 
         loopcount++;
 
-        print_memory();
+        if (loopcount >= 1)
+        {
 
-        if (loopcount == 4){
-
-            print_memmap();
-
-
+            temp = 1;
         }
 
-        if (loopcount == 50)
+        print_memory();
+
+        if (loopcount == 25)
         {
             halt();
         }

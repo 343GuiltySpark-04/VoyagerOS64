@@ -1,4 +1,5 @@
 #include "include/liballoc.h"
+#include "include/printf.h"
 
 /**  Durand's Ridiculously Amazing Super Duper Memory functions.  */
 
@@ -13,10 +14,6 @@
 #define MODE_INSTANT 1
 
 #define MODE MODE_BEST
-
-#ifdef DEBUG
-#include <stdio.h>
-#endif
 
 struct boundary_tag *l_freePages[MAXEXP]; //< Allowing for 2^MAXEXP blocks
 int l_completePages[MAXEXP];              //< Allowing for 2^MAXEXP blocks
@@ -126,7 +123,7 @@ static void dump_array()
     }
 
     printf("'*' denotes a split to the left/right of a tag\n");
-    fflush(stdout);
+    // fflush(stdout);
 }
 #endif
 
@@ -379,6 +376,9 @@ void free(void *ptr)
     int index;
     struct boundary_tag *tag;
 
+    printf_("%s", "INFO: Free ptr: ");
+    printf_("0x%llx\n", ptr);
+
     if (ptr == NULL)
         return;
 
@@ -435,6 +435,11 @@ void free(void *ptr)
             if (pages < l_pageCount)
                 pages = l_pageCount;
 
+            printf_("%s", "INFO: Free, liballoc_free call data: tag: ");
+            printf_("0x%llx", tag);
+            printf_("%s", " Pages: ");
+            printf_("%u\n", pages);
+
             liballoc_free(tag, pages);
 
 #ifdef DEBUG
@@ -478,6 +483,10 @@ void *calloc(size_t nobj, size_t size)
 
 void *realloc(void *p, size_t size)
 {
+
+    printf_("%s", "INFO: Size requested of realloc is: ");
+    printf_("0x%llx\n", size);
+
     void *ptr;
     struct boundary_tag *tag;
     int real_size;
@@ -500,8 +509,12 @@ void *realloc(void *p, size_t size)
     if (real_size > size)
         real_size = size;
 
+    printf_("%s\n", "INFO: Calling malloc via realloc!");
     ptr = malloc(size);
+
+    printf_("%s\n", "INFO: Moving data to new block!");
     liballoc_memcpy(ptr, p, real_size);
+    printf_("%s\n", "INFO: Calling free via realloc");
     free(p);
 
     return ptr;

@@ -11,6 +11,8 @@
 #include "include/time.h"
 #include "include/kernel.h"
 #include "include/sched.h"
+#include "include/stack_trace.h"
+#include "include/KernelUtils.h"
 
 static const char *exception_messages[] =
     {
@@ -72,12 +74,12 @@ static const char *irq_messages[] =
 
 };
 
-void isr_exception_handler(isr_xframe_t *frame);
+void isr_exception_handler(isr_xframe_t *frame, uint64_t rsi);
 /**
-* @brief This is the ISR handler.
-* @param * frame
-*/
-void isr_exception_handler(isr_xframe_t *frame)
+ * @brief This is the ISR handler.
+ * @param * frame
+ */
+void isr_exception_handler(isr_xframe_t *frame, uint64_t rsi)
 {
 
     kerror_mode = 1;
@@ -94,6 +96,19 @@ void isr_exception_handler(isr_xframe_t *frame)
     printf_("0x%llx\n", frame->base_frame.cs);
     printf_("%s", "CR2 REGISTER: ");
     printf_("0x%llx\n", frame->control_registers.cr2);
+    printf_("%s", "CR4 REGISTER: ");
+    printf_("0x%llx\n", frame->control_registers.cr4);
+    printf_("%s", "RSP REGISTER: ");
+    printf_("0x%lx\n", frame->base_frame.rsp);
+    printf_("%s", "RFLAGS REGISTER: ");
+    printf_("0x%llx\n", frame->base_frame.rflags);
+
+    if (k_mode.stack_trace_on_fault == 1)
+    {
+
+        printf_("%s\n", "NOTE: Will Page Fault if frames run out before the 5 frame cap, this is harmless dissregard it and the resulting additonal trace.");
+        stack_trace(0);
+    }
 
     __asm__ volatile("cli; hlt");
 }
@@ -103,9 +118,9 @@ extern void dyn_isr_handler(uint64_t isr);
 
 void irq_handler(isr_xframe_t *frame);
 /**
-* @brief The handler for IRQs.
-* @param * frame
-*/
+ * @brief The handler for IRQs.
+ * @param * frame
+ */
 void irq_handler(isr_xframe_t *frame)
 {
 
