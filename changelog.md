@@ -1,22 +1,24 @@
 # Version 0.0.1 (Was Not Released)
+
 - IDT
 - GDT
 - Basic non-PIC interrupts
 
-
 # Version 0.0.2
-- Working terminal output 
-- Paging 
+
+- Working terminal output
+- Paging
 - liballoc
 
-
 # Version 0.0.3
+
 - Full interrupt system
 - PIC now mapped
 - Keyboard driver
 - Proper on-screen error messaging
 
 # Version 0.0.4
+
 - Major Fixes to The MMU
 - Began Work on Multitasking
 - Added a CPU Feature Readout
@@ -27,14 +29,21 @@
 - New Terminal Font
 
 # Version 0.0.5
+
 - Added Support For ACPI And Relevant Kernel Panics
 - Improved Timing Subsystem
 - Dynamic Interrupt Vector Allocation
 - Ability to Reload The GDT, IDT And TSS
 
-# Version 0.0.6
+# Version 0.0.6 (WIP)
+
 - Added a scheduler of my own design
 - Greatly improved documentation
 - Fixed a typo that stopped SE extension detection from working
 - Added stack tracing on faults that can be toggled
 - Added a kmode struct containing behavior toggles
+- Added stack dumps that can be toggled as well
+- Added HW RNG Support
+- Some CodeGPT refractoring
+- SSE and floating point ops now working.
+- more accurrate memory reporting (Unknown at this time why its off by 2x i suspect the boot protocole.)

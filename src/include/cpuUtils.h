@@ -46,6 +46,12 @@
 
 extern bool has_ACPI;
 
+uint64_t rand_asm();
+
+extern size_t xsave_bank;
+
+void alloc_xsave();
+
 int get_model(void);
 void cpuid_readout();
 

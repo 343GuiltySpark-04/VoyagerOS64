@@ -29,5 +29,8 @@ struct stack_frame
 void stack_trace_asm(uint64_t max_size, bool stop);
 void print_stack_size();
 void stack_trace(uint64_t max_frames);
-
+void dump_hex(const void *data, size_t size);
+extern void stack_dump_asm();
+void stack_dump();
+void stack_dump_recursive(uint64_t max_frames);
 #endif

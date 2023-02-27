@@ -19,13 +19,34 @@ global cpuid_check_ds
 global cpuid_check_tm
 global cpuid_check_sep
 global cpuid_check_htt
+global cpuid_check_rdseed
+global cpuid_check_rdrand
+global cpuid_check_fpu
+global cpuid_check_oxsave
+global cpuid_check_avx
+global cpuid_check_fxsr
 global float_save
 global float_load
 global float_bank
 global task_switch_int
+global rdseed_asm
+global rdrand_asm
 
 extern no_sse
 extern no_xsave
+extern no_oxsave
+extern no_avx
+
+
+
+rdseed_asm:
+    rdseed rax
+    ret
+
+rdrand_asm:
+    rdrand rax
+    ret
+
 
 
 
@@ -67,8 +88,8 @@ halt:
 cpuid_check_sse:
     mov eax, 0x1
     cpuid
-    test edx, 1 << 25
-    jz no_sse
+    bt edx, 25
+    jnc no_sse
     mov eax, 1
     ret
 
@@ -76,11 +97,16 @@ cpuid_check_sse:
 cpuid_check_xsave:
     mov eax, 0x1
     cpuid
-    test ecx, 1 << 26
-    jz no_xsave
+    bt ecx, 26
+    jnc no_xsave
     mov eax, 1
     ret
 
+
+
+no_fxsr:
+    mov eax, 0
+    ret
 
 no_pcid:
     mov eax, 0
@@ -122,21 +148,82 @@ no_htt:
     mov eax, 0
     ret
 
+no_rdseed:
+    mov eax, 0
+    ret
 
+no_rdrand:
+    mov eax, 0
+    ret
+
+no_fpu:
+    mov eax, 0
+    ret
+
+
+cpuid_check_fxsr:
+    mov eax, 0x1
+    cpuid
+    bt edx, 24
+    jnc no_fxsr
+    mov eax, 1
+    ret
+
+
+cpuid_check_oxsave:
+    mov eax, 0x1
+    cpuid
+    bt ecx, 27
+    jnc no_oxsave
+    mov eax, 1
+    ret
+
+cpuid_check_avx:
+    mov eax, 0x1
+    cpuid
+    bt ecx, 28
+    jnc no_avx
+    mov eax, 1
+    ret
+
+cpuid_check_fpu:
+    mov eax, 0x1
+    cpuid
+    bt edx, 0
+    jnc no_fpu
+    mov eax, 1
+    ret
+
+cpuid_check_rdrand:
+    mov eax, 0x1
+    cpuid
+    bt ecx, 30  ; check the 30th bit of ECX register 
+    jnc no_rdrand ; if the result is not set (ie. 0) jump to no_rdrand label 
+    mov eax, 1   ; otherwise set EAX to 1 and return 
+    ret 
+
+
+cpuid_check_rdseed:
+    mov eax, 0x7
+    cpuid
+    bt ebx, 18
+    jnc no_rdseed
+    mov eax, 1
+    ret
 
 cpuid_check_htt:
     mov eax, 0x1
     cpuid
-    test edx, 1 << 28
-    jz no_htt
+    bt edx, 28  ; Check bit 28 of edx register
+    jnc no_htt  ; Jump to no_htt if the bit is not set (carry flag is clear)
     mov eax, 1
     ret
 
 cpuid_check_pcid:
     mov eax, 0x1
     cpuid
-    test ecx, 1 << 17
-    jz no_pcid  
+    bt ecx, 17
+    jnc no_pcid  
     mov eax, 1
     ret
     
@@ -144,16 +231,16 @@ cpuid_check_pcid:
 cpuid_check_pae:
     mov eax, 0x1
     cpuid
-    test edx, 1 << 6
-    jz no_pae
+    bt edx, 6
+    jnc no_pae
     mov eax, 1
     ret
 
 cpuid_check_mce:
     mov eax, 0x1
     cpuid
-    test edx, 1 << 7
-    jz no_mce
+    bt edx, 7
+    jnc no_mce
     mov eax, 1
     ret
     

@@ -17,13 +17,6 @@ inline bool bitmap_get(uint8_t *bitmap, size_t bit)
     uint64_t byteIndex = bit / 8;
     uint8_t bitIndex = bit % 8;
     uint8_t bitIndexer = 0b10000000 >> bitIndex;
-    uint8_t wtf = (bitmap[byteIndex] & bitIndexer) > 0;
-
-    if (temp == 1)
-    {
-
-        //printf_("0x%llx\n", bit);
-    }
 
     return (bitmap[byteIndex] & bitIndexer) > 0;
 }

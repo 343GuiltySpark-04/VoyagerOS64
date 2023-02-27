@@ -27,7 +27,6 @@ isr_stub_%+%1:
 %endmacro
 
 %macro pushagrd 0
-;xsave [float_bank]
 push rax
 push rbx
 push rcx
@@ -37,7 +36,6 @@ push rdi
 %endmacro
 
 %macro popagrd 0
-;xrstor [float_bank]
 pop rdi
 pop rsi
 pop rdx

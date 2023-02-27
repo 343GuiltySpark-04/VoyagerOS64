@@ -5,13 +5,14 @@
 #include "include/paging/paging.h"
 #include "include/lock.hpp"
 #include "include/printf.h"
+#include "include/KernelUtils.h"
 
 AtomicLock liballocLock;
 
 /**
-* @brief Locks the liballoc lock.
-* @return Zero on success non - zero
-*/
+ * @brief Locks the liballoc lock.
+ * @return Zero on success non - zero
+ */
 extern "C" int liballoc_lock()
 {
 
@@ -21,9 +22,9 @@ extern "C" int liballoc_lock()
 }
 
 /**
-* @brief Unlock liballoc's lock
-* @return Zero on success non - zero
-*/
+ * @brief Unlock liballoc's lock
+ * @return Zero on success non - zero
+ */
 extern "C" int liballoc_unlock()
 {
 
@@ -33,10 +34,10 @@ extern "C" int liballoc_unlock()
 }
 
 /**
-* @brief Allocate memory and translate it to high half memory
-* @param pages number of pages to allocate
-* @return pointer to allocated memory or NULL if
-*/
+ * @brief Allocate memory and translate it to high half memory
+ * @param pages number of pages to allocate
+ * @return pointer to allocated memory or NULL if
+ */
 extern "C" void *liballoc_alloc(size_t pages)
 {
 
@@ -54,21 +55,24 @@ extern "C" void *liballoc_alloc(size_t pages)
 }
 
 /**
-* @brief Free memory allocated by liballoc.
-* @param * ptr
-* @param pages Number of pages to be freed.
-* @return Zero on success non - zero on failure
-*/
+ * @brief Free memory allocated by liballoc.
+ * @param * ptr
+ * @param pages Number of pages to be freed.
+ * @return Zero on success non - zero on failure
+ */
 extern "C" int liballoc_free(void *ptr, size_t pages)
 {
 
-    printf_("%s", "INFO: liballoc_free ptr: ");
-    printf_("0x%llx\n", ptr);
-
     void *realPtr = (void *)TranslateToPhysicalMemoryAddress((uint64_t)ptr);
 
-    printf_("%s", "INFO: realptr: ");
-    printf_("0x%llx\n", realPtr);
+    if (k_mode.addr_debug)
+    {
+
+        printf_("%s", "INFO: liballoc_free ptr: ");
+        printf_("0x%llx\n", ptr);
+        printf_("%s", "INFO: realptr: ");
+        printf_("0x%llx\n", realPtr);
+    }
 
     frame_free_multiple(realPtr, pages);
 

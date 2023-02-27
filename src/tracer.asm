@@ -36,3 +36,15 @@ walk_stack:
     leave
     ret
     
+
+[extern dump_hex]
+[global stack_dump_asm]
+
+stack_dump_asm:
+    push rbp
+    mov rdi, [rbp]
+    mov rsi, 0x1000
+    call dump_hex
+    pop rbp
+    leave
+    hlt

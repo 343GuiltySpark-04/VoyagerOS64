@@ -11,6 +11,8 @@
 
 #define PAGE_SIZE 4096
 
+extern uint8_t *frameBitmap;
+
 void read_memory_map();
 
 void frame_free(void *address);

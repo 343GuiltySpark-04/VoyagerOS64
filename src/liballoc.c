@@ -1,9 +1,10 @@
 #include "include/liballoc.h"
 #include "include/printf.h"
+#include "include/KernelUtils.h"
 
 /**  Durand's Ridiculously Amazing Super Duper Memory functions.  */
 
-//#define DEBUG
+// #define DEBUG
 
 #define LIBALLOC_MAGIC 0xc001c0de
 #define MAXCOMPLETE 5
@@ -435,10 +436,14 @@ void free(void *ptr)
             if (pages < l_pageCount)
                 pages = l_pageCount;
 
-            printf_("%s", "INFO: Free, liballoc_free call data: tag: ");
-            printf_("0x%llx", tag);
-            printf_("%s", " Pages: ");
-            printf_("%u\n", pages);
+            if (k_mode.addr_debug)
+            {
+
+                printf_("%s", "INFO: Free, liballoc_free call data: tag: ");
+                printf_("0x%llx", tag);
+                printf_("%s", " Pages: ");
+                printf_("%u\n", pages);
+            }
 
             liballoc_free(tag, pages);
 
@@ -509,12 +514,12 @@ void *realloc(void *p, size_t size)
     if (real_size > size)
         real_size = size;
 
-    printf_("%s\n", "INFO: Calling malloc via realloc!");
+    //  printf_("%s\n", "INFO: Calling malloc via realloc!");
     ptr = malloc(size);
 
-    printf_("%s\n", "INFO: Moving data to new block!");
+    // printf_("%s\n", "INFO: Moving data to new block!");
     liballoc_memcpy(ptr, p, real_size);
-    printf_("%s\n", "INFO: Calling free via realloc");
+    // printf_("%s\n", "INFO: Calling free via realloc");
     free(p);
 
     return ptr;

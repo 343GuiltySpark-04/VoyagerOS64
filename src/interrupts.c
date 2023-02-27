@@ -109,6 +109,13 @@ void isr_exception_handler(isr_xframe_t *frame, uint64_t rsi)
         printf_("%s\n", "NOTE: Will Page Fault if frames run out before the 5 frame cap, this is harmless dissregard it and the resulting additonal trace.");
         stack_trace(0);
     }
+    else if (k_mode.stack_trace_on_fault == 2)
+    {
+
+        stack_dump_asm();
+        // stack_dump();
+        // stack_dump_recursive(16);
+    }
 
     __asm__ volatile("cli; hlt");
 }
@@ -126,14 +133,10 @@ void irq_handler(isr_xframe_t *frame)
 
     uint64_t vector = frame->base_frame.vector;
 
-    // printf_("%s", "IRQ RECIVED FROM: ");
-    // printf_("%s\n", irq_messages[vector - 32]);
-
     if (vector < 48)
     {
         switch (vector)
         {
-
         case 32:
             sys_clock_handler_alt();
             break;
@@ -145,10 +148,7 @@ void irq_handler(isr_xframe_t *frame)
     else
     {
 
-        printf_("%s", "IRQ Handoff to Dynamic Handler Using Vector: ");
-        printf_("%i", vector);
-        printf_("%s", " With Handler Located At Address: ");
-        printf_("0x%llx\n", isr_delta[vector]);
+        printf_("IRQ Handoff to Dynamic Handler Using Vector: %i With Handler Located At Address: 0x%llx\n", vector, isr_delta[vector]);
 
         if (isr_delta[vector] == NULL)
         {

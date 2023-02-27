@@ -169,7 +169,7 @@ void *frame_request()
         return (void *)(i * 0x1000);
     }
 
-    return NULL; // just fucking page fault 
+    return NULL; // just fucking page fault
 }
 
 /**
@@ -243,17 +243,16 @@ void frame_free(void *address)
 
     uint64_t index = (uint64_t)address / 0x1000;
 
-    // if (temp == 1){
+    if (k_mode.addr_debug == 1)
+    {
 
-    printf_("%s", "!!!!!INFO!!!!! BITMAP DATA ADDRESS: ");
-    printf_("0x%llx\n", index);
-
-    // }
+        printf_("%s", "INFO: BITMAP DATA ADDRESS: ");
+        printf_("0x%llx\n", index);
+    }
 
     if (bitmap_get(frameBitmap, index) == false)
     {
 
-        printf_("%s\n", "Warning: already freed!");
         return;
     }
 
@@ -271,10 +270,14 @@ void frame_free(void *address)
 void frame_free_multiple(void *address, uint64_t pageCount)
 {
 
-    printf_("%s", "INFO: Freeing at address: ");
-    printf_("0x%llx", address);
-    printf_("%s", " for this number of pages: ");
-    printf_("%u\n", pageCount);
+    if (k_mode.addr_debug == 1)
+    {
+
+        printf_("%s", "INFO: Freeing at address: ");
+        printf_("0x%llx", address);
+        printf_("%s", " for this number of pages: ");
+        printf_("%u\n", pageCount);
+    }
 
     for (uint64_t t = 0; t < pageCount; t++)
     {
@@ -309,6 +312,16 @@ void frame_lock(void *address)
  */
 void frame_lock_multiple(void *address, uint64_t pageCount)
 {
+
+    if (k_mode.addr_debug == 1)
+    {
+
+        printf_("%s", "INFO: Locking at address: ");
+        printf_("0x%llx", address);
+        printf_("%s", " for this number of pages: ");
+        printf_("%u\n", pageCount);
+    }
+
     for (uint64_t t = 0; t < pageCount; t++)
     {
         frame_lock((void *)((uint64_t)address + (t * 0x1000)));

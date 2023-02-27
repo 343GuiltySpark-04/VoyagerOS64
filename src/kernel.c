@@ -83,6 +83,21 @@ struct active_tube active_tube;
 
 struct hot_tube hot_tube;
 
+void hello_general_floatius()
+{
+
+    double t;
+
+    double x = 5.239;
+
+    t = 5 / 2;
+
+    x = t * 6.4;
+
+    printf_("%g\n", t);
+    printf_("%g\n", x);
+}
+
 void hello_thread()
 {
 
@@ -115,6 +130,12 @@ void _start(void)
 
     cpuid_readout();
 
+    if (k_mode.hw_rng_support == 1)
+    {
+
+        printf_("%s", "Random Number Gen (HW) Test: ");
+        printf_("%u\n", rand_asm());
+    }
     // breakpoint();
 
     stop_interrupts();
@@ -190,7 +211,11 @@ void _start(void)
     printf_("%s", "CR4: ");
     printf_("0x%llx\n", readCR4());
 
-    acpi_init();
+    if (k_mode.acpi_support == 1)
+    {
+
+        acpi_init();
+    }
 
     //  keyboard_init();
 
@@ -220,13 +245,13 @@ void _start(void)
 
     pic_unmask_irq(0);
 
+    // cpuid_readout();
+
     print_memory();
 
     print_load_time();
 
     print_date();
-
-    stack_trace(NULL);
 
     print_stack_size();
 
@@ -234,15 +259,24 @@ void _start(void)
 
     printf_("%s\n", ":> ");
 
-        bootspace = 1;
+    hello_general_floatius();
+
+    bootspace = 1;
 
     init_sched(&standby_tube, &active_tube, &hot_tube);
-    // print_frame_bitmap();
+
+    if (k_mode.addr_debug == 1)
+    {
+        print_frame_bitmap();
+    }
 
     bootspace = 0;
 
+    // stack_dump_asm();
+
     add_active_tube_process(&active_tube, create_tube_process(false, true, true, "Kernel_Thread"));
     add_tube_process(&standby_tube, create_tube_process(false, true, true, "Kernel_Thread_2"));
+    // add_tube_process(&standby_tube, create_tube_process(false, true, true, "Kernel_Thread_3"));
 
     // halt();
 
