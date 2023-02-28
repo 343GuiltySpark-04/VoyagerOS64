@@ -27,3 +27,5 @@
 - New Terminal Font
   
 # Version 0.0.5 (Divergance point)
+- floating points now work
+- improved memory readout
