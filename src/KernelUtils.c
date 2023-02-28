@@ -308,6 +308,15 @@ void print_memory()
     switch (k_mode.mem_readout_unit)
     {
 
+    case 0:
+        exp = 1073741824;
+
+        printf("Total Memory: %.2f Gb.\n", (double)get_memory_size() / exp);
+        printf("Free Memory: %.2f Gb.\n", (double)free_ram() / exp);
+        printf("Used Memory: %.2f Gb.\n", (double)used_ram() / exp);
+        printf("Reserved Memory: %.2f Gb.\n", (double)reserved_ram() / exp);
+        break;
+
     case 1:
         exp = 1048576;
 

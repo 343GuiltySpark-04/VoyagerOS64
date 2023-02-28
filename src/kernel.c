@@ -156,11 +156,11 @@ void _start(void)
 
     time_init();
 
-    /*     stop_interrupts();
+    asm volatile("cli");
 
-        lapic_init();
+   // lapic_init();
 
-        start_interrupts(); */
+    asm volatile("sti");
 
     asm volatile("cli");
 

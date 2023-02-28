@@ -9,10 +9,25 @@ global readCR2
 global readRSP
 global readCR4
 global writeCR4
+global get_apic_base_address
 global cfg_XCR0
 global test_em
 global read_XCR0
 global get_xsave_size
+
+
+
+get_apic_base_address:
+    mov ecx, 0x1b
+    rdmsr
+    and eax, 0x001FFFFF  ; extract the APIC base address from the MSR value
+    shr ebx, 12         ; isolate the APIC ID from the MSR value
+    lea eax, [eax + ebx] ; combine the APIC base and ID 
+    ret
+
+
+
+
 
 
 

@@ -68,10 +68,10 @@ extern "C" int liballoc_free(void *ptr, size_t pages)
     if (k_mode.addr_debug)
     {
 
-        printf_("%s", "INFO: liballoc_free ptr: ");
-        printf_("0x%llx\n", ptr);
-        printf_("%s", "INFO: realptr: ");
-        printf_("0x%llx\n", realPtr);
+        printf("%s", "INFO: liballoc_free ptr: ");
+        printf("0x%llx\n", ptr);
+        printf("%s", "INFO: realptr: ");
+        printf("0x%llx\n", realPtr);
     }
 
     frame_free_multiple(realPtr, pages);

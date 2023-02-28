@@ -35,7 +35,7 @@ struct PACKED kswitches
 
     uint8_t hw_rng_support;
 
-    // 1 mb, 2 kb, 3 b
+    // 0 gb, 1 mb, 2 kb, 3 b
     uint8_t mem_readout_unit;
 };
 

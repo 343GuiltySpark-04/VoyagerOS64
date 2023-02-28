@@ -33,6 +33,7 @@ extern int cpuid_check_fpu();
 extern int cpuid_check_oxsave();
 extern int cpuid_check_avx();
 extern int cpuid_check_fxsr();
+extern uint32_t get_apic_base_address();
 extern int test_em();
 extern void cfg_XCR0();
 extern uint64_t rdrand_asm();
@@ -105,6 +106,9 @@ void cpuid_readout()
     printf_("0x%llx\n", readCRO());
     printf_("%s", "CR4: ");
     printf_("0x%llx\n", readCR4());
+    printf_("%s", "APIC Base Address: ");
+    printf_("0x%llx\n", get_apic_base_address());
+   // halt();
 
     printf_("%s\n", "-----------------------------");
 }
