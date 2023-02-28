@@ -11,6 +11,8 @@ global float_save
 global float_load
 global float_bank
 global task_switch_int
+global cfg_XCR0
+global read_XCR0
 
 
 
@@ -48,6 +50,34 @@ serial_debug:
 halt:
     cli
     hlt
+
+
+cfg_XCR0:
+    mov eax, 0x1
+    cpuid
+    bt ecx, 28
+    jnc .noavx
+    xor ecx, ecx
+    mov rax, 0x7
+    xor rdx, rdx
+    xsetbv
+    ret
+.noavx:
+    xor ecx, ecx
+    mov rax, 0x3
+    xor rdx, rdx
+    xsetbv
+    ret
+
+
+
+
+
+
+read_XCR0:
+    mov ecx, 0x0
+    xgetbv
+    ret
 
 
 align 16

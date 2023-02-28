@@ -14,6 +14,9 @@ global cpuid_check_vmx
 global cpuid_check_htt
 global cpuid_check_fpu
 global cpuid_check_msr
+global cpuid_check_oxsave
+global cpuid_check_avx
+global cpuid_check_fxsr
 
 extern no_sse
 extern no_xsave
@@ -78,8 +81,46 @@ no_fpu:
     mov eax, 0
     ret
 
-no_msr
+no_msr:
     mov eax, 0
+    ret
+
+no_oxsave:
+    mov eax, 0
+    ret
+
+no_avx:
+    mov eax, 0
+    ret
+
+no_fxsr:
+    mov eax, 0
+    ret
+
+
+cpuid_check_fxsr:
+    mov eax, 0x1
+    cpuid
+    bt edx, 24
+    jnc no_fxsr
+    mov eax, 1
+    ret
+
+
+cpuid_check_oxsave:
+    mov eax, 0x1
+    cpuid
+    bt ecx, 27
+    jnc no_oxsave
+    mov eax, 1
+    ret
+
+cpuid_check_avx:
+    mov eax, 0x1
+    cpuid
+    bt ecx, 28
+    jnc no_avx
+    mov eax, 1
     ret
 
 

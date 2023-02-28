@@ -44,13 +44,11 @@ override CFLAGS +=       \
     -m64                 \
     -march=x86-64        \
     -mabi=sysv           \
-    -mno-80387           \
     -mno-mmx             \
     -mno-sse2            \
     -mno-red-zone        \
     -mcmodel=kernel      \
     -MMD                 \
-	-DPRINTF_DISABLE_SUPPORT_FLOAT \
     -I.
  
 # Internal linker flags that should not be changed by the user.

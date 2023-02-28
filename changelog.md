@@ -25,3 +25,5 @@
 - Made The GDT Compatible With The Limine Bootloader Terminal
 - Added a Few Kernel Panic Messages
 - New Terminal Font
+  
+# Version 0.0.5 (Divergance point)

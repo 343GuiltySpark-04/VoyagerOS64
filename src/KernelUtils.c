@@ -8,6 +8,7 @@
 #include "include/registers.h"
 #include "include/time.h"
 #include "include/cpuUtils.h"
+#include "include/printf.h"
 
 extern void breakpoint();
 extern uint8_t *frameBitmap;
@@ -37,6 +38,12 @@ volatile struct limine_smp_request smp_req = {
 
 };
 
+const struct kswitches k_mode = {
+
+    .mem_readout_unit = 0
+
+};
+
 extern volatile struct limine_kernel_address_request Kaddress_req;
 
 void system_readout()
@@ -49,8 +56,8 @@ void system_readout()
     printf_("%s\n", "--------------------------------------");
     printf_("%s\n", "|          System Overview           |");
     printf_("%s\n", "--------------------------------------");
-    printf_("Total Memory: %llu", memory_size);
-    printf_("%s\n", "Kb.");
+    print_memory();
+    printf_("%s\n", "--------------------------------------");
 
     printf_("Number of Physical Cores: %lli\n", core_count);
 
@@ -302,13 +309,46 @@ void init_memory()
 
 void print_memory()
 {
+    double exp;
 
-    printf_("Total Memory: %llu", get_memory_size() / 1000);
-    printf_("%s\n", "Kb.");
-    printf_("Free Memory: %llu", free_ram() / 1000);
-    printf_("%s\n", "Kb.");
-    printf_("Used Memory: %llu", used_ram() / 1000);
-    printf_("%s\n", "Kb.");
-    printf_("Reserved Memory: %llu", reserved_ram() / 1000);
-    printf_("%s\n", "Kb.");
+    switch (k_mode.mem_readout_unit)
+    {
+
+    case 0:
+        exp = 1073741824;
+
+        printf("Total Memory: %.2f Gb.\n", (double)get_memory_size() / exp);
+        printf("Free Memory: %.2f Gb.\n", (double)free_ram() / exp);
+        printf("Used Memory: %.2f Gb.\n", (double)used_ram() / exp);
+        printf("Reserved Memory: %.2f Gb.\n", (double)reserved_ram() / exp);
+        break;
+
+    case 1:
+        exp = 1048576;
+
+        printf("Total Memory: %.2f Mb.\n", (double)get_memory_size() / exp);
+        printf("Free Memory: %.2f Mb.\n", (double)free_ram() / exp);
+        printf("Used Memory: %.2f Mb.\n", (double)used_ram() / exp);
+        printf("Reserved Memory: %.2f Mb.\n", (double)reserved_ram() / exp);
+        break;
+    case 2:
+        exp = 1024;
+
+        printf("Total Memory: %.2f Kb.\n", (double)get_memory_size() / exp);
+        printf("Free Memory: %.2f Kb.\n", (double)free_ram() / exp);
+        printf("Used Memory: %.2f Kb.\n", (double)used_ram() / exp);
+        printf("Reserved Memory: %.2f Kb.\n", (double)reserved_ram() / exp);
+        break;
+    case 3:
+        exp = 1;
+
+        printf("Total Memory: %.2f Bytes.\n", (double)get_memory_size() / exp);
+        printf("Free Memory: %.2f Bytes.\n", (double)free_ram() / exp);
+        printf("Used Memory: %.2f Bytes.\n", (double)used_ram() / exp);
+        printf("Reserved Memory: %.2f Bytes.\n", (double)reserved_ram() / exp);
+        break;
+    default:
+        printf("%s\n", "ERROR: Invalid value in k_mode.mem_readout_unit switch!");
+        break;
+    }
 }

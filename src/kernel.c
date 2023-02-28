@@ -74,9 +74,9 @@ struct term_context *term_context;
 static struct PageTable *test_table;
 
 /**
-* @brief Clears the screen by writing a black line to each of the characters.
-* @return 0 on success non - zero
-*/
+ * @brief Clears the screen by writing a black line to each of the characters.
+ * @return 0 on success non - zero
+ */
 void clear_screen()
 {
 
@@ -88,9 +88,9 @@ void clear_screen()
 }
 
 /**
-* @brief Prints the prompt to the user.
-* @return void Author : Christian Schafmeister ( 1991 ) Modifications
-*/
+ * @brief Prints the prompt to the user.
+ * @return void Author : Christian Schafmeister ( 1991 ) Modifications
+ */
 void print_prompt()
 {
 
@@ -105,8 +105,8 @@ void print_prompt()
 
 /// \fn  following will be our kernel's entry point.
 /**
-* @brief \ brief Start bootloader. Called by _init
-*/
+ * @brief \ brief Start bootloader. Called by _init
+ */
 void _start(void)
 {
 
@@ -218,7 +218,7 @@ void _start(void)
 
     print_date();
 
-    printf_("%s\n", "Powered by VoyagerOS64 V0.0.4");
+    printf_("%s\n", "Powered by VoyagerOS64 V0.0.5 (Diagnostic Branch)");
 
     sleep(100);
 

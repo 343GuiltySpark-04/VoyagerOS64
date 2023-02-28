@@ -56,6 +56,11 @@ static const char *month_str[] = {
 
 };
 
+/**
+* Sleep for a number of milliseconds. This is useful for unit testing to ensure that the program doesn't die indefinitely
+* 
+* @param millis - The number of milliseconds to
+*/
 void sleep(uint64_t millis)
 {
     static spinlock_t sleep_lock = SPINLOCK_INIT;
