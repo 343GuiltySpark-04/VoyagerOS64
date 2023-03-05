@@ -43,10 +43,10 @@ static volatile struct limine_boot_time_request boot_time_req = {
 };
 
 /**
-* @brief Create a new timer.
-* @param when The time at which the timer will expire.
-* @return The new timer or NULL on error
-*/
+ * @brief Create a new timer.
+ * @param when The time at which the timer will expire.
+ * @return The new timer or NULL on error
+ */
 struct timer *timer_new(struct timespec when)
 {
 
@@ -64,13 +64,13 @@ struct timer *timer_new(struct timespec when)
 }
 
 /**
-* @brief Arm a timer so it will be fired.
-* @param * timer
-*/
+ * @brief Arm a timer so it will be fired.
+ * @param * timer
+ */
 void timer_arm(struct timer *timer)
 {
 
-    spinlock_acquire(&timers_lock);
+    spinlock_test_and_acq(&timers_lock);
 
     timer->index = armed_timers.length;
     timer->fired = false;
@@ -80,14 +80,14 @@ void timer_arm(struct timer *timer)
 }
 
 /**
-* @brief Remove a timer from the armed timers list
-* @param * timer
-* @return 0 on success - ENOMEM on OOM
-*/
+ * @brief Remove a timer from the armed timers list
+ * @param * timer
+ * @return 0 on success - ENOMEM on OOM
+ */
 void timer_disarm(struct timer *timer)
 {
 
-    spinlock_acquire(&timers_lock);
+    spinlock_test_and_acq(&timers_lock);
 
     if (armed_timers.length == 0 || timer->index == -1 || (size_t)timer->index >= armed_timers.length)
     {
@@ -105,9 +105,9 @@ cleanup:
 }
 
 /**
-* @brief This function is called by limine_init () to initialize the time.
-* @return None. Side effects : None
-*/
+ * @brief This function is called by limine_init () to initialize the time.
+ * @return None. Side effects : None
+ */
 void time_init(void)
 {
 
@@ -148,9 +148,9 @@ static const char *month_str[] = {
 };
 
 /**
-* @brief Get the PIT count.
-* @return uint16_t The number of pit
-*/
+ * @brief Get the PIT count.
+ * @return uint16_t The number of pit
+ */
 uint16_t pit_get_current_count(void)
 {
     outb(0x43, 0x00);
@@ -160,9 +160,9 @@ uint16_t pit_get_current_count(void)
 }
 
 /**
-* @brief Set PIT reload value.
-* @param new_count Value to set in 16 bits
-*/
+ * @brief Set PIT reload value.
+ * @param new_count Value to set in 16 bits
+ */
 void pit_set_reload_value(uint16_t new_count)
 {
     outb(0x43, 0x34);
@@ -171,9 +171,9 @@ void pit_set_reload_value(uint16_t new_count)
 }
 
 /**
-* @brief Set PIT frequency in Hz
-* @param frequency Frequency in Hz to
-*/
+ * @brief Set PIT frequency in Hz
+ * @param frequency Frequency in Hz to
+ */
 void pit_set_frequency(uint64_t frequency)
 {
     uint64_t new_divisor = PIT_DIVIDEND / frequency;
@@ -185,8 +185,8 @@ void pit_set_frequency(uint64_t frequency)
 }
 
 /**
-* @brief This is the clock handler for the system
-*/
+ * @brief This is the clock handler for the system
+ */
 void sys_clock_handler()
 {
 
@@ -221,40 +221,38 @@ void sys_clock_handler()
         spinlock_release(&timers_lock);
     }
 
-   if (timer_fired == false){
+    if (timer_fired == false)
+    {
 
         timer_fired = true;
-
-   }
+    }
 
     system_timer_fractions++;
     system_timer_ms++;
 }
 
-
 /**
-* @brief Sys clock handler alternative. This is called by the interrupt handler to indicate that the system clock has expired
-*/
-void sys_clock_handler_alt(){
+ * @brief Sys clock handler alternative. This is called by the interrupt handler to indicate that the system clock has expired
+ */
+void sys_clock_handler_alt()
+{
 
-
-   if (timer_fired == false){
+    if (timer_fired == false)
+    {
 
         timer_fired = true;
-
-   }
+    }
 
     system_timer_fractions++;
     system_timer_ms++;
-
 }
 
 uint8_t task_timer_count = 0;
 
 /**
-* @brief Handler for task switch.
-* @return Nothing. Side Effects : None
-*/
+ * @brief Handler for task switch.
+ * @return Nothing. Side Effects : None
+ */
 void task_switch_handler()
 {
 
@@ -264,17 +262,17 @@ void task_switch_handler()
 }
 
 /**
-* @brief This function is used to convert a 64 - bit value into a vector.
-* @param delta The 64 - bit value to convert.
-* @param vector The vector to convert
-*/
+ * @brief This function is used to convert a 64 - bit value into a vector.
+ * @param delta The 64 - bit value to convert.
+ * @param vector The vector to convert
+ */
 void delta_int(uint64_t delta, uint8_t vector)
 {
 }
 
 /**
-* @brief Initialize PIT to a known
-*/
+ * @brief Initialize PIT to a known
+ */
 void init_PIT()
 {
 
@@ -286,9 +284,9 @@ void init_PIT()
 }
 
 /**
-* @brief Get update flag from CMOS
-* @return 1 if update flag is
-*/
+ * @brief Get update flag from CMOS
+ * @return 1 if update flag is
+ */
 int get_update_flag()
 {
 
@@ -297,10 +295,10 @@ int get_update_flag()
 }
 
 /**
-* @brief Read a byte from a CMOS RTC register
-* @param reg register to read from ( 0 - 15 )
-* @return byte read from the register
-*/
+ * @brief Read a byte from a CMOS RTC register
+ * @param reg register to read from ( 0 - 15 )
+ * @return byte read from the register
+ */
 uint8_t get_RTC_register(int reg)
 {
 
@@ -309,8 +307,8 @@ uint8_t get_RTC_register(int reg)
 }
 
 /**
-* @brief Read the RTC registers
-*/
+ * @brief Read the RTC registers
+ */
 void read_rtc()
 {
     unsigned char century;
@@ -405,9 +403,9 @@ void read_rtc()
 }
 
 /**
-* @brief Print the date of the current RTC.
-* @return N / A Returns 0
-*/
+ * @brief Print the date of the current RTC.
+ * @return N / A Returns 0
+ */
 void print_date()
 {
 
@@ -436,7 +434,7 @@ void print_date()
 /* 1 <= m <= 12,  y > 1752 (in the U.K.) */
 
 // Determane day of the week from the month year and date.
-dayofweek(y, m, d)
+int dayofweek(y, m, d)
 {
     static int t[] = {0, 3, 2, 5, 0, 3, 5, 1, 4, 6, 2, 4};
     if (m < 3)
@@ -447,9 +445,9 @@ dayofweek(y, m, d)
 }
 
 /**
-* @brief Prints the system time.
-* @return N / A Returns 0
-*/
+ * @brief Prints the system time.
+ * @return N / A Returns 0
+ */
 void print_sys_time()
 {
 
@@ -461,9 +459,9 @@ void print_sys_time()
 }
 
 /**
-* @brief Print load time to stdout.
-* @return void. Side effects : None
-*/
+ * @brief Print load time to stdout.
+ * @return void. Side effects : None
+ */
 void print_load_time()
 {
 

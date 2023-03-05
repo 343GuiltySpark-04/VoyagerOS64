@@ -148,7 +148,7 @@ void gdt_load_tss(struct TSS *tss)
 
     static spinlock_t lock = SPINLOCK_INIT;
 
-    spinlock_acquire(&lock);
+    spinlock_test_and_acq(&lock);
 
     gdt.tss = (struct TSS_Entry){
         .length = 104,
