@@ -310,6 +310,9 @@ void init_memory()
 void print_memory()
 {
     double exp;
+    
+   printf("%s\n", "NOTE: May be off by up to 2x on a emulator or VM!");
+
 
     switch (k_mode.mem_readout_unit)
     {
