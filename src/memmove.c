@@ -5,7 +5,7 @@
 * @param * dstptr
 * @param void
 * @param size Number of bytes to copy.
-* @return Pointer to destination memory which may be different
+* @return Pointer to destination memory (dstptr)
 */
 void *memmove(void *dstptr, const void *srcptr, size_t size)
 {

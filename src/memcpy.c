@@ -5,7 +5,7 @@
 * @param * restrict dstptr
 * @param void
 * @param size Number of bytes to copy.
-* @return Pointer to destination buffer ( same as srcptr
+* @return Pointer to destination buffer (same as dstptr)
 */
 void *memcpy(void *restrict dstptr, const void *restrict srcptr, size_t size)
 {

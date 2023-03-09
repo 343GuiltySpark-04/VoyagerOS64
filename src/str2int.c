@@ -6,7 +6,7 @@
 // integer without using functions
 
 /**
-* @brief Converts a string to an integer.
+* @brief Converts a string to an integer. (DEPRECIATED)
 * @param str []
 * @return The integer or NULL if the string is invalid
 */

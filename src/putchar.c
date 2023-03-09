@@ -6,7 +6,7 @@
 
 /**
 * @brief This function writes a character to the terminal
-* @param character character to be written to
+* @param character character to be written.
 */
 void _putchar(char character)
 {

@@ -114,10 +114,15 @@ struct GDT_Desc desc = {
     .offset = (uint64_t)&gdt};
 
 /**
- * @brief Reload GDT. This is called from reload.
+ * @brief Reload GDT. 
  */
 void gdt_reload(void)
 {
+
+    static spinlock_t lock = SPINLOCK_INIT;
+
+    spinlock_test_and_acq(&lock);
+
 
     asm volatile(
         "lgdt %0\n\t"
@@ -135,6 +140,8 @@ void gdt_reload(void)
         :
         : "m"(desc)
         : "rax", "memory");
+
+      spinlock_release(&lock);
 }
 
 /**
@@ -168,7 +175,7 @@ void gdt_load_tss(struct TSS *tss)
 }
 
 /**
- * @brief Stage 1 of GDT loading
+ * @brief Inital GDT load
  */
 void LoadGDT_Stage1()
 {
@@ -210,7 +217,8 @@ void LoadGDT_Stage1()
     printf_("%s", "GDT TSS Segment: ");
     printf_("0x%llx\n", (uint64_t)&gdt.tss - (uint64_t)&gdt);
     printf_("%s\n", "------------------------------------");
-    printf_("%s\n", "Expected GDTR Data as Follows: ");
+    printf_("%s\n", "|     	   GDTR DATA		       |");
+    printf_("%s\n", "------------------------------------");
     printf_("%s", "GDTR Size: ");
     printf_("0x%llx\n", (uint16_t)&desc.size);
     printf_("%s", "GDTR Offset: ");
@@ -248,5 +256,4 @@ void LoadGDT_Stage1()
                      :
                      : "a"((uint16_t)GDTTSSSegment));
 
-    // breakpoint();
 }

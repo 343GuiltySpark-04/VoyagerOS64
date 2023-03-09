@@ -46,7 +46,6 @@ const struct kswitches k_mode = {
 
 extern volatile struct limine_kernel_address_request Kaddress_req;
 
-// get avialable RAM size
 
 /**
  * @brief Calculates the size of the memory in bytes.
@@ -71,7 +70,7 @@ uint64_t get_memory_size()
 
 /**
  * @brief Print information about the memory map
- * @return void ( cannot fail
+ * @return void
  */
 void print_memmap()
 {
@@ -164,7 +163,7 @@ void print_memmap()
 struct PageTable *page_table;
 
 /**
- * @brief Initialize memory. This is called at boot time
+ * @brief Initialize memory. This is called at boot time.
  */
 void init_memory()
 {
@@ -300,7 +299,7 @@ void init_memory()
 
 /**
  * @brief Print memory information to stdout.
- * @return void. Side effects : None
+ * @return void.
  */
 void print_memory()
 {

@@ -2,7 +2,7 @@
 
 /**
 * @brief Returns the length of a string.
-* @param char
+* @param str string to parse
 * @return The length of the string
 */
 size_t strlen(const char *str)

@@ -2,7 +2,7 @@
 #include "include/io.h"
 
 /**
-* @brief Mask IRQ'irq'in the PIC.
+* @brief Mask an IRQ in the PIC.
 * @param irq The IRQ number to mask
 */
 void pic_mask_irq(uint8_t irq)
@@ -26,7 +26,7 @@ void pic_mask_irq(uint8_t irq)
 }
 
 /**
-* @brief Unmask an interrupt. This is used to enable a previously disabled PIC interrupt
+* @brief Unmask an IRQ in the PIC.
 * @param irq The IRQ number to
 */
 void pic_unmask_irq(uint8_t irq)

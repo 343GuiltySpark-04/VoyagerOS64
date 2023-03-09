@@ -3,8 +3,8 @@
 
 /**
 * @brief Print a string to the serial port.
-* @param char
-* @return Nothing. Side effects : None
+* @param str String to print.
+* @return void
 */
 void inline serial_print(const char *str)
 {
@@ -17,9 +17,9 @@ void inline serial_print(const char *str)
 }
 
 /**
-* @brief Print a line to serial port
-* @param char
-* @return void This function is used to print a
+* @brief Print a string ending with a new line break to serial port
+* @param str String to print
+* @return void
 */
 void inline serial_print_line(const char *str)
 {

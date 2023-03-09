@@ -48,7 +48,7 @@ bool has_ACPI;
 
 /**
  * @brief Generate a 64 - bit pseudo - random number using RDSEED or RDRAND. This is used to generate pseudorandom numbers that are guaranteed to be in the range 0 to 2^64 - 1.
- * @return The pseudo - random number as a 64 - bit integer with at least 64 bits of entropy ( the most significant bit is zero
+ * @return The pseudo - random number as a 64 - bit integer with at least 64 bits of entropy.
  */
 uint64_t rand_asm()
 {
@@ -74,7 +74,7 @@ uint64_t rand_asm()
 }
 
 /**
- * @brief CPUID Readout As Follows ( read CR0 CR4 ) Check all CPUIDs and print
+ * @brief CPUID Readout As Follows ( read CR0 CR4 ) Check all CPUIDs and print which are supported.
  */
 void cpuid_readout()
 {
@@ -126,7 +126,7 @@ int get_model(void)
 }
 
 /**
- * @brief \ brief Initializes x87 FPU on the system. Enables the CRO to make it work
+ * @brief Initialize the x87 FPU on the system.
  */
 void fpu_init()
 {
@@ -163,7 +163,7 @@ void alloc_xsave()
 }
 
 /**
- * @brief Check if FPU is available and initialize it if not. This is called at boot time to make sure we are running on CPU
+ * @brief Check if FPU is available and if so initialize it.
  */
 void check_fpu()
 {

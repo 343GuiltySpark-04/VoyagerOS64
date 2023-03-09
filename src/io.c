@@ -4,7 +4,7 @@
 /**
 * @brief Read a byte from a port
 * @param port The port to read from
-* @return The byte read from the
+* @return The byte read from the port
 */
 uint8_t inb(uint16_t port)
 {
@@ -26,7 +26,7 @@ void outb(uint16_t port, uint8_t val)
 }
 
 /**
-* @brief Wait for I / O to complete
+* @brief Wait for I / O to complete (Mostly unused)
 * @return 0 on success non -
 */
 void io_wait(void)

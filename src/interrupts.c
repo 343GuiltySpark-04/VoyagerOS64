@@ -153,7 +153,7 @@ void irq_handler(isr_xframe_t *frame)
         if (isr_delta[vector] == NULL)
         {
 
-            printf_("%s\n", "Needs More Work!");
+            printf_("%s\n", "Kernel Panic: Invalid/NULL Dynamic ISR Vector!");
             halt();
         }
         else

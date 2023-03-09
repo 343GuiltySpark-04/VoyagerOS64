@@ -46,7 +46,7 @@ void idt_set_descriptor(uint8_t vector, uintptr_t isr, uint8_t flags, uint8_t is
 }
 
 /**
- * @brief Initialize IDT and set interrupt
+ * @brief Initialize IDT and set IDT entries
  */
 void idt_init()
 {
@@ -62,7 +62,6 @@ void idt_init()
             idt_set_descriptor(vector, isr_stub_table[vector], IDT_DESCRIPTOR_EXTERNAL, 001);
             vectors[vector] = true;
 
-            // printf_("%i\n", vector);
         }
         else
         {
