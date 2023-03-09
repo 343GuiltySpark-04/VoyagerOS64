@@ -37,6 +37,8 @@ struct PACKED kswitches
 
     // 0 gb, 1 mb, 2 kb, 3 b
     uint8_t mem_readout_unit;
+
+    uint8_t liballoc_debug;
 };
 
 void print_memmap();

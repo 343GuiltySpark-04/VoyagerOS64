@@ -33,13 +33,14 @@ volatile struct limine_framebuffer_request fbr_req = {
 
 const struct kswitches k_mode = {
 
-    .stack_trace_size = 5,
+    .stack_trace_size = 12,
     .stack_trace_on_fault = 1,
     .acpi_support = 0,
     .sched_debug = 0,
     .addr_debug = 0,
     .hw_rng_support = 1,
-    .mem_readout_unit = 1
+    .mem_readout_unit = 1,
+    .liballoc_debug = 0
 
 };
 
@@ -304,6 +305,8 @@ void init_memory()
 void print_memory()
 {
     double exp;
+
+    printf("%s\n", "NOTE: May be off by up to 2x on a emulator or VM!");
 
     switch (k_mode.mem_readout_unit)
     {

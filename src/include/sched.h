@@ -17,6 +17,9 @@ extern const uint64_t quantum;
 extern bool sched_started;
 extern high_yield_int();
 
+extern uint64_t active_pid;
+extern uint64_t exec_pid;
+
 // Data structure to represent a process
 struct Process
 {
@@ -50,6 +53,8 @@ struct PACKED tube_process
     bool immortal;
     uint8_t exit_code;
     uint64_t child_ids[256];
+    char io_stack[4096];
+    int io_stack_top;
     uint64_t *parent; // NULL if N/A
 };
 
@@ -83,6 +88,14 @@ struct PACKED hot_tube
     uint64_t process_count;
 
     uint64_t current_waiting;
+};
+
+struct PACKED process_list
+{
+
+    uint64_t *pid;
+
+    uint64_t index;
 };
 
 struct Process create_process(uint64_t id, uint64_t priority, bool mortality, char name[256]);

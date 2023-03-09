@@ -26,6 +26,8 @@
 #include "include/acpi/acpi.h"
 #include "include/apic/lapic.h"
 #include "include/stack_trace.h"
+#include "include/io.h"
+#include "include/pebble.h"
 
 #define White "\033[1;00m"
 #define Red "\033[1;31m"
@@ -77,11 +79,15 @@ static struct PageTable *test_table;
 
 struct Scheduler scheduler;
 
-struct standby_tube standby_tube;
+struct standby_tube k_standby_tube;
 
-struct active_tube active_tube;
+struct active_tube k_active_tube;
+
+struct process_list k_process_list;
 
 struct hot_tube hot_tube;
+
+HANDLE kernel_heap = NULL;
 
 void hello_general_floatius()
 {
@@ -158,7 +164,7 @@ void _start(void)
 
     asm volatile("cli");
 
-   // lapic_init();
+    // lapic_init();
 
     asm volatile("sti");
 
@@ -211,13 +217,15 @@ void _start(void)
     printf_("%s", "CR4: ");
     printf_("0x%llx\n", readCR4());
 
+    kernel_heap = pmalloc_init(0x2FAF080);
+
     if (k_mode.acpi_support == 1)
     {
 
         acpi_init();
     }
 
-    //  keyboard_init();
+    keyboard_init();
 
     printf_("%s\n", "Handing Control to Standalone Terminal...");
 
@@ -263,7 +271,7 @@ void _start(void)
 
     bootspace = 1;
 
-    init_sched(&standby_tube, &active_tube, &hot_tube);
+    init_sched(&k_standby_tube, &k_active_tube, &hot_tube);
 
     if (k_mode.addr_debug == 1)
     {
@@ -274,9 +282,13 @@ void _start(void)
 
     // stack_dump_asm();
 
-    add_active_tube_process(&active_tube, create_tube_process(false, true, true, "Kernel_Thread"));
-    add_tube_process(&standby_tube, create_tube_process(false, true, true, "Kernel_Thread_2"));
-    // add_tube_process(&standby_tube, create_tube_process(false, true, true, "Kernel_Thread_3"));
+    add_active_tube_process(&k_active_tube, create_tube_process(false, true, true, "Kernel_Thread"));
+    add_tube_process(&k_standby_tube, create_tube_process(false, true, true, "Kernel_Thread_2"));
+    add_tube_process(&k_standby_tube, create_tube_process(false, true, true, "Kernel_Thread_3"));
+
+    active_pid = k_active_tube.processes[0].id;
+
+    stdin("k", 123);
 
     // halt();
 
@@ -285,19 +297,21 @@ void _start(void)
     while (1)
     {
 
-        tube_schedule(&standby_tube, &active_tube, &hot_tube, quantum);
+        tube_schedule(&k_standby_tube, &k_active_tube, &hot_tube, quantum);
 
         printf_("%u\n", loopcount);
         printf_("%s", "Current PID: ");
-        printf_("%u\n", active_tube.processes[0].id);
+        printf_("%u\n", k_active_tube.processes[0].id);
         printf_("%s", "Current Process Name: ");
-        printf_("%s\n", active_tube.processes[0].name);
+        printf_("%s\n", k_active_tube.processes[0].name);
         printf_("%s", "Number of processes (Active and Standby Tubes): ");
-        printf_("%u\n", active_tube.current_active + standby_tube.current_standby);
+        printf_("%u\n", k_active_tube.current_active + k_standby_tube.current_standby);
         printf_("%s", "Quantum Value of Current Process: ");
-        printf_("%u\n", active_tube.processes[0].allocated_time);
+        printf_("%u\n", k_active_tube.processes[0].allocated_time);
 
         loopcount++;
+
+        stdout("P", &k_active_tube, &k_standby_tube);
 
         if (loopcount >= 1)
         {
@@ -309,6 +323,7 @@ void _start(void)
 
         if (loopcount == 25)
         {
+
             halt();
         }
     }

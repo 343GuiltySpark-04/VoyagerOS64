@@ -38,3 +38,5 @@
 
 typedef int32_t mode_t;
 typedef signed long ssize_t;
+typedef unsigned long long lsize_t;
+typedef void *HANDLE;

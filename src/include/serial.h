@@ -3,7 +3,7 @@
 
 extern void serial_debug(int c);
 
-void serial_print(const char *str);
-void serial_print_line(const char *str);
+void inline serial_print(const char *str);
+void inline serial_print_line(const char *str);
 
 #endif

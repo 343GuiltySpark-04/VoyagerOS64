@@ -35,7 +35,7 @@
 - Dynamic Interrupt Vector Allocation
 - Ability to Reload The GDT, IDT And TSS
 
-# Version 0.0.6 (WIP)
+# Version 0.0.6 (WIP and subject to change)
 
 - Added a scheduler of my own design
 - Greatly improved documentation
@@ -46,4 +46,6 @@
 - Added HW RNG Support
 - Some CodeGPT refractoring
 - SSE and floating point ops now working.
-- more accurrate memory reporting (Unknown at this time why its off by 2x i suspect the boot protocole.)
+- more accurrate memory reporting (Unknown at this time why its off by 2x i suspect the VM/Emulator.)
+- Added a warning for the afromention issue to the memory readouts
+- Started work on standardized IO

@@ -427,7 +427,7 @@ void print_date()
 
     printf_("%i", year);
 
-    printf_("%s\n", " (VERY WIP)");
+    printf_("%s\n", " (Year reading still has some kinks in it.)");
 }
 
 // Courtesy of Tomohiko Sakamoto

@@ -6,15 +6,15 @@ global dyn_isr_handler
 %macro isr_err_stub 1
 isr_stub_%+%1:
     cli
-    push %1
+    push qword %1
     jmp isr_xframe_assembler
 %endmacro
 
 %macro isr_no_err_stub 1
 isr_stub_%+%1:
     cli
-    push 0
-    push %1
+    push qword 0
+    push qword %1
     jmp isr_xframe_assembler
 %endmacro
 
@@ -72,21 +72,29 @@ dyn_isr_handler:
     call rdi
     ret
 
+
+; this is a long mode handler
 isr_xframe_assembler:
     push rbp
     mov rbp, rsp
+    nop
     pushagrd
     pushacrd
+    nop
     mov ax, ds
     push rax
+    nop
     push qword 0
+    nop
     mov ax, 0x10
     mov ds, ax
     mov es, ax
     mov ss, ax
 
+    nop
     lea rdi, [rsp + 0x10]
     call isr_exception_handler
+    nop
 
     pop rax
     pop rax

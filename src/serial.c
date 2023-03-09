@@ -6,7 +6,7 @@
 * @param char
 * @return Nothing. Side effects : None
 */
-void serial_print(const char *str)
+void inline serial_print(const char *str)
 {
     char *p = (char *)str;
 
@@ -21,7 +21,7 @@ void serial_print(const char *str)
 * @param char
 * @return void This function is used to print a
 */
-void serial_print_line(const char *str)
+void inline serial_print_line(const char *str)
 {
     char *p = (char *)str;
 
