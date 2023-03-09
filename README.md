@@ -1,7 +1,7 @@
 
 
 # NOTE
-This branch is meant as a super lightweight CPUID utility and will not be kept up to date with the master branch
+This branch is meant as a super lightweight CPUID utility and will not be kept up to date with the master branch, that being said it may also have some features that the master branch will not.
 
 # VoyagerOS64
 To Boldly Go 
