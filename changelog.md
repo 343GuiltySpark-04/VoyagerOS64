@@ -28,7 +28,7 @@
 - Added a Few Kernel Panic Messages
 - New Terminal Font
 
-# Version 0.0.5
+# Version 0.0.5 (Internal Unreleased)
 
 - Added Support For ACPI And Relevant Kernel Panics
 - Improved Timing Subsystem
