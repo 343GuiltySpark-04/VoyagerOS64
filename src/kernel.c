@@ -28,6 +28,7 @@
 #include "include/stack_trace.h"
 #include "include/io.h"
 #include "include/pebble.h"
+#include "include/panic.h"
 
 #define White "\033[1;00m"
 #define Red "\033[1;31m"
@@ -206,7 +207,7 @@ void _start(void)
 
     // read_memory_map();
 
-    print_memory();
+    //   print_memory();
 
     init_memory();
 
@@ -241,7 +242,7 @@ void _start(void)
 
     bootspace = 1;
 
-    term_context = fbterm_init(malloc, fbr_req.response->framebuffers[0]->address, fbr_req.response->framebuffers[0]->width, fbr_req.response->framebuffers[0]->height,
+    term_context = fbterm_init(vmalloc, fbr_req.response->framebuffers[0]->address, fbr_req.response->framebuffers[0]->width, fbr_req.response->framebuffers[0]->height,
 
                                fbr_req.response->framebuffers[0]->pitch, NULL, NULL, NULL, &term_bg, &term_fg, &vgafont, 8, 16, 1,
 
@@ -255,7 +256,7 @@ void _start(void)
 
     // cpuid_readout();
 
-    print_memory();
+    //  print_memory();
 
     print_load_time();
 
@@ -267,7 +268,7 @@ void _start(void)
 
     printf_("%s\n", ":> ");
 
-    hello_general_floatius();
+    // hello_general_floatius();
 
     bootspace = 1;
 
@@ -297,8 +298,16 @@ void _start(void)
     while (1)
     {
 
+        if (loopcount == 1)
+        {
+
+            breakpoint();
+            bootspace = 1;
+        }
+
         tube_schedule(&k_standby_tube, &k_active_tube, &hot_tube, quantum);
 
+        printf_("%s", "Loop number: ");
         printf_("%u\n", loopcount);
         printf_("%s", "Current PID: ");
         printf_("%u\n", k_active_tube.processes[0].id);
@@ -319,7 +328,7 @@ void _start(void)
             temp = 1;
         }
 
-        print_memory();
+        //  print_memory();
 
         if (loopcount == 25)
         {

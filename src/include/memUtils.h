@@ -4,6 +4,7 @@
 
 #include "heap.h"
 #include "liballoc.h"
+#include <stddef.h>
 
 extern KHEAPBM kheap;
 
@@ -21,5 +22,7 @@ extern KHEAPBM kheap;
 #define MALLOC_FLAGS_ALIGNED (1 << 6)  // must be aligned.  The aligned parameter is now used, else it is ignored.
 #define MALLOC_HARDWARE32 (MALLOC_FLAGS_LOW4GIG | MALLOC_FLAGS_PHYSICAL | MALLOC_FLAGS_CLEAR)
 #define MALLOC_HARDWARE64 (MALLOC_FLAGS_PHYSICAL | MALLOC_FLAGS_CLEAR)
+
+void vmalloc(size_t size);
 
 #endif

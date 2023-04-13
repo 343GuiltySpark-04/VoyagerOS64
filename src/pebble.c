@@ -182,6 +182,19 @@ struct S_MEMORY_PEBBLE *place_pebble(struct S_MEMORY_BUCKET *bucket, struct S_ME
         //  large enough to insert our pebble in.  First one found, we use.
         while (start != NULL)
         {
+
+            uint64_t addr; // Memory address
+            if ((addr & 0x8000000000000000) == 1)
+            { // Check if most significant bit is set to 0
+                // Address is canonical
+            }
+            else
+            {
+                // Address is not canonical
+            }
+
+            printf_("0x%llx\n", start);
+            // Code is Causing a GP Fault when checking the if statement condtions due to non-canonical address
             if (PEBBLE_IS_FREE(start) && (start->size >= pebble->size))
             {
                 // we found one to use.  Do we need to split it?

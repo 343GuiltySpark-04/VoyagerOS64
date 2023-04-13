@@ -11,6 +11,7 @@
 #include "include/sched.h"
 #include "include/cpu.h"
 #include "include/liballoc.h"
+#include "include/panic.h"
 #include <cpuid.h>
 #include <stdbool.h>
 #include <stddef.h>
@@ -311,7 +312,7 @@ void check_sep()
         sysenter = false;
         printf_("%s\n", "SEP (SYSENTER/EXIT): No");
         printf_("%s\n", "You Realized How Fucked You Are Without This? Halting Get A Better PC.");
-        halt();
+        panic("NO SEP!");
     }
 }
 

@@ -5,6 +5,7 @@
 #include <stddef.h>
 #include "include/KernelUtils.h"
 #include "include/printf.h"
+#include "include/panic.h"
 
 uint64_t freeMemory = 0;
 uint64_t reservedMemory = 0;
@@ -100,10 +101,7 @@ void read_memory_map()
 
     if (largestFreeMemSegment == NULL)
     {
-        printf_("%s\n", "!!!Kernel Panic!!!");
-        printf_("%s\n", "No Suitable Memory Map Entries Found!");
-        printf_("%s\n", "!!!Kernel Panic!!!");
-        halt();
+        panic("No Suitable Memory Map Entries Found!");
     }
 
     printf_("%s", "Address of Largest Free Entry: ");

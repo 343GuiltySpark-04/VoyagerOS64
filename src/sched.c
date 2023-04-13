@@ -13,6 +13,7 @@
 #include "include/kernel.h"
 #include "include/pebble.h"
 #include "include/memUtils.h"
+#include "include/panic.h"
 
 #define SAVE_STATE()                       \
     asm volatile("pushq %rax");            \
@@ -160,11 +161,7 @@ void exit_reg()
     // Kernel Panic if vectors are exausted.
     if (vector == NULL)
     {
-
-        printf_("%s\n", "!!!Kernel Panic!!!");
-        printf_("%s", "IDT VECTORS EXUSTED!");
-        printf_("%s\n", "!!!Kernel Panic!!!");
-        halt();
+        panic("IDT VECTORS EXUSTED!");
     }
 
     isr_delta[vector] = exit_tube;
@@ -189,11 +186,7 @@ void high_yield_reg()
 
     if (vector == NULL)
     {
-
-        printf_("%s\n", "!!!Kernel Panic!!!");
-        printf_("%s", "IDT VECTORS EXUSTED!");
-        printf_("%s\n", "!!!Kernel Panic!!!");
-        halt();
+        panic("IDT VECTORS EXUSTED!");
     }
 
     isr_delta[vector] = high_yield;

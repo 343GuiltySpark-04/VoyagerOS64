@@ -38,7 +38,7 @@ const struct kswitches k_mode = {
     .acpi_support = 0,
     .sched_debug = 0,
     .addr_debug = 0,
-    .hw_rng_support = 1,
+    .hw_rng_support = 0,
     .mem_readout_unit = 1,
     .liballoc_debug = 0
 

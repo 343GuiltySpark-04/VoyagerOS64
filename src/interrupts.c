@@ -13,6 +13,7 @@
 #include "include/sched.h"
 #include "include/stack_trace.h"
 #include "include/KernelUtils.h"
+#include "include/panic.h"
 
 static const char *exception_messages[] =
     {
@@ -82,6 +83,8 @@ void isr_exception_handler(isr_xframe_t *frame, uint64_t rsi);
 void isr_exception_handler(isr_xframe_t *frame, uint64_t rsi)
 {
 
+    printf_("%s\n", "!!!!!!!!!!!!!!!!!!!!KERNEL PANIC!!!!!!!!!!!!!!!!!!!!!");
+
     kerror_mode = 1;
 
     printf_("%s", "ERROR: CPU EXCEPTION: ");
@@ -116,6 +119,8 @@ void isr_exception_handler(isr_xframe_t *frame, uint64_t rsi)
         // stack_dump();
         // stack_dump_recursive(16);
     }
+
+    printf_("%s\n", "!!!!!!!!!!!!!!!!!!!!KERNEL PANIC!!!!!!!!!!!!!!!!!!!!!");
 
     __asm__ volatile("cli; hlt");
 }
@@ -153,8 +158,7 @@ void irq_handler(isr_xframe_t *frame)
         if (isr_delta[vector] == NULL)
         {
 
-            printf_("%s\n", "Kernel Panic: Invalid/NULL Dynamic ISR Vector!");
-            halt();
+            panic("Kernel Panic: Invalid/NULL Dynamic ISR Vector!");
         }
         else
         {

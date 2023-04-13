@@ -15,9 +15,9 @@
 #include "include/cpuUtils.h"
 #include "include/limine.h"
 #include "include/apic/lapic.h"
+#include "include/panic.h"
 
 bool sysenter;
-extern void halt();
 
 size_t fpu_bank_size;
 void (*fpu_save)(void *ctx) = NULL;
@@ -40,10 +40,7 @@ struct cpu_local *this_cpu(void)
     if (interrupt_state())
     {
 
-        printf_("%s\n", "!!!!!!!!!!!!!!!!!!!!KERNEL PANIC!!!!!!!!!!!!!!!!!!!!!");
-        printf_("%s\n", " Calling this_cpu() With Interrupts on is Forbidden!");
-        printf_("%s\n", "!!!!!!!!!!!!!!!!!!!!KERNEL PANIC!!!!!!!!!!!!!!!!!!!!!");
-        halt();
+        panic(" Calling this_cpu() With Interrupts on is Forbidden!");
     }
 
     return NULL;
