@@ -116,8 +116,6 @@ void isr_exception_handler(isr_xframe_t *frame, uint64_t rsi)
     {
 
         stack_dump_asm();
-        // stack_dump();
-        // stack_dump_recursive(16);
     }
 
     printf_("%s\n", "!!!!!!!!!!!!!!!!!!!!KERNEL PANIC!!!!!!!!!!!!!!!!!!!!!");

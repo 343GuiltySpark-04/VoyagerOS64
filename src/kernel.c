@@ -88,6 +88,8 @@ struct process_list k_process_list;
 
 struct hot_tube hot_tube;
 
+uint8_t init_done = 0;
+
 HANDLE kernel_heap = NULL;
 
 void hello_general_floatius()
@@ -267,6 +269,8 @@ void _start(void)
     printf_("%s\n", "VoyagerOS64 v0.0.4");
 
     printf_("%s\n", ":> ");
+
+    init_done = 1;
 
     // hello_general_floatius();
 

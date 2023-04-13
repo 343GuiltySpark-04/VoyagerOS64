@@ -109,7 +109,7 @@ void cpuid_readout()
     printf_("0x%llx\n", readCR4());
     printf_("%s", "APIC Base Address: ");
     printf_("0x%llx\n", get_apic_base_address());
-   // halt();
+    // halt();
 
     printf_("%s\n", "-----------------------------");
 }
@@ -311,8 +311,7 @@ void check_sep()
 
         sysenter = false;
         printf_("%s\n", "SEP (SYSENTER/EXIT): No");
-        printf_("%s\n", "You Realized How Fucked You Are Without This? Halting Get A Better PC.");
-        panic("NO SEP!");
+        panic("NO SEP!, You Realized How Fucked You Are Without This? Halting Get A Better PC.");
     }
 }
 
