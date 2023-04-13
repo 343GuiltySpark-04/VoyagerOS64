@@ -193,7 +193,7 @@ void _start(void)
 
     if (Kaddress_req.response == NULL)
     {
-        printf_("%s\n", "!!!Error While Fetching Kernel Addresses!!!");
+        panic("Error While Fetching Kernel Addresses, Where is the Kernel! oh wait it up and fricked off!");
     }
     else
     {

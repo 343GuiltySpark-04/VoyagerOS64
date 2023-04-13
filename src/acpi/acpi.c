@@ -7,6 +7,7 @@
 #include "../include/paging/paging.h"
 #include "../include/printf.h"
 #include "../include/string.h"
+#include "../include/panic.h"
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
@@ -46,17 +47,17 @@ static struct rsdp *rsdp = NULL;
 static struct rsdt *rsdt = NULL;
 
 /**
-* @brief Check if we should use XSDT.
-* @return True if XSDT should be used
-*/
+ * @brief Check if we should use XSDT.
+ * @return True if XSDT should be used
+ */
 static inline bool use_xsdt(void)
 {
     return rsdp->revision >= 2 && rsdp->xsdt_addr != 0;
 }
 
 /**
-* @brief Initialize ACPI subsystem This is called at boot time
-*/
+ * @brief Initialize ACPI subsystem This is called at boot time
+ */
 void acpi_init(void)
 {
     struct limine_rsdp_response *rsdp_resp = rsdp_req.response;
@@ -64,18 +65,12 @@ void acpi_init(void)
     if (rsdp_resp == NULL || rsdp_resp->address == NULL)
     {
 
-        printf_("%s\n", "!!!!!!!!!!!!KERNEL PANIC!!!!!!!!!!!!!");
-        printf_("%s\n", " ACPI Not Supported by This Machine!");
-        printf_("%s\n", "!!!!!!!!!!!!!KERNEL PANIC!!!!!!!!!!!!!");
-        halt();
+        panic("ACPI Not Supported by This Machine!, Don't look at me you bought the bloody thing!");
     }
     else if (has_ACPI == false)
     {
 
-        printf_("%s\n", "!!!!!!!!!!!!KERNEL PANIC!!!!!!!!!!!!!");
-        printf_("%s\n", " ACPI Not Supported by This Machine!");
-        printf_("%s\n", "!!!!!!!!!!!!!KERNEL PANIC!!!!!!!!!!!!!");
-        halt();
+        panic("ACPI Not Supported by This Machine!, Don't look at me you bought the bloody thing!");
     }
 
     rsdp = rsdp_resp->address;
@@ -100,10 +95,7 @@ void acpi_init(void)
 
         if ((fadt_flags & (1 << 20)) != 0)
         {
-            printf_("%s\n", "!!!!!!!!!!!!!!!!!KERNEL PANIC!!!!!!!!!!!!!!!!!!");
-            printf_("%s\n", " VoyagerOS64 Does Not Support HW Reduced ACPI");
-            printf_("%s\n", "!!!!!!!!!!!!!!!!!KERNEL PANIC!!!!!!!!!!!!!!!!!!");
-            halt();
+         panic("VoyagerOS64 Does Not Support HW Reduced ACPI, Sounds like a you problem!");
         }
     }
 
@@ -111,11 +103,11 @@ void acpi_init(void)
 }
 
 /**
-* @brief Locates SDT by signature
-* @param char
-* @param index Index of entry to search.
-* @return Pointer to the entry or NULL if not found
-*/
+ * @brief Locates SDT by signature
+ * @param char
+ * @param index Index of entry to search.
+ * @return Pointer to the entry or NULL if not found
+ */
 void *acpi_find_sdt(const char signature[static 4], size_t index)
 {
     size_t entry_count =

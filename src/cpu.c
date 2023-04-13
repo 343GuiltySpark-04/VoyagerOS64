@@ -40,7 +40,7 @@ struct cpu_local *this_cpu(void)
     if (interrupt_state())
     {
 
-        panic(" Calling this_cpu() With Interrupts on is Forbidden!");
+        panic(" Calling this_cpu() With Interrupts on is Forbidden! Read the docs next time dipshit!");
     }
 
     return NULL;

@@ -101,7 +101,7 @@ void read_memory_map()
 
     if (largestFreeMemSegment == NULL)
     {
-        panic("No Suitable Memory Map Entries Found!");
+        panic("No Suitable Memory Map Entries Found! How tiny is your PC no judgments just curious?");
     }
 
     printf_("%s", "Address of Largest Free Entry: ");

@@ -156,7 +156,7 @@ void irq_handler(isr_xframe_t *frame)
         if (isr_delta[vector] == NULL)
         {
 
-            panic("Kernel Panic: Invalid/NULL Dynamic ISR Vector!");
+            panic("Kernel Panic: Invalid/NULL Dynamic ISR Vector! Not my fault... ok it's my fault.");
         }
         else
         {

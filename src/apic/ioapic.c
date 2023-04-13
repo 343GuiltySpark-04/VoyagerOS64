@@ -5,17 +5,17 @@
 #include "../include/acpi/madt.h"
 #include "../include/apic/ioapic.h"
 #include "../include/paging/paging.h"
+#include "../include/panic.h"
 
 extern void halt();
 
-
 // Read From IOAPIC
 /**
-* @brief Read a value from the IO APIC.
-* @param * io_apic
-* @param reg Register to read from the IO APIC
-* @return Value read from the IO API
-*/
+ * @brief Read a value from the IO APIC.
+ * @param * io_apic
+ * @param reg Register to read from the IO APIC
+ * @return Value read from the IO API
+ */
 static uint32_t io_apic_read(struct madt_io_apic *io_apic, uint32_t reg)
 {
     uint64_t base = (uint64_t)io_apic->address + HIGHER_HALF_MEMORY_OFFSET;
@@ -25,11 +25,11 @@ static uint32_t io_apic_read(struct madt_io_apic *io_apic, uint32_t reg)
 
 // Write to IOAPIC
 /**
-* @brief Write a 32 - bit register on the IO - APIC.
-* @param * io_apic
-* @param reg Register to write to ( big endian )
-* @param value Value to write to ( little endian
-*/
+ * @brief Write a 32 - bit register on the IO - APIC.
+ * @param * io_apic
+ * @param reg Register to write to ( big endian )
+ * @param value Value to write to ( little endian
+ */
 static void io_apic_write(struct madt_io_apic *io_apic, uint32_t reg, uint32_t value)
 {
     uint64_t base = (uint64_t)io_apic->address + HIGHER_HALF_MEMORY_OFFSET;
@@ -39,22 +39,21 @@ static void io_apic_write(struct madt_io_apic *io_apic, uint32_t reg, uint32_t v
 
 // Get number of GSI's
 /**
-* @brief Get GSI count of I / O APIC
-* @param * io_apic
-* @return Number of GSIs in
-*/
+ * @brief Get GSI count of I / O APIC
+ * @param * io_apic
+ * @return Number of GSIs in
+ */
 static size_t io_apic_gsi_count(struct madt_io_apic *io_apic)
 {
     return (io_apic_read(io_apic, 1) & 0xff0000) >> 16;
 }
 
-
-// create MADT 
+// create MADT
 /**
-* @brief Find the IO APIC that corresponds to GSI
-* @param gsi GSI to look up.
-* @return I / O APIC
-*/
+ * @brief Find the IO APIC that corresponds to GSI
+ * @param gsi GSI to look up.
+ * @return I / O APIC
+ */
 static struct madt_io_apic *io_apic_from_gsi(uint32_t gsi)
 {
     for (size_t i = 0; i < madt_io_apics.length; i++)
@@ -65,24 +64,18 @@ static struct madt_io_apic *io_apic_from_gsi(uint32_t gsi)
             return io_apic;
         }
     }
-
-    printf_("%s\n", "!!!!!!!!!!!!!!!!!!KERNEL PANIC!!!!!!!!!!!!!!!");
-    printf_("%s\n", " Cannot determine IO APIC from GSI %lu", gsi);
-    printf_("%s\n", "!!!!!!!!!!!!!!!!!!KERNEL PANIC!!!!!!!!!!!!!!!");
-
-    halt();
+    panic("Cannot determine IO APIC from GSI %lu", gsi);
 }
 
-
-// Setup IRQ redirects 
+// Setup IRQ redirects
 /**
-* @brief Set GSI redirect for interrupt
-* @param lapic_id LAPIC ID to redirect to
-* @param vector Interrupt vector to redirect to
-* @param irq Interrupt source to redirect to
-* @param status True if status should be set
-* @return The IO - APIC
-*/
+ * @brief Set GSI redirect for interrupt
+ * @param lapic_id LAPIC ID to redirect to
+ * @param vector Interrupt vector to redirect to
+ * @param irq Interrupt source to redirect to
+ * @param status True if status should be set
+ * @return The IO - APIC
+ */
 void io_apic_set_irq_redirect(uint32_t lapic_id, uint8_t vector, uint8_t irq, bool status)
 {
     for (size_t i = 0; i < madt_isos.length; i++)
@@ -101,13 +94,13 @@ void io_apic_set_irq_redirect(uint32_t lapic_id, uint8_t vector, uint8_t irq, bo
 }
 
 /**
-* @brief Set IO - APIC GSI redirect
-* @param lapic_id
-* @param vector Vector to redirect to ( 0.. 63 )
-* @param gsi GSI to redirect to ( 0.. 63 )
-* @param flags Bitmask of flags to redirect
-* @param status Status to redirect to ( true = redirect
-*/
+ * @brief Set IO - APIC GSI redirect
+ * @param lapic_id
+ * @param vector Vector to redirect to ( 0.. 63 )
+ * @param gsi GSI to redirect to ( 0.. 63 )
+ * @param flags Bitmask of flags to redirect
+ * @param status Status to redirect to ( true = redirect
+ */
 void io_apic_set_gsi_redirect(uint32_t lapic_id, uint8_t vector, uint8_t gsi,
                               uint16_t flags, bool status)
 {

@@ -179,7 +179,7 @@ void yield_register()
     if (vector == NULL)
     {
 
-        panic("IDT VECTORS EXUSTED!");
+        panic("IDT VECTORS EXUSTED! That's on me mate sorry!");
     }
 
     isr_delta[vector] = yield_isr_test;

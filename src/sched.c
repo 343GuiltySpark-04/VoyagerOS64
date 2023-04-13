@@ -161,7 +161,7 @@ void exit_reg()
     // Kernel Panic if vectors are exausted.
     if (vector == NULL)
     {
-        panic("IDT VECTORS EXUSTED!");
+        panic("IDT VECTORS EXUSTED! That's on me mate sorry!");
     }
 
     isr_delta[vector] = exit_tube;
@@ -186,7 +186,7 @@ void high_yield_reg()
 
     if (vector == NULL)
     {
-        panic("IDT VECTORS EXUSTED!");
+        panic("IDT VECTORS EXUSTED! That's on me mate sorry!");
     }
 
     isr_delta[vector] = high_yield;
