@@ -9,7 +9,7 @@
 extern void halt();
 
 /**
- * @brief Panic with a nicely formatted message. This is useful for situations where you are certain an unrecoverable error will occur and want to be informative (feel free to abuse sarcasm in them) about the problem. 
+ * @brief Panic with a nicely formatted message. This is useful for situations where you are certain an unrecoverable error will occur and want to be informative (feel free to abuse sarcasm in them) about the problem.
  * @param fmt printf style format string for the panic message
  */
 void panic(const char *fmt, ...)
@@ -35,17 +35,14 @@ void panic(const char *fmt, ...)
 
     printf_("%s\n", "-----------------------------------------------------");
 
-    if (k_mode.stack_trace_on_fault == 1)
-    {
-
-        printf_("%s\n", "NOTE: May Page Fault if frames run out before the 5 frame cap, this is harmless dissregard it and the resulting additonal trace.");
-        stack_trace(0);
-    }
-    else if (k_mode.stack_trace_on_fault == 2)
-    {
-
-        stack_dump_asm();
-    }
+    stack_trace(0);
+    printf("%s\n", "-----------------------------------------------");
+    printf("%s\n", "    INFO: Stack Trace (Dump) as Follows");
+    printf("%s\n", "-----------------------------------------------");
+    stack_dump_asm(0, 256);
+    printf("%s\n", "-----------------------------------------------");
+    printf_("%s\n", "End of Trace.");
+    printf("%s\n", "-----------------------------------------------");
 
     printf_("%s\n", "!!!!!!!!!!!!!!!!!!!!KERNEL PANIC!!!!!!!!!!!!!!!!!!!!!");
 
