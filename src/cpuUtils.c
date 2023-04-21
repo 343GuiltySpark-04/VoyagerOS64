@@ -11,6 +11,7 @@
 #include "include/sched.h"
 #include "include/cpu.h"
 #include "include/liballoc.h"
+#include "include/panic.h"
 #include <cpuid.h>
 #include <stdbool.h>
 #include <stddef.h>
@@ -54,20 +55,23 @@ uint64_t rand_asm()
 {
     uint64_t result;
 
+    uint64_t seed = cpuid_check_rdseed();
+    uint64_t rand = cpuid_check_rdrand();
+
     // This function checks the cpuid_check_rdseed and cpuid_check_rdrand parameters.
-    if (cpuid_check_rdseed() == 1)
+    if (seed == 1)
     {
         result = rdseed_asm();
     }
     // This function checks if the current CPUID is a RDRAND.
-    else if (cpuid_check_rdrand() == 1)
+    else if (rand == 1)
     {
         result = rdrand_asm();
     }
     else
     {
-        printf_("%s\n", "FATAL: No HW RND Facilites Found!");
-        halt();
+
+        panic("NO HARDWARE RNG CAPABILITES DETECTED!");
     }
 
     return result;
@@ -108,7 +112,7 @@ void cpuid_readout()
     printf_("0x%llx\n", readCR4());
     printf_("%s", "APIC Base Address: ");
     printf_("0x%llx\n", get_apic_base_address());
-   // halt();
+    // halt();
 
     printf_("%s\n", "-----------------------------");
 }

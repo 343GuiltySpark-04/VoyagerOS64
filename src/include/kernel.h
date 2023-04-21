@@ -14,6 +14,8 @@ extern uint32_t bootspace;
 
 extern uint8_t kerror_mode;
 
+extern uint8_t init_done;
+
 extern volatile struct limine_terminal_request early_term;
 
 #endif

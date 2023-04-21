@@ -30,7 +30,8 @@ void stack_trace_asm(uint64_t max_size, bool stop);
 void print_stack_size();
 void stack_trace(uint64_t max_frames);
 void dump_hex(const void *data, size_t size);
-extern void stack_dump_asm();
+// set leave to 0 to simply return otherwise set to 1
+extern void stack_dump_asm(uint64_t leave, uint64_t trace_size);
 void stack_dump();
 void stack_dump_recursive(uint64_t max_frames);
 #endif

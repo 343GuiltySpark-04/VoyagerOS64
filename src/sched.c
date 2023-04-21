@@ -11,8 +11,8 @@
 #include "include/stack_trace.h"
 #include "include/KernelUtils.h"
 #include "include/kernel.h"
-#include "include/pebble.h"
 #include "include/memUtils.h"
+#include "include/panic.h"
 
 #define SAVE_STATE()                       \
     asm volatile("pushq %rax");            \
@@ -119,7 +119,7 @@ struct tube_process create_tube_process(bool high_priority, bool immortal, bool 
     p.io_stack_top = -1;
     // p.parent_id = NULL;
 
-    k_process_list.pid = prealloc(k_process_list.pid, (k_process_list.index + 1) * sizeof(uint64_t));
+    k_process_list.pid = realloc(k_process_list.pid, (k_process_list.index + 1) * sizeof(uint64_t));
 
     k_process_list.pid[k_process_list.index] = pid;
 
@@ -161,10 +161,7 @@ void exit_reg()
     if (vector == NULL)
     {
 
-        printf_("%s\n", "!!!Kernel Panic!!!");
-        printf_("%s", "IDT VECTORS EXUSTED!");
-        printf_("%s\n", "!!!Kernel Panic!!!");
-        halt();
+        panic("IDT VECTORS EXAUSTED!");
     }
 
     isr_delta[vector] = exit_tube;
@@ -190,10 +187,7 @@ void high_yield_reg()
     if (vector == NULL)
     {
 
-        printf_("%s\n", "!!!Kernel Panic!!!");
-        printf_("%s", "IDT VECTORS EXUSTED!");
-        printf_("%s\n", "!!!Kernel Panic!!!");
-        halt();
+        panic("IDT VECTORS EXAUSTED!");
     }
 
     isr_delta[vector] = high_yield;
@@ -226,11 +220,11 @@ void init_sched(struct standby_tube *s_tube, struct active_tube *a_tube, struct 
 
     uint64_t hot_size = (1 + sizeof(struct tube_process));
 
-    h_tube->processes = pmalloc(hot_size, 0, MALLOC_FLAGS_VIRTUAL);
+    h_tube->processes = malloc(hot_size);
 
-    s_tube->processes = pmalloc(size, 0, MALLOC_FLAGS_VIRTUAL);
+    s_tube->processes = malloc(size);
 
-    a_tube->processes = pmalloc(size, 0, MALLOC_FLAGS_VIRTUAL);
+    a_tube->processes = malloc(size);
 
     spinlock_release(&schedlock_t);
 }
@@ -303,7 +297,7 @@ void add_tube_process(struct standby_tube *tube, struct tube_process p)
     printf_("0x%llx\n", sizeof(p));
     printf_("%s\n", "----------------------------------------");
 
-    tube->processes = prealloc(tube->processes, ++tube->process_count * sizeof(struct tube_process));
+    tube->processes = realloc(tube->processes, ++tube->process_count * sizeof(struct tube_process));
 
     tube->processes[tube->process_count - 1] = p;
 
@@ -356,7 +350,7 @@ void add_active_tube_process(struct active_tube *tube, struct tube_process p)
     printf_("0x%llx\n", sizeof(p));
     printf_("%s\n", "----------------------------------------");
 
-    tube->processes = prealloc(tube->processes, ++tube->process_count * sizeof(struct tube_process));
+    tube->processes = realloc(tube->processes, ++tube->process_count * sizeof(struct tube_process));
 
     tube->processes[tube->process_count - 1] = p;
 
@@ -764,7 +758,7 @@ void tube_schedule(struct standby_tube *standby, struct active_tube *active, str
 
                 active->prev_exit_code = active->processes[active->process_count - 1].exit_code;
 
-                active->processes = prealloc(active->processes, (--active->process_count) * sizeof(struct tube_process));
+                active->processes = realloc(active->processes, (--active->process_count) * sizeof(struct tube_process));
 
                 active->current_active--;
 
@@ -790,11 +784,11 @@ void tube_schedule(struct standby_tube *standby, struct active_tube *active, str
             else
             {
 
-                hot->processes = prealloc(hot->processes, (++hot->process_count) * sizeof(struct tube_process));
+                hot->processes = realloc(hot->processes, (++hot->process_count) * sizeof(struct tube_process));
 
                 hot->processes[hot->process_count - 1] = active->processes[0];
 
-                hot->processes = prealloc(hot->processes, (++hot->process_count) * sizeof(struct tube_process));
+                hot->processes = realloc(hot->processes, (++hot->process_count) * sizeof(struct tube_process));
 
                 hot->processes[hot->process_count - 1] = standby->processes[0];
 
@@ -833,11 +827,11 @@ void tube_schedule(struct standby_tube *standby, struct active_tube *active, str
                     h_index++;
                 }
 
-                active->processes = prealloc(active->processes, (++active->process_count) * sizeof(struct tube_process));
+                active->processes = realloc(active->processes, (++active->process_count) * sizeof(struct tube_process));
 
                 active->processes[active->process_count - 1] = standby->processes[0];
 
-                standby->processes = prealloc(standby->processes, (++standby->process_count) * sizeof(struct tube_process));
+                standby->processes = realloc(standby->processes, (++standby->process_count) * sizeof(struct tube_process));
 
                 standby->processes[standby->process_count - 1] = active->processes[0];
 
@@ -853,9 +847,9 @@ void tube_schedule(struct standby_tube *standby, struct active_tube *active, str
                     standby->processes[i - 1] = standby->processes[i];
                 }
 
-                standby->processes = prealloc(standby->processes, (--standby->process_count) * sizeof(struct tube_process));
+                standby->processes = realloc(standby->processes, (--standby->process_count) * sizeof(struct tube_process));
 
-                active->processes = prealloc(active->processes, (--active->process_count) * sizeof(struct tube_process));
+                active->processes = realloc(active->processes, (--active->process_count) * sizeof(struct tube_process));
 
                 exec_pid = active->processes[0].id;
 

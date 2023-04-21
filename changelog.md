@@ -47,5 +47,6 @@
 - Some CodeGPT refractoring
 - SSE and floating point ops now working.
 - more accurrate memory reporting (Unknown at this time why its off by 2x i suspect the VM/Emulator.)
-- Added a warning for the afromention issue to the memory readouts
+- Added a warning for the afromentioned issue to the memory readouts
 - Started work on standardized IO
+- Added a standardized panic system

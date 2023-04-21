@@ -8,6 +8,7 @@
 #include "include/registers.h"
 #include "include/interrupts.h"
 #include "include/lock.h"
+#include "include/panic.h"
 
 static ALIGN_16BIT
     idt_desc_t idt[IDT_MAX_DESCRIPTORS];
@@ -35,7 +36,6 @@ void idt_set_descriptor(uint8_t vector, uintptr_t isr, uint8_t flags, uint8_t is
 {
     idt_desc_t *descriptor = &idt[vector];
 
-
     descriptor->base_low = isr & 0xFFFF;
     descriptor->base_mid = (isr >> 16) & 0xFFFF;
     descriptor->base_high = (isr >> 32) & 0xFFFFFFFF;
@@ -61,7 +61,6 @@ void idt_init()
 
             idt_set_descriptor(vector, isr_stub_table[vector], IDT_DESCRIPTOR_EXTERNAL, 001);
             vectors[vector] = true;
-
         }
         else
         {
@@ -180,10 +179,7 @@ void yield_register()
     if (vector == NULL)
     {
 
-        printf_("%s\n", "!!!Kernel Panic!!!");
-        printf_("%s", "IDT VECTORS EXUSTED!");
-        printf_("%s\n", "!!!Kernel Panic!!!");
-        halt();
+        panic("IDT VECTORS EXAUSTED!");
     }
 
     isr_delta[vector] = yield_isr_test;

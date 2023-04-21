@@ -35,7 +35,7 @@ const struct kswitches k_mode = {
 
     .stack_trace_size = 12,
     .stack_trace_on_fault = 1,
-    .acpi_support = 0,
+    .acpi_support = 1,
     .sched_debug = 0,
     .addr_debug = 0,
     .hw_rng_support = 1,

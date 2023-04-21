@@ -13,6 +13,7 @@
 #include "include/sched.h"
 #include "include/stack_trace.h"
 #include "include/KernelUtils.h"
+#include "include/panic.h"
 
 static const char *exception_messages[] =
     {
@@ -82,6 +83,8 @@ void isr_exception_handler(isr_xframe_t *frame, uint64_t rsi);
 void isr_exception_handler(isr_xframe_t *frame, uint64_t rsi)
 {
 
+    printf_("%s\n", "!!!!!!!!!!!!!!!!!!!!KERNEL PANIC!!!!!!!!!!!!!!!!!!!!!");
+
     kerror_mode = 1;
 
     printf_("%s", "ERROR: CPU EXCEPTION: ");
@@ -106,16 +109,18 @@ void isr_exception_handler(isr_xframe_t *frame, uint64_t rsi)
     if (k_mode.stack_trace_on_fault == 1)
     {
 
-        printf_("%s\n", "NOTE: Will Page Fault if frames run out before the 5 frame cap, this is harmless dissregard it and the resulting additonal trace.");
+        printf_("%s", "NOTE: Will Page Fault if frames run out before the ");
+        printf_("%u", k_mode.stack_trace_size);
+        printf_("%s\n", " frame cap, this is harmless dissregard it and the resulting additonal trace.");
         stack_trace(0);
     }
     else if (k_mode.stack_trace_on_fault == 2)
     {
 
-        stack_dump_asm();
-        // stack_dump();
-        // stack_dump_recursive(16);
+        stack_dump_asm(1, 0x1000);
     }
+
+    printf_("%s\n", "!!!!!!!!!!!!!!!!!!!!KERNEL PANIC!!!!!!!!!!!!!!!!!!!!!");
 
     __asm__ volatile("cli; hlt");
 }
@@ -153,8 +158,7 @@ void irq_handler(isr_xframe_t *frame)
         if (isr_delta[vector] == NULL)
         {
 
-            printf_("%s\n", "Kernel Panic: Invalid/NULL Dynamic ISR Vector!");
-            halt();
+            panic("Kernel Panic: Invalid/NULL Dynamic ISR Vector! Not my fault... ok it's my fault.");
         }
         else
         {

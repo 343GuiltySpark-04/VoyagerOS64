@@ -3,6 +3,7 @@
 #include "../include/global_defs.h"
 #include "../include/lib/vector.h"
 #include "../include/printf.h"
+#include "../include/panic.h"
 #include <stddef.h>
 #include <stdint.h>
 
@@ -22,17 +23,14 @@ struct madt
 };
 
 /**
-* @brief Initialize MADT by looking for APIC
-*/
+ * @brief Initialize MADT by looking for APIC
+ */
 void madt_init(void)
 {
     struct madt *madt = acpi_find_sdt("APIC", 0);
     if (madt == NULL)
     {
-        printf_("%s\n", "!!!!!!!!!!KERNEL PANIC!!!!!!!!!");
-        printf_("%s\n", "System Does Not Have an MADT!");
-        printf_("%s\n", "!!!!!!!!!!KERNEL PANIC!!!!!!!!!");
-        halt();
+        panic("System Does Not Have an MADT!");
     }
 
     size_t offset = 0;

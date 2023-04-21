@@ -41,10 +41,18 @@ walk_stack:
 [global stack_dump_asm]
 
 stack_dump_asm:
+    push rdi
     push rbp
+    mov rax, rsi
+    push rsi
     mov rdi, [rbp]
-    mov rsi, 0x1000
+    mov rsi, rax
     call dump_hex
+    pop rax
     pop rbp
+    pop rdi
+    cmp rdi, 1
+    jz .leave
+    ret
+.leave:
     leave
-    hlt
