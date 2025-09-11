@@ -3,6 +3,7 @@
 #include <stdint.h>
 #include "include/printf.h"
 #include "include/tss.h"
+#include "include/lock.h"
 
 extern void breakpoint();
 extern void serial_debug(int);
@@ -112,6 +113,70 @@ struct GDT_Desc desc = {
     .size = sizeof(gdt) - 1,
     .offset = (uint64_t)&gdt};
 
+/**
+ * @brief Reload GDT. 
+ */
+void gdt_reload(void)
+{
+
+    static spinlock_t lock = SPINLOCK_INIT;
+
+    spinlock_test_and_acq(&lock);
+
+
+    asm volatile(
+        "lgdt %0\n\t"
+        "push $0x28\n\t"
+        "lea 1f(%%rip), %%rax\n\t"
+        "push %%rax\n\t"
+        "lretq\n\t"
+        "1:\n\t"
+        "mov $0x30, %%eax\n\t"
+        "mov %%eax, %%ds\n\t"
+        "mov %%eax, %%es\n\t"
+        "mov %%eax, %%fs\n\t"
+        "mov %%eax, %%gs\n\t"
+        "mov %%eax, %%ss\n\t"
+        :
+        : "m"(desc)
+        : "rax", "memory");
+
+      spinlock_release(&lock);
+}
+
+/**
+ * @brief Loads TSS into GDT.
+ * @param * tss
+ */
+void gdt_load_tss(struct TSS *tss)
+{
+
+    uintptr_t addr = (uintptr_t)tss;
+
+    static spinlock_t lock = SPINLOCK_INIT;
+
+    spinlock_test_and_acq(&lock);
+
+    gdt.tss = (struct TSS_Entry){
+        .length = 104,
+        .base_low = (uint16_t)addr,
+        .base_mid = (uint8_t)(addr >> 16),
+        .flags = 0b10001001,
+        .base_high = (uint8_t)(addr >> 24),
+        .base_up = (uint32_t)(addr >> 32),
+    };
+
+    asm volatile("ltr %0"
+                 :
+                 : "rm"((uint16_t)0x58)
+                 : "memory");
+
+    spinlock_release(&lock);
+}
+
+/**
+ * @brief Inital GDT load
+ */
 void LoadGDT_Stage1()
 {
     uint64_t address = (uint64_t)&tss;
@@ -152,7 +217,8 @@ void LoadGDT_Stage1()
     printf_("%s", "GDT TSS Segment: ");
     printf_("0x%llx\n", (uint64_t)&gdt.tss - (uint64_t)&gdt);
     printf_("%s\n", "------------------------------------");
-    printf_("%s\n", "Expected GDTR Data as Follows: ");
+    printf_("%s\n", "|     	   GDTR DATA		       |");
+    printf_("%s\n", "------------------------------------");
     printf_("%s", "GDTR Size: ");
     printf_("0x%llx\n", (uint16_t)&desc.size);
     printf_("%s", "GDTR Offset: ");
@@ -190,5 +256,4 @@ void LoadGDT_Stage1()
                      :
                      : "a"((uint16_t)GDTTSSSegment));
 
-    // breakpoint();
 }

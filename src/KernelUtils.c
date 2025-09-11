@@ -6,9 +6,12 @@
 #include "include/paging/paging.h"
 #include "include/string.h"
 #include "include/registers.h"
+#include "include/kernel.h"
+#include "include/stack_trace.h"
+#include "include/cpuUtils.h"
 
 extern void breakpoint();
-extern uint8_t *frameBitmap;
+// uint8_t *frameBitmap;
 extern void halt();
 
 typedef char symbol[];
@@ -28,8 +31,26 @@ volatile struct limine_framebuffer_request fbr_req = {
 
 };
 
+const struct kswitches k_mode = {
+
+    .stack_trace_size = 12,
+    .stack_trace_on_fault = 1,
+    .acpi_support = 1,
+    .sched_debug = 0,
+    .addr_debug = 0,
+    .hw_rng_support = 1,
+    .mem_readout_unit = 1,
+    .liballoc_debug = 0
+
+};
+
 extern volatile struct limine_kernel_address_request Kaddress_req;
 
+
+/**
+ * @brief Calculates the size of the memory in bytes.
+ * @return The size of the memory in bytes
+ */
 uint64_t get_memory_size()
 {
     static uint64_t memorySize = 0;
@@ -47,6 +68,10 @@ uint64_t get_memory_size()
     return memorySize;
 }
 
+/**
+ * @brief Print information about the memory map
+ * @return void
+ */
 void print_memmap()
 {
     int size = memmap_req.response->entry_count;
@@ -135,8 +160,11 @@ void print_memmap()
     printf_("%s\n", "--------------------------------------");
 }
 
-static struct PageTable *page_table;
+struct PageTable *page_table;
 
+/**
+ * @brief Initialize memory. This is called at boot time.
+ */
 void init_memory()
 {
     read_memory_map();
@@ -146,8 +174,6 @@ void init_memory()
     memset(page_table, 0, sizeof(struct PageTable));
 
     printf_("%s\n", "Initializing Paging");
-
-    breakpoint();
 
     printf_("%s\n", "Preallocating Upper Region");
 
@@ -166,6 +192,15 @@ void init_memory()
             printf_("0x%llx\n", page);
             printf_("%s\n", "!!!Kernel Panic!!!");
             halt();
+        }
+
+        if (k_mode.addr_debug == 1)
+        {
+
+            printf_("%s", "Attempting to preallocate page with address at table index: ");
+            printf_("%i\n", i);
+            printf_("%s", "Requested address: ");
+            printf_("0x%llx\n", page);
         }
 
         memset(page, 0, 0x1000);
@@ -259,18 +294,57 @@ void init_memory()
 
     printf_("Wrote CR3\n");
 
-    breakpoint();
+    alloc_xsave();
 }
 
+/**
+ * @brief Print memory information to stdout.
+ * @return void.
+ */
 void print_memory()
 {
+    double exp;
 
-    printf_("Total Memory: %llu", get_memory_size() / 1000);
-    printf_("%s\n", "Kb.");
-    printf_("Free Memory: %llu", free_ram() / 1000);
-    printf_("%s\n", "Kb.");
-    printf_("Used Memory: %llu", used_ram() / 1000);
-    printf_("%s\n", "Kb.");
-    printf_("Reserved Memory: %llu", reserved_ram() / 1000);
-    printf_("%s\n", "Kb.");
+    printf("%s\n", "NOTE: May be off by up to 2x on a emulator or VM!");
+
+    switch (k_mode.mem_readout_unit)
+    {
+
+    case 0:
+        exp = 1073741824;
+
+        printf("Total Memory: %.2f Gb.\n", (double)get_memory_size() / exp);
+        printf("Free Memory: %.2f Gb.\n", (double)free_ram() / exp);
+        printf("Used Memory: %.2f Gb.\n", (double)used_ram() / exp);
+        printf("Reserved Memory: %.2f Gb.\n", (double)reserved_ram() / exp);
+        break;
+
+    case 1:
+        exp = 1048576;
+
+        printf("Total Memory: %.2f Mb.\n", (double)get_memory_size() / exp);
+        printf("Free Memory: %.2f Mb.\n", (double)free_ram() / exp);
+        printf("Used Memory: %.2f Mb.\n", (double)used_ram() / exp);
+        printf("Reserved Memory: %.2f Mb.\n", (double)reserved_ram() / exp);
+        break;
+    case 2:
+        exp = 1024;
+
+        printf("Total Memory: %.2f Kb.\n", (double)get_memory_size() / exp);
+        printf("Free Memory: %.2f Kb.\n", (double)free_ram() / exp);
+        printf("Used Memory: %.2f Kb.\n", (double)used_ram() / exp);
+        printf("Reserved Memory: %.2f Kb.\n", (double)reserved_ram() / exp);
+        break;
+    case 3:
+        exp = 1;
+
+        printf("Total Memory: %.2f Bytes.\n", (double)get_memory_size() / exp);
+        printf("Free Memory: %.2f Bytes.\n", (double)free_ram() / exp);
+        printf("Used Memory: %.2f Bytes.\n", (double)used_ram() / exp);
+        printf("Reserved Memory: %.2f Bytes.\n", (double)reserved_ram() / exp);
+        break;
+    default:
+        printf("%s\n", "ERROR: Invalid value in k_mode.mem_readout_unit switch!");
+        break;
+    }
 }

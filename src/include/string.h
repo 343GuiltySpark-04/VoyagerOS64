@@ -2,6 +2,7 @@
 #define _STRING_H 1
 
 #include <stddef.h>
+#include <stdint.h>
 
 #ifdef __cplusplus
 extern "C"
@@ -14,6 +15,9 @@ extern "C"
     void *memset(void *, int, size_t);
     size_t strlen(const char *);
     int strtok(char *srcstr, char sep, char ***output);
+    int str2int(char str[]);
+    uint64_t str2int2(char* str);
+    char *strncpy(char *dest, const char *src, size_t n);
 
 #ifdef __cplusplus
 }

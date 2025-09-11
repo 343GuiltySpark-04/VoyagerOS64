@@ -21,13 +21,13 @@ export CC=$(HOME)/opt/cross/bin/x86_64-elf-gcc
 export LD=$(HOME)/opt/cross/bin/x86_64-elf-ld
  
 # User controllable CFLAGS.
-CFLAGS ?= -g -O2 -pipe -Wall -Wextra
+CFLAGS ?= -g -O1 -pipe -Wall -Wextra -finline-functions
  
 # User controllable preprocessor flags. We set none by default.
 CPPFLAGS ?= 
  
 # User controllable nasm flags.
-NASMFLAGS ?= -O2 -F dwarf -g
+NASMFLAGS ?= -O1 -F dwarf -g
  
 # User controllable linker flags. We set none by default.
 LDFLAGS ?=
@@ -44,13 +44,12 @@ override CFLAGS +=       \
     -m64                 \
     -march=x86-64        \
     -mabi=sysv           \
-    -mno-80387           \
     -mno-mmx             \
     -mno-sse2            \
     -mno-red-zone        \
     -mcmodel=kernel      \
+    -fms-extensions      \
     -MMD                 \
-	-DPRINTF_DISABLE_SUPPORT_FLOAT \
     -I.
  
 # Internal linker flags that should not be changed by the user.

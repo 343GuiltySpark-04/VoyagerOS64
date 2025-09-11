@@ -16,31 +16,61 @@
 #define PAGE_FLAG_MASK (0xFFF | (1ull << 63))
 #define PAGE_ADDRESS_MASK (~(PAGE_FLAG_MASK))
 
+/**
+* @brief Translates a physical address to a high half memory address.
+* @param physicalAddress The physical address to translate.
+* @return The translated high half memory address
+*/
 inline uint64_t TranslateToHighHalfMemoryAddress(uint64_t physicalAddress)
 {
     return physicalAddress + HIGHER_HALF_MEMORY_OFFSET;
 }
 
+/**
+* @brief Translates a virtual address to a physical memory address.
+* @param virtualAddress The virtual address to translate.
+* @return The physical address that corresponds to the given virtual address
+*/
 inline uint64_t TranslateToPhysicalMemoryAddress(uint64_t virtualAddress)
 {
     return virtualAddress - HIGHER_HALF_MEMORY_OFFSET;
 }
 
+/**
+* @brief Translates a virtual address to a kernel physical memory address.
+* @param virtualAddress The virtual address to translate.
+* @return The translated kernel physical memory address
+*/
 inline uint64_t TranslateToKernelPhysicalMemoryAddress(uint64_t virtualAddress)
 {
     return virtualAddress - HIGHER_HALF_KERNEL_MEMORY_OFFSET;
 }
 
+/**
+* @brief Translates a virtual address to kernel memory
+* @param virtualAddress The virtual address to translate
+* @return The translated address in kernel
+*/
 inline uint64_t TranslateToKernelMemoryAddress(uint64_t virtualAddress)
 {
     return virtualAddress + HIGHER_HALF_KERNEL_MEMORY_OFFSET;
 }
 
+/**
+* @brief Checks if the physical address is higher half of the memory.
+* @param physicalAddress The physical address to check.
+* @return True if the physical address is higher half
+*/
 inline bool IsHigherHalf(uint64_t physicalAddress)
 {
     return physicalAddress >= HIGHER_HALF_MEMORY_OFFSET;
 }
 
+/**
+* @brief Checks if the given physical address is higher half of kernel memory.
+* @param physicalAddress The physical address to check.
+* @return True if the memory belongs to HIGHER_HALF_KERNEL
+*/
 inline bool IsKernelHigherHalf(uint64_t physicalAddress)
 {
     return physicalAddress >= HIGHER_HALF_KERNEL_MEMORY_OFFSET;
@@ -67,6 +97,10 @@ struct PageTableOffset
     uint64_t ptOffset;
 };
 
+/**
+* @brief Allocate and initialize a page table.
+* @return A pointer to the page table
+*/
 struct __attribute__((aligned(0x1000))) PageTable
 {
     uint64_t entries[512];

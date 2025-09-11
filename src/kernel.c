@@ -23,6 +23,11 @@
 #include "include/shell.h"
 #include "include/sched.h"
 #include "include/paging/vmm.h"
+#include "include/acpi/acpi.h"
+#include "include/apic/lapic.h"
+#include "include/stack_trace.h"
+#include "include/io.h"
+#include "include/pebble.h"
 
 #define White "\033[1;00m"
 #define Red "\033[1;31m"
@@ -56,14 +61,13 @@ volatile struct limine_terminal_request early_term = {
 
 };
 
-/// @brief breakpoint() Provides a magic breakpoint for debugging in Bochs
 extern void breakpoint();
 extern void stop_interrupts();
 extern void start_interrupts();
 extern void halt();
 extern void task_switch_int();
+extern uint64_t walk_stack(uint64_t *array, uint64_t max);
 
-/// @var allows me to enable or dissable or alter behavoir according to wether the kernel
 /// is fully loaded yet.
 uint32_t bootspace = 2;
 
@@ -73,7 +77,45 @@ struct term_context *term_context;
 
 static struct PageTable *test_table;
 
-/// \fn  following will be our kernel's entry point.
+struct Scheduler scheduler;
+
+struct standby_tube k_standby_tube;
+
+struct active_tube k_active_tube;
+
+struct process_list k_process_list;
+
+struct hot_tube hot_tube;
+
+uint8_t init_done = 0;
+
+HANDLE kernel_heap = NULL;
+
+void hello_general_floatius()
+{
+
+    double t;
+
+    double x = 5.239;
+
+    t = 5 / 2;
+
+    x = t * 6.4;
+
+    printf_("%g\n", t);
+    printf_("%g\n", x);
+}
+
+void hello_thread()
+{
+
+    fork(&scheduler);
+
+    printf_("%s\n", "Hello Im a Child Process!");
+
+    return;
+}
+
 void _start(void)
 {
 
@@ -82,7 +124,7 @@ void _start(void)
 
         bootspace = 1;
 
-        printf_("%s\n", "Bootloader Terminal Offline Using Serial Only!");
+        printf_("%s\n", "WARNING: Bootloader Terminal Offline Using Serial Only!");
     }
 
     printf_("%s", "Early Terminal Using Framebuffer At Physical Address: ");
@@ -90,11 +132,19 @@ void _start(void)
     printf_("%s", "And At Virtual Address: ");
     printf_("0x%llx\n", early_term.response->terminals[0]->framebuffer);
 
+    print_stack_size();
+
     print_date();
 
     cpuid_readout();
 
-    breakpoint();
+    if (k_mode.hw_rng_support == 1)
+    {
+
+        printf_("%s", "Random Number Gen (HW) Test: ");
+        printf_("%u\n", rand_asm());
+    }
+    // breakpoint();
 
     stop_interrupts();
 
@@ -102,7 +152,7 @@ void _start(void)
 
     printf_("%s\n", "Loaded GDT");
 
-    breakpoint();
+    // breakpoint();
 
     idt_init();
 
@@ -112,11 +162,34 @@ void _start(void)
 
     printf_("%s\n", "PICs Online");
 
-    init_PIT();
+    time_init();
+
+    asm volatile("cli");
+
+    // lapic_init();
+
+    asm volatile("sti");
+
+    asm volatile("cli");
+
+    idt_reload();
+
+    gdt_reload();
+
+    asm volatile("sti");
+
+    idt_reg_test();
+
+    asm volatile("int $48");
+
+    yield_register();
+
+    asm volatile("int $49");
+
+    pic_mask_irq(0);
 
     print_memmap();
 
-    // @brief Kernel Addresses
     if (Kaddress_req.response == NULL)
     {
         printf_("%s\n", "!!!Error While Fetching Kernel Addresses!!!");
@@ -131,11 +204,10 @@ void _start(void)
         printf_("%s\n", "--------------------------------------");
     }
 
-    breakpoint();
+    // breakpoint();
 
     // read_memory_map();
 
-    /// @brief print usable memory to log
     print_memory();
 
     init_memory();
@@ -146,6 +218,16 @@ void _start(void)
     printf_("0x%llx\n", readCRO());
     printf_("%s", "CR4: ");
     printf_("0x%llx\n", readCR4());
+
+    kernel_heap = pmalloc_init(0x2FAF080);
+
+    if (k_mode.acpi_support == 1)
+    {
+
+        acpi_init();
+    }
+
+    keyboard_init();
 
     printf_("%s\n", "Handing Control to Standalone Terminal...");
 
@@ -163,7 +245,7 @@ void _start(void)
 
     term_context = fbterm_init(malloc, fbr_req.response->framebuffers[0]->address, fbr_req.response->framebuffers[0]->width, fbr_req.response->framebuffers[0]->height,
 
-                               fbr_req.response->framebuffers[0]->pitch, NULL, NULL, NULL, &term_bg, &term_fg, NULL, 0, 0, 0,
+                               fbr_req.response->framebuffers[0]->pitch, NULL, NULL, NULL, &term_bg, &term_fg, &vgafont, 8, 16, 1,
 
                                1, 1, 1);
 
@@ -171,32 +253,82 @@ void _start(void)
 
     // VMM_table_clone();
 
-    keyboard_init();
+    pic_unmask_irq(0);
+
+    // cpuid_readout();
 
     print_memory();
 
-    printf_("%s\n", "Kernel Loaded");
-
-    printf_("%s", "Loadtime roughly: ");
-
-    printf_("%i", system_timer_ms);
-
-    printf_("%s", ".");
-
-    printf_("%i", system_timer_fractions);
-
-    printf_("%s\n", " ms.");
+    print_load_time();
 
     print_date();
 
+    print_stack_size();
+
     printf_("%s\n", "VoyagerOS64 v0.0.4");
 
-    printf_("%s", ":> ");
+    printf_("%s\n", ":> ");
 
-    //  init_multitasking();
+    init_done = 1;
 
+    hello_general_floatius();
+
+    bootspace = 1;
+
+    init_sched(&k_standby_tube, &k_active_tube, &hot_tube);
+
+    if (k_mode.addr_debug == 1)
+    {
+        print_frame_bitmap();
+    }
+
+    bootspace = 0;
+
+    // stack_dump_asm();
+
+    add_active_tube_process(&k_active_tube, create_tube_process(false, true, true, "Kernel_Thread"));
+    add_tube_process(&k_standby_tube, create_tube_process(false, true, true, "Kernel_Thread_2"));
+    add_tube_process(&k_standby_tube, create_tube_process(false, true, true, "Kernel_Thread_3"));
+
+    active_pid = k_active_tube.processes[0].id;
+
+    stdin("k", 123);
+
+    // halt();
+
+    uint64_t loopcount = 0;
     // Just chill until needed
     while (1)
     {
+
+        tube_schedule(&k_standby_tube, &k_active_tube, &hot_tube, quantum);
+
+        printf_("%u\n", loopcount);
+        printf_("%s", "Current PID: ");
+        printf_("%u\n", k_active_tube.processes[0].id);
+        printf_("%s", "Current Process Name: ");
+        printf_("%s\n", k_active_tube.processes[0].name);
+        printf_("%s", "Number of processes (Active and Standby Tubes): ");
+        printf_("%u\n", k_active_tube.current_active + k_standby_tube.current_standby);
+        printf_("%s", "Quantum Value of Current Process: ");
+        printf_("%u\n", k_active_tube.processes[0].allocated_time);
+
+        loopcount++;
+
+        stdout("P", &k_active_tube, &k_standby_tube);
+
+        if (loopcount >= 1)
+        {
+
+            temp = 1;
+        }
+
+        print_memory();
+
+        if (loopcount == 25)
+        {
+
+            halt();
+        }
     }
 }

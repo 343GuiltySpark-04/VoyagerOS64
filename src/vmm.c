@@ -11,15 +11,15 @@ struct dummy_proc *test_proc;
 
 uint64_t proc_page_size = 0;
 
+/**
+* @brief Clones the VMM table and allocates a new frame. This is used to test the paging system
+*/
 void VMM_table_clone()
 {
 
     static struct PageTable *table_frame;
     static struct PageTable *current_table;
     static struct PageTable *higher_frame;
-
-    // test_proc->id = 0x0;
-    // test_proc->data = 0x15000;
 
     table_frame = (struct PageTable *)frame_request();
     current_table = (struct PageTable *)readCR3();

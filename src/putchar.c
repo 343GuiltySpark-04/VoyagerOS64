@@ -4,6 +4,10 @@
 #include "include/terminal/term.h"
 #include "include/KernelUtils.h"
 
+/**
+* @brief This function writes a character to the terminal
+* @param character character to be written.
+*/
 void _putchar(char character)
 {
 
@@ -45,6 +49,7 @@ void _putchar(char character)
         {
 
             term_write(term_context, &character, sizeof(char));
+            serial_debug(character);
         }
         else
         {
@@ -57,5 +62,6 @@ void _putchar(char character)
         }
     }
 
-    // serial_debug(character);
+ //   serial_debug(character);
+   
 }

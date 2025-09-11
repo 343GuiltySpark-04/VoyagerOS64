@@ -11,5 +11,12 @@
         "frameallocator.h": "c",
         "framebuffer.h": "c"
     },
-    "C_Cpp.errorSquiggles": "Enabled"
+    "C_Cpp.errorSquiggles": "Enabled",
+    "docwriter.style": "Doxygen",
+    "docwriter.progress.trackFunctions": true,
+    "docwriter.progress.trackMethods": true,
+    "docify.programmingLanguage": "c",
+    "docify.docstringFormat": "Doxygen",
+    "docify.commentService.docstringFormat": "Doxygen",
+    "docify.commentService.programmingLanguage": "c"
 }

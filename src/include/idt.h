@@ -8,7 +8,7 @@
 
 #define IDT_MAX_DESCRIPTORS 256
 #define IDT_CPU_EXCEPTION_COUNT 32
-#define IDT_HDW_INTERRUPT_COUNT 17 // including software interrupts called using int
+#define IDT_HDW_INTERRUPT_COUNT 16 // including software interrupts called using int
 
 #define IDT_DESCRIPTOR_X16_INTERRUPT 0x06
 #define IDT_DESCRIPTOR_X16_TRAP 0x07
@@ -23,6 +23,10 @@
 #define IDT_DESCRIPTOR_EXCEPTION (IDT_DESCRIPTOR_X32_INTERRUPT | IDT_DESCRIPTOR_PRESENT)
 #define IDT_DESCRIPTOR_EXTERNAL (IDT_DESCRIPTOR_X32_INTERRUPT | IDT_DESCRIPTOR_PRESENT)
 #define IDT_DESCRIPTOR_CALL (IDT_DESCRIPTOR_X32_INTERRUPT | IDT_DESCRIPTOR_PRESENT | IDT_DESCRIPTOR_RING3)
+
+extern uint64_t isr_stub_table[];
+
+extern void *isr_delta[];
 
 typedef struct
 {
@@ -41,8 +45,10 @@ typedef struct
 	uint64_t base;
 } __attribute__((packed)) idtr_t;
 
-void idt_reload(idtr_t *idtr);
+void idt_reload(void);
 uint8_t idt_allocate_vector(void);
 void idt_free_vector(uint8_t vector);
 void idt_set_descriptor(uint8_t vector, uintptr_t isr, uint8_t flags, uint8_t ist);
 void idt_init(void);
+void idt_reg_test();
+void yield_register();

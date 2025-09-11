@@ -9,6 +9,7 @@
 #include "../../include/serial.h"
 #include "../../include/lock.h"
 #include "../../include/kernel.h"
+#include "../../include/sched.h"
 
 #define KBD_STACK_SIZE 255
 
@@ -18,6 +19,12 @@ char kbd_stack[KBD_STACK_SIZE];
 
 int kbd_top = -1;
 
+static spinlock_t kbdlock_t = SPINLOCK_INIT;
+
+/**
+ * @brief Push a character onto the keyboard stack
+ * @param data The character to push onto
+ */
 void kbd_push(char data)
 {
 
@@ -38,6 +45,10 @@ void kbd_push(char data)
     }
 }
 
+/**
+ * @brief Pop a character from the kbd stack
+ * @return character that was popped
+ */
 char kbd_pop()
 {
 
@@ -59,8 +70,14 @@ char kbd_pop()
     }
 }
 
+/**
+ * @brief This is the keyboard interrupt handler. It reads the status and pushes the keycode to the keyboard stack.
+ * @return Returns nothing. If there is an error it returns
+ */
 void keyboard_handler()
 {
+
+    spinlock_acquire(&kbdlock_t);
 
     uint8_t status = inb(KEYBOARD_STATUS_PORT);
 
@@ -73,10 +90,13 @@ void keyboard_handler()
 
         inb(KEYBOARD_DATA_PORT);
 
-        kbd_push(keyboard_map[keycode]);
+        // kbd_push(keyboard_map[keycode]);
+
+        stdin("k", keyboard_map[keycode]);
 
         if (keycode < 0 || keycode >= 128)
         {
+            spinlock_release(&kbdlock_t);
             return;
         }
 
@@ -106,19 +126,27 @@ void keyboard_handler()
 
             printf_("%s\n", "ERROR: TERMINAL WRITE FAILURE!");
 
+            spinlock_release(&kbdlock_t);
+
             return;
         }
+
+        spinlock_release(&kbdlock_t);
 
         return;
     }
 }
 
+/**
+ * @brief Get a character from k_char.
+ * @return The character or 0 if none
+ */
 char k_getchar()
 {
 
     char c;
 
-    while (k_char <= 0)
+    while (k_char > 0)
     {
 
         c = k_char;
@@ -128,6 +156,10 @@ char k_getchar()
     return c;
 }
 
+/**
+ * @brief \ brief Initializes the keyboard. Unmask IRQ and print message.
+ * @return 0 on success non - zero
+ */
 void keyboard_init()
 {
 

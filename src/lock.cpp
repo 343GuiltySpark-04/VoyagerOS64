@@ -2,6 +2,10 @@
 
 AtomicLock::AtomicLock() : locked(false){};
 
+/**
+* @brief Check if lock is locked.
+* @return true if lock is locked
+*/
 bool AtomicLock::IsLocked() const
 {
     uint32_t result = 0;
@@ -11,6 +15,10 @@ bool AtomicLock::IsLocked() const
     return result;
 }
 
+/**
+* @brief Locks the mutex. This is a non - blocking operation.
+* @return true if the mutex was
+*/
 void AtomicLock::Lock()
 {
     uint32_t expected = false;
@@ -24,11 +32,18 @@ void AtomicLock::Lock()
     }
 }
 
+/**
+* @brief \ brief Force the lock to be unlocked.
+* @return true if the lock was
+*/
 void AtomicLock::ForceLock()
 {
     locked = true;
 }
 
+/**
+* @brief Unlock the lock. This is equivalent to releasing the lock but does not block
+*/
 void AtomicLock::Unlock()
 {
     __atomic_store_n(&locked, false, __ATOMIC_RELEASE);

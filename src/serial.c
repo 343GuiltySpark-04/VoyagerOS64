@@ -1,7 +1,12 @@
 #include "include/serial.h"
 #include "include/printf.h"
 
-void serial_print(const char *str)
+/**
+* @brief Print a string to the serial port.
+* @param str String to print.
+* @return void
+*/
+void inline serial_print(const char *str)
 {
     char *p = (char *)str;
 
@@ -11,7 +16,12 @@ void serial_print(const char *str)
     }
 }
 
-void serial_print_line(const char *str)
+/**
+* @brief Print a string ending with a new line break to serial port
+* @param str String to print
+* @return void
+*/
+void inline serial_print_line(const char *str)
 {
     char *p = (char *)str;
 

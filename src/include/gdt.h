@@ -2,6 +2,7 @@
 
 #include <stdint.h>
 #include "global_defs.h"
+#include "tss.h"
 
 #define GDTAccessDPL(n) (n << 5)
 
@@ -95,3 +96,7 @@ struct PACKED ALIGN_4K GDT
 extern uint64_t rsp0;
 
 void LoadGDT_Stage1();
+
+void gdt_load_tss(struct TSS *tss);
+
+void gdt_reload(void);

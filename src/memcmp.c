@@ -1,5 +1,11 @@
 #include "include/string.h"
 
+/**
+* @brief Compare two memory blocks.
+* @param void * aptr Pointer to the first memory block.
+* @param size Size of the memory block.
+* @return 1 if a < b 0 if a == b and 1 if a > b
+*/
 int memcmp(const void *aptr, const void *bptr, size_t size)
 {
     const unsigned char *a = (const unsigned char *)aptr;

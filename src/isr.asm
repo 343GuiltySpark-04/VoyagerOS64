@@ -1,19 +1,20 @@
 extern isr_exception_handler
 extern irq_handler
 extern float_bank
+global dyn_isr_handler
 
 %macro isr_err_stub 1
 isr_stub_%+%1:
     cli
-    push %1
+    push qword %1
     jmp isr_xframe_assembler
 %endmacro
 
 %macro isr_no_err_stub 1
 isr_stub_%+%1:
     cli
-    push 0
-    push %1
+    push qword 0
+    push qword %1
     jmp isr_xframe_assembler
 %endmacro
 
@@ -26,7 +27,6 @@ isr_stub_%+%1:
 %endmacro
 
 %macro pushagrd 0
-;xsave [float_bank]
 push rax
 push rbx
 push rcx
@@ -36,7 +36,6 @@ push rdi
 %endmacro
 
 %macro popagrd 0
-;xrstor [float_bank]
 pop rdi
 pop rsi
 pop rdx
@@ -67,21 +66,35 @@ pop rax
 mov cr0, rax
 %endmacro
 
+
+
+dyn_isr_handler:
+    call rdi
+    ret
+
+
+; this is a long mode handler
 isr_xframe_assembler:
     push rbp
     mov rbp, rsp
+    nop
     pushagrd
     pushacrd
+    nop
     mov ax, ds
     push rax
+    nop
     push qword 0
+    nop
     mov ax, 0x10
     mov ds, ax
     mov es, ax
     mov ss, ax
 
+    nop
     lea rdi, [rsp + 0x10]
     call isr_exception_handler
+    nop
 
     pop rax
     pop rax
@@ -171,17 +184,75 @@ isr_irq_stub 45
 isr_irq_stub 46
 isr_irq_stub 47
 isr_irq_stub 48 ; yield switch (used to trigger the software task switching code
+isr_irq_stub 49
+isr_irq_stub 50 ; High Priority Yield
+isr_irq_stub 51 ; exit
+isr_irq_stub 52 ; fork
+isr_irq_stub 53
+isr_irq_stub 54
+isr_irq_stub 55
+isr_irq_stub 56
+isr_irq_stub 57
+isr_irq_stub 58
+isr_irq_stub 59
+isr_irq_stub 60
+isr_irq_stub 61
+isr_irq_stub 62
+isr_irq_stub 63
+isr_irq_stub 64
+isr_irq_stub 65
+isr_irq_stub 66
+isr_irq_stub 67
+isr_irq_stub 68
+isr_irq_stub 69
+isr_irq_stub 70
+isr_irq_stub 71
+isr_irq_stub 72
+isr_irq_stub 73
+isr_irq_stub 74
+isr_irq_stub 75
+isr_irq_stub 76
+isr_irq_stub 77
+isr_irq_stub 78
+isr_irq_stub 79
+isr_irq_stub 80
+isr_irq_stub 81
+isr_irq_stub 82
+isr_irq_stub 83
+isr_irq_stub 84
+isr_irq_stub 85 
+isr_irq_stub 86
+isr_irq_stub 87
+isr_irq_stub 88
+isr_irq_stub 89
+isr_irq_stub 90
+isr_irq_stub 91
+isr_irq_stub 92
+isr_irq_stub 93
+isr_irq_stub 94
+isr_irq_stub 95
+isr_irq_stub 96
+isr_irq_stub 97
+isr_irq_stub 98
+isr_irq_stub 99
+isr_irq_stub 100
 
 global isr_stub_table
 isr_stub_table:
 %assign i 0 
-%rep    48
+%rep    100
     dq isr_stub_%+i
 %assign i i+1 
 %endrep
 
 global proc_yield
 
+global high_yield_int
+
 proc_yield:
-    int 0x30
+    int 0x31
+    ret
+
+high_yield_int:
+    int 0x32
     ret
