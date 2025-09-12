@@ -5,6 +5,7 @@
 #include "printf.h"
 #include "kernel.h"
 #include "KernelUtils.h"
+#include "panic.h"
 
 /**
  * @brief Gets the value of a bit in a bitmap.
@@ -14,6 +15,14 @@
  */
 inline bool bitmap_get(uint8_t *bitmap, size_t bit)
 {
+
+    if (bit >= total_pages)
+    {
+        panic("bitmap_set OOB: bit=%llu total=%llu",
+              (unsigned long long)bit,
+              (unsigned long long)total_pages);
+    }
+
     uint64_t byteIndex = bit / 8;
     uint8_t bitIndex = bit % 8;
     uint8_t bitIndexer = 0b10000000 >> bitIndex;
@@ -29,6 +38,14 @@ inline bool bitmap_get(uint8_t *bitmap, size_t bit)
  */
 inline void bitmap_set(uint8_t *bitmap, size_t bit, uint8_t value)
 {
+
+    if (bit >= total_pages)
+    {
+        panic("bitmap_set OOB: bit=%llu total=%llu",
+              (unsigned long long)bit,
+              (unsigned long long)total_pages);
+    }
+
     uint64_t byteIndex = bit / 8;
     uint8_t bitIndex = bit % 8;
     uint8_t bitIndexer = 0b10000000 >> bitIndex;

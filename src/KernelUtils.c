@@ -20,6 +20,10 @@ extern symbol text_start_addr, text_end_addr,
     rodata_start_addr, rodata_end_addr,
     data_start_addr, data_end_addr;
 
+
+uint32_t total_pages = 0;
+
+
 volatile struct limine_memmap_request memmap_req = {
     .id = LIMINE_MEMMAP_REQUEST,
     .revision = 0};

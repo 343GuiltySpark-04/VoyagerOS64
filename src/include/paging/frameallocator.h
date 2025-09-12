@@ -11,7 +11,19 @@
 
 #define PAGE_SIZE 4096
 
+#define ASSERT_BOUNDS(idx, max)                              \
+    do                                                       \
+    {                                                        \
+        if ((idx) >= (max))                                  \
+        {                                                    \
+            panic("Frame allocator OOB: idx=%llu, max=%llu", \
+                  (unsigned long long)(idx),                 \
+                  (unsigned long long)(max));                \
+        }                                                    \
+    } while (0)
+
 extern uint8_t *frameBitmap;
+
 
 void read_memory_map();
 

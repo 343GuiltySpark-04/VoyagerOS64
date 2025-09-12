@@ -145,10 +145,14 @@ void read_memory_map()
                 freeMemory += 0x1000;
                 reservedMemory -= 0x1000;
             }
+
+            total_pages += entry->length / 0x1000;
         }
     }
 
     frame_lock_multiple(frameBitmap, bitmapSize / 0x1000 + 1);
+
+    printf_("Total Pages: %i\n", total_pages);
 }
 
 /**

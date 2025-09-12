@@ -14,6 +14,8 @@ extern const struct kswitches k_mode;
 
 extern struct PageTable *page_table;
 
+extern uint32_t total_pages;
+
 // struct contains kernel behavior setting switches. their values are set in KernelUtils.c
 struct PACKED kswitches
 {
