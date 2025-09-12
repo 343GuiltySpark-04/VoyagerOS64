@@ -1,3 +1,16 @@
+/**
+ * Copyright (c) 2025 Tristan Adams
+ * 
+ * This software is released under the MIT License.
+ * https://opensource.org/licenses/MIT
+ */
+
+
+
+
+
+
+
 #include <stdint.h>
 #include <stddef.h>
 #include "include/gdt.h"

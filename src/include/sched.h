@@ -11,6 +11,16 @@
 #define SYSCALL_FORK 2
 #define SYSCALL_EXIT 3
 
+struct process
+{
 
+    int pid;
+
+    uint64_t *rsp;
+
+    int state;
+
+    struct process *next;
+};
 
 #endif
