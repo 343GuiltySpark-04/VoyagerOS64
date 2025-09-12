@@ -35,17 +35,17 @@ const struct kswitches k_mode = {
 
     .stack_trace_size = 12,
     .stack_trace_on_fault = 1,
-    .acpi_support = 1,
+    .acpi_support = 0,
     .sched_debug = 0,
     .addr_debug = 0,
     .hw_rng_support = 1,
     .mem_readout_unit = 1,
-    .liballoc_debug = 0
+    .liballoc_debug = 0,
+    .fpu_allowed = 0
 
 };
 
 extern volatile struct limine_kernel_address_request Kaddress_req;
-
 
 /**
  * @brief Calculates the size of the memory in bytes.

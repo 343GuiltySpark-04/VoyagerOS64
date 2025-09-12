@@ -92,7 +92,7 @@ void keyboard_handler()
 
         // kbd_push(keyboard_map[keycode]);
 
-        stdin("k", keyboard_map[keycode]);
+        //stdin("k", keyboard_map[keycode]);
 
         if (keycode < 0 || keycode >= 128)
         {

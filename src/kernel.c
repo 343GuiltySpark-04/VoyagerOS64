@@ -49,15 +49,15 @@ KHEAPBM kheap;
 
 volatile struct limine_kernel_address_request Kaddress_req = {
 
-    .id = LIMINE_KERNEL_ADDRESS_REQUEST,
-    .revision = 0
+	.id = LIMINE_KERNEL_ADDRESS_REQUEST,
+	.revision = 0
 
 };
 
 volatile struct limine_terminal_request early_term = {
 
-    .id = LIMINE_TERMINAL_REQUEST,
-    .revision = 0
+	.id = LIMINE_TERMINAL_REQUEST,
+	.revision = 0
 
 };
 
@@ -77,16 +77,6 @@ struct term_context *term_context;
 
 static struct PageTable *test_table;
 
-struct Scheduler scheduler;
-
-struct standby_tube k_standby_tube;
-
-struct active_tube k_active_tube;
-
-struct process_list k_process_list;
-
-struct hot_tube hot_tube;
-
 uint8_t init_done = 0;
 
 HANDLE kernel_heap = NULL;
@@ -94,241 +84,191 @@ HANDLE kernel_heap = NULL;
 void hello_general_floatius()
 {
 
-    double t;
+	double t;
 
-    double x = 5.239;
+	double x = 5.239;
 
-    t = 5 / 2;
+	t = 5 / 2;
 
-    x = t * 6.4;
+	x = t * 6.4;
 
-    printf_("%g\n", t);
-    printf_("%g\n", x);
-}
-
-void hello_thread()
-{
-
-    fork(&scheduler);
-
-    printf_("%s\n", "Hello Im a Child Process!");
-
-    return;
+	printf_("%g\n", t);
+	printf_("%g\n", x);
 }
 
 void _start(void)
 {
 
-    if (early_term.response == NULL || early_term.response->terminal_count < 1)
-    {
+	if (early_term.response == NULL || early_term.response->terminal_count < 1)
+	{
 
-        bootspace = 1;
+		bootspace = 1;
 
-        printf_("%s\n", "WARNING: Bootloader Terminal Offline Using Serial Only!");
-    }
+		printf_("%s\n", "WARNING: Bootloader Terminal Offline Using Serial Only!");
+	}
 
-    printf_("%s", "Early Terminal Using Framebuffer At Physical Address: ");
-    printf_("0x%llx\n", TranslateToPhysicalMemoryAddress(early_term.response->terminals[0]->framebuffer));
-    printf_("%s", "And At Virtual Address: ");
-    printf_("0x%llx\n", early_term.response->terminals[0]->framebuffer);
+	printf_("%s", "Early Terminal Using Framebuffer At Physical Address: ");
+	printf_("0x%llx\n", TranslateToPhysicalMemoryAddress(early_term.response->terminals[0]->framebuffer));
+	printf_("%s", "And At Virtual Address: ");
+	printf_("0x%llx\n", early_term.response->terminals[0]->framebuffer);
 
-    print_stack_size();
+	print_stack_size();
 
-    print_date();
+	print_date();
 
-    cpuid_readout();
+	cpuid_readout();
 
-    if (k_mode.hw_rng_support == 1)
-    {
+	if (k_mode.hw_rng_support == 1)
+	{
 
-        printf_("%s", "Random Number Gen (HW) Test: ");
-        printf_("%u\n", rand_asm());
-    }
-    // breakpoint();
+		printf_("%s", "Random Number Gen (HW) Test: ");
+		printf_("%u\n", rand_asm());
+	}
+	// breakpoint();
 
-    stop_interrupts();
+	stop_interrupts();
 
-    LoadGDT_Stage1();
+	LoadGDT_Stage1();
 
-    printf_("%s\n", "Loaded GDT");
+	printf_("%s\n", "Loaded GDT");
 
-    // breakpoint();
+	// breakpoint();
 
-    idt_init();
+	idt_init();
 
-    printf_("%s\n", "Loaded IDT");
+	printf_("%s\n", "Loaded IDT");
 
-    pic_enable();
+	pic_enable();
 
-    printf_("%s\n", "PICs Online");
+	printf_("%s\n", "PICs Online");
 
-    time_init();
+	time_init();
 
-    asm volatile("cli");
+	asm volatile("cli");
 
-    // lapic_init();
+	// lapic_init();
 
-    asm volatile("sti");
+	asm volatile("sti");
 
-    asm volatile("cli");
+	asm volatile("cli");
 
-    idt_reload();
+	idt_reload();
 
-    gdt_reload();
+	gdt_reload();
 
-    asm volatile("sti");
+	asm volatile("sti");
 
-    idt_reg_test();
+	idt_reg_test();
 
-    asm volatile("int $48");
+	asm volatile("int $48");
 
-    yield_register();
+	yield_register();
 
-    asm volatile("int $49");
+	asm volatile("int $49");
 
-    pic_mask_irq(0);
+	pic_mask_irq(0);
 
-    print_memmap();
+	print_memmap();
 
-    if (Kaddress_req.response == NULL)
-    {
-        printf_("%s\n", "!!!Error While Fetching Kernel Addresses!!!");
-    }
-    else
-    {
-        printf_("%s\n", "Kernel Base Addresses Are As Follows: ");
-        printf_("%s", "Physical Address: ");
-        printf_("0x%llx\n", Kaddress_req.response->physical_base);
-        printf_("%s", "Virtual Address: ");
-        printf_("0x%llx\n", Kaddress_req.response->virtual_base);
-        printf_("%s\n", "--------------------------------------");
-    }
+	if (Kaddress_req.response == NULL)
+	{
+		printf_("%s\n", "!!!Error While Fetching Kernel Addresses!!!");
+	}
+	else
+	{
+		printf_("%s\n", "Kernel Base Addresses Are As Follows: ");
+		printf_("%s", "Physical Address: ");
+		printf_("0x%llx\n", Kaddress_req.response->physical_base);
+		printf_("%s", "Virtual Address: ");
+		printf_("0x%llx\n", Kaddress_req.response->virtual_base);
+		printf_("%s\n", "--------------------------------------");
+	}
 
-    // breakpoint();
+	// breakpoint();
 
-    // read_memory_map();
+	// read_memory_map();
 
-    print_memory();
+	//print_memory();
 
-    init_memory();
+	init_memory();
 
-    printf_("%s", "CR3: ");
-    printf_("0x%llx\n", readCR3());
-    printf_("%s", "CR0: ");
-    printf_("0x%llx\n", readCRO());
-    printf_("%s", "CR4: ");
-    printf_("0x%llx\n", readCR4());
+	printf_("%s", "CR3: ");
+	printf_("0x%llx\n", readCR3());
+	printf_("%s", "CR0: ");
+	printf_("0x%llx\n", readCRO());
+	printf_("%s", "CR4: ");
+	printf_("0x%llx\n", readCR4());
 
-    kernel_heap = pmalloc_init(0x2FAF080);
+	kernel_heap = pmalloc_init(0x2FAF080);
 
-    if (k_mode.acpi_support == 1)
-    {
+	if (k_mode.acpi_support == 1)
+	{
 
-        acpi_init();
-    }
+		acpi_init();
+	}
 
-    keyboard_init();
+	keyboard_init();
 
-    printf_("%s\n", "Handing Control to Standalone Terminal...");
+	printf_("%s\n", "Handing Control to Standalone Terminal...");
 
-    bootspace = 3;
+	bootspace = 3;
 
-    for (uint64_t i = 0; i < 500; i++)
-    {
+	for (uint64_t i = 0; i < 500; i++)
+	{
 
-        printf_("%s\n", "");
-    }
+		printf_("%s\n", "");
+	}
 
-    early_term.response->write(early_term.response->terminals[0], NULL, LIMINE_TERMINAL_FULL_REFRESH);
+	early_term.response->write(early_term.response->terminals[0], NULL, LIMINE_TERMINAL_FULL_REFRESH);
 
-    bootspace = 1;
+	bootspace = 1;
 
-    term_context = fbterm_init(malloc, fbr_req.response->framebuffers[0]->address, fbr_req.response->framebuffers[0]->width, fbr_req.response->framebuffers[0]->height,
+	term_context = fbterm_init(malloc, fbr_req.response->framebuffers[0]->address, fbr_req.response->framebuffers[0]->width, fbr_req.response->framebuffers[0]->height,
 
-                               fbr_req.response->framebuffers[0]->pitch, NULL, NULL, NULL, &term_bg, &term_fg, &vgafont, 8, 16, 1,
+							   fbr_req.response->framebuffers[0]->pitch, NULL, NULL, NULL, &term_bg, &term_fg, &vgafont, 8, 16, 1,
 
-                               1, 1, 1);
+							   1, 1, 1);
 
-    bootspace = 0;
+	bootspace = 0;
 
-    // VMM_table_clone();
+	// VMM_table_clone();
 
-    pic_unmask_irq(0);
+	pic_unmask_irq(0);
 
-    // cpuid_readout();
+	// cpuid_readout();
 
-    print_memory();
+	//print_memory();
 
-    print_load_time();
+	print_load_time();
 
-    print_date();
+	print_date();
 
-    print_stack_size();
+	print_stack_size();
 
-    printf_("%s\n", "VoyagerOS64 v0.0.4");
+	printf_("%s\n", "VoyagerOS64 v0.0.4");
 
-    printf_("%s\n", ":> ");
+	printf_("%s\n", ":> ");
 
-    init_done = 1;
+	init_done = 1;
 
-    hello_general_floatius();
+	//hello_general_floatius();
 
-    bootspace = 1;
+	bootspace = 1;
 
-    init_sched(&k_standby_tube, &k_active_tube, &hot_tube);
+	if (k_mode.addr_debug == 1)
+	{
+		print_frame_bitmap();
+	}
 
-    if (k_mode.addr_debug == 1)
-    {
-        print_frame_bitmap();
-    }
+	bootspace = 0;
 
-    bootspace = 0;
+	// stack_dump_asm();
 
-    // stack_dump_asm();
+	// halt();
 
-    add_active_tube_process(&k_active_tube, create_tube_process(false, true, true, "Kernel_Thread"));
-    add_tube_process(&k_standby_tube, create_tube_process(false, true, true, "Kernel_Thread_2"));
-    add_tube_process(&k_standby_tube, create_tube_process(false, true, true, "Kernel_Thread_3"));
-
-    active_pid = k_active_tube.processes[0].id;
-
-    stdin("k", 123);
-
-    // halt();
-
-    uint64_t loopcount = 0;
-    // Just chill until needed
-    while (1)
-    {
-
-        tube_schedule(&k_standby_tube, &k_active_tube, &hot_tube, quantum);
-
-        printf_("%u\n", loopcount);
-        printf_("%s", "Current PID: ");
-        printf_("%u\n", k_active_tube.processes[0].id);
-        printf_("%s", "Current Process Name: ");
-        printf_("%s\n", k_active_tube.processes[0].name);
-        printf_("%s", "Number of processes (Active and Standby Tubes): ");
-        printf_("%u\n", k_active_tube.current_active + k_standby_tube.current_standby);
-        printf_("%s", "Quantum Value of Current Process: ");
-        printf_("%u\n", k_active_tube.processes[0].allocated_time);
-
-        loopcount++;
-
-        stdout("P", &k_active_tube, &k_standby_tube);
-
-        if (loopcount >= 1)
-        {
-
-            temp = 1;
-        }
-
-        print_memory();
-
-        if (loopcount == 25)
-        {
-
-            halt();
-        }
-    }
+	uint64_t loopcount = 0;
+	// Just chill until needed
+	while (1)
+	{
+	}
 }

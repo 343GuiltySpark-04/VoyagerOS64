@@ -29,6 +29,8 @@ uint64_t system_timer_ms = 0;
 
 uint64_t system_timer_fractions = 0;
 
+bool timer_fired;
+
 struct timespec time_mono = {0, 0};
 struct timespec time_real = {0, 0};
 

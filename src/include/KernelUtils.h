@@ -39,6 +39,8 @@ struct PACKED kswitches
     uint8_t mem_readout_unit;
 
     uint8_t liballoc_debug;
+
+    uint8_t fpu_allowed;
 };
 
 void print_memmap();

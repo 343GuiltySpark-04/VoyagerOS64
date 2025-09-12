@@ -12,6 +12,7 @@
 #include "include/cpu.h"
 #include "include/liballoc.h"
 #include "include/panic.h"
+#include "include/KernelUtils.h"
 #include <cpuid.h>
 #include <stdbool.h>
 #include <stddef.h>
@@ -179,7 +180,11 @@ void check_fpu()
     {
 
         printf_("%s\n", "FPU: Yes");
-        fpu_init();
+
+        if (k_mode.fpu_allowed == 1)
+        {
+            fpu_init();
+        }
     }
     else
     {
