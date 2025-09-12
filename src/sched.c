@@ -13,6 +13,7 @@
 #include "include/kernel.h"
 #include "include/memUtils.h"
 #include "include/panic.h"
+#include "include/serial.h"
 
 #define SAVE_STATE()                       \
     asm volatile("pushq %rax");            \
@@ -40,7 +41,9 @@
                  :                         \
                  : "a"(TSS_SELECTOR));
 
-//bool timer_fired = false;
+#define STACK_SIZE 4096
+
+// bool timer_fired = false;
 
 bool sched_started = false;
 
@@ -58,3 +61,81 @@ extern breakpoint();
 
 extern halt();
 
+static char sched_buff[64];
+
+static int next_pid = 1;
+process_t *current = 0;
+
+bool allow_sched = false;
+
+void init_scheduler(void)
+{
+    current = 0; // nothing yet
+
+    allow_sched = true;
+}
+
+process_t *create_process(void (*entry)(void))
+{
+
+    // spinlock_acquire(&schedlock_t);
+
+    process_t *p = ALLOC(sizeof(process_t));
+    p->pid = next_pid++;
+    p->state = PROC_READY;
+
+    uint64_t *stack = ALLOC(STACK_SIZE);
+    uint64_t *sp = (uint64_t *)((uint8_t *)stack + STACK_SIZE);
+
+    // push fake callee-saved registers (switch frame layout)
+    *(--sp) = (uint64_t)0; // r15
+    *(--sp) = (uint64_t)0; // r14
+    *(--sp) = (uint64_t)0; // r13
+    *(--sp) = (uint64_t)0; // r12
+    *(--sp) = (uint64_t)0; // rbx
+    *(--sp) = (uint64_t)0; // rbp
+
+    // return address for ret in switch_to
+    *(--sp) = (uint64_t)entry;
+
+    p->rsp = sp;
+
+    // add to circular list
+    if (!current)
+    {
+        current = p;
+        p->next = p;
+    }
+    else
+    {
+        p->next = current->next;
+        current->next = p;
+    }
+
+    // spinlock_release(&schedlock_t);
+
+    return p;
+}
+
+void schedule(void)
+{
+
+    // spinlock_acquire(&schedlock_t);
+
+    printf_("%s", "PID: ");
+    printf_("%i\n", &current->pid);
+
+    if (!current || !current->next)
+    {
+        // spinlock_release(&schedlock_t);
+        return;
+    }
+    process_t *next = current->next;
+    if (next == current)
+    {
+        // spinlock_release(&schedlock_t);
+        return; // only one process
+    }
+    // spinlock_release(&schedlock_t);
+    switch_to(next);
+}

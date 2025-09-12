@@ -1,15 +1,9 @@
 /**
  * Copyright (c) 2025 Tristan Adams
- * 
+ *
  * This software is released under the MIT License.
  * https://opensource.org/licenses/MIT
  */
-
-
-
-
-
-
 
 #include <stdint.h>
 #include <stddef.h>
@@ -93,6 +87,26 @@ static struct PageTable *test_table;
 uint8_t init_done = 0;
 
 HANDLE kernel_heap = NULL;
+
+void proc_a(void)
+{
+	while (1)
+	{
+		printf_("%s\n", "I'm a thread");
+		for (volatile int i = 0; i < 1000000; i++)
+			; // simple delay
+	}
+}
+
+void proc_b(void)
+{
+	while (1)
+	{
+		printf_("%s\n", "I'm a catgirl");
+		for (volatile int i = 0; i < 1000000; i++)
+			; // simple delay
+	}
+}
 
 void hello_general_floatius()
 {
@@ -201,7 +215,7 @@ void _start(void)
 
 	// read_memory_map();
 
-	//print_memory();
+	// print_memory();
 
 	init_memory();
 
@@ -250,7 +264,7 @@ void _start(void)
 
 	// cpuid_readout();
 
-	//print_memory();
+	// print_memory();
 
 	print_load_time();
 
@@ -264,7 +278,7 @@ void _start(void)
 
 	init_done = 1;
 
-	//hello_general_floatius();
+	// hello_general_floatius();
 
 	bootspace = 1;
 
@@ -281,6 +295,17 @@ void _start(void)
 
 	uint64_t loopcount = 0;
 	// Just chill until needed
+
+	// pic_mask_irq(0);
+
+	init_scheduler();
+
+	create_process(proc_a);
+
+	create_process(proc_b);
+
+	// pic_unmask_irq(0);
+
 	while (1)
 	{
 	}

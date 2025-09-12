@@ -33,7 +33,7 @@ volatile struct limine_framebuffer_request fbr_req = {
 
 const struct kswitches k_mode = {
 
-    .stack_trace_size = 12,
+    .stack_trace_size = 24,
     .stack_trace_on_fault = 1,
     .acpi_support = 0,
     .sched_debug = 0,

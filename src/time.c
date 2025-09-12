@@ -228,7 +228,7 @@ void sys_clock_handler()
 
         timer_fired = true;
     }
-
+    // schedule();
     system_timer_fractions++;
     system_timer_ms++;
 }
@@ -247,6 +247,12 @@ void sys_clock_handler_alt()
 
     system_timer_fractions++;
     system_timer_ms++;
+
+    if (allow_sched == true)
+    {
+
+        schedule();
+    }
 }
 
 uint8_t task_timer_count = 0;

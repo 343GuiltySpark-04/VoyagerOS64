@@ -16,8 +16,9 @@ extern "C"
     size_t strlen(const char *);
     int strtok(char *srcstr, char sep, char ***output);
     int str2int(char str[]);
-    uint64_t str2int2(char* str);
+    uint64_t str2int2(char *str);
     char *strncpy(char *dest, const char *src, size_t n);
+    char int_to_str(int value, char *buffer);
 
 #ifdef __cplusplus
 }
