@@ -1,0 +1,46 @@
+========================================================
+        KERNEL CODE CRIMES — WATCHLIST (Dexter OS)
+========================================================
+
+[☠] DOUBLE-FREE MURDER
+    frame_free(p);
+    frame_free(p);   // allocator corruption
+
+[☠] RACE CONDITION RIPPER
+    if (lock == 0) { lock = 1; }   // no atomic op!
+    // Two CPUs think they’re alone, chaos follows.
+
+[☠] STACK POINTER SERIAL KILLER
+    • Misaligned RSP before a call
+    • Or touching below RSP in kernel mode
+    => Triple fault awaits.
+
+[☠] NULL POINTER NUMBSKULL
+    struct foo *f = 0; f->bar = 42;
+    // Userspace crash is cute. Kernel crash is fatal.
+
+[☠] INTERRUPT MASK MANIAC
+    Grab a spinlock in IRQ without disabling IRQs?
+    Enjoy your self-deadlock.
+
+[☠] OFF-BY-ONE BUTCHER
+    for (i = 0; i <= count; i++) ...
+    // And just like that, the bitmap is bleeding.
+
+[☠] LAZY PAGE-TABLE POISONER
+    Forgot NX/W^X flags? Userland executes garbage
+    straight from kernel rodata.
+
+--------------------------------------------------------
+HOW TO SURVIVE
+ • Use atomic ops (lock xchg, cmpxchg).
+ • Keep stacks 16-byte aligned, no red zone.
+ • Always reserve kernel & early-alloc pages.
+ • Mask interrupts in spinlock-critical ISRs.
+ • Double-check your loop bounds. Twice.
+ • Never trust user pointers.
+--------------------------------------------------------
+
+REMEMBER:
+“Atomic means indivisible. You should have known better.”
+========================================================

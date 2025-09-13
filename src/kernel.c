@@ -35,6 +35,7 @@
 #include "include/stack_trace.h"
 #include "include/io.h"
 #include "include/pebble.h"
+#include "include/early_alloc.h"
 
 #define White "\033[1;00m"
 #define Red "\033[1;31m"
@@ -196,6 +197,9 @@ void _start(void)
 	pic_mask_irq(0);
 
 	print_memmap();
+
+
+	early_init();
 
 	if (Kaddress_req.response == NULL)
 	{

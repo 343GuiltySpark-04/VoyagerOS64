@@ -1,69 +1,106 @@
-/* Tell the linker that we want an x86_64 ELF64 output file */
+/* x86_64 ELF kernel (PIE-friendly), higher-half link */
 OUTPUT_FORMAT(elf64-x86-64)
 OUTPUT_ARCH(i386:x86-64)
- 
-/* We want the symbol _start to be our entry point */
 ENTRY(_start)
- 
-/* Define the program headers we want so the bootloader gives us the right */
-/* MMU permissions */
+
+/* Program headers (PHDRs) so Limine maps with proper permissions */
 PHDRS
 {
-    null    PT_NULL    FLAGS(0) ;                   /* Null segment */
-    text    PT_LOAD    FLAGS((1 << 0) | (1 << 2)) ; /* Execute + Read */
-    rodata  PT_LOAD    FLAGS((1 << 2)) ;            /* Read only */
-    data    PT_LOAD    FLAGS((1 << 1) | (1 << 2)) ; /* Write + Read */
-    dynamic PT_DYNAMIC FLAGS((1 << 1) | (1 << 2)) ; /* Dynamic segment needed for PIE */
+    null    PT_NULL    FLAGS(0);                         /* Null segment */
+    text    PT_LOAD    FLAGS((1 << 0) | (1 << 2));       /* X | R */
+    rodata  PT_LOAD    FLAGS((1 << 2));                  /* R */
+    data    PT_LOAD    FLAGS((1 << 1) | (1 << 2));       /* W | R */
+    dynamic PT_DYNAMIC FLAGS((1 << 1) | (1 << 2));       /* W | R (for PIE) */
 }
- 
+
+/* Link at classic higher-half base; Limine will relocate as needed (PIE) */
 SECTIONS
 {
-    /* We wanna be placed in the higher half, 2MiB above 0 in physical memory. */
-    /* Since we are going to use PIE, this is just the base load address, but the */
-    /* bootloader will be able to relocate us as it sees fit. */
     . = 0xffffffff80000000;
 
-    text_start_addr = .;
-    
-    .text : {
-        *(.text*)
+    /* Whole-kernel bounds */
+    __kernel_start = .;
+
+    /* -------- TEXT -------- */
+    . = ALIGN(0x1000);
+    __text_start = .;
+    .text : ALIGN(0x1000)
+    {
+        *(.text .text.*)
     } :text
+    __text_end = .;
 
-    text_end_addr = .;
- 
-    /* Move to the next memory page for .rodata */
-    . += 0x1000;
-
-    rodata_start_addr = .;
-
-    .rodata : {
-        *(.rodata*)
+    /* -------- RODATA -------- */
+    . = ALIGN(0x1000);
+    __rodata_start = .;
+    .rodata : ALIGN(0x1000)
+    {
+        *(.rodata .rodata.*)
+        *(.gnu.linkonce.r.*)
     } :rodata
+    __rodata_end = .;
 
-    rodata_end_addr = .;
- 
-    /* Move to the next memory page for .data */
-    . += 0x1000;
+    /* -------- INIT/FINI ARRAYS -------- */
+    . = ALIGN(0x1000);
+    __init_array_start = .;
+    .init_array : ALIGN(8)
+    {
+        KEEP(*(.init_array .init_array.*))
+    } :rodata
+    __init_array_end = .;
 
-    data_start_addr = .;
- 
-    .data : {
-        *(.data*)
+    __fini_array_start = .;
+    .fini_array : ALIGN(8)
+    {
+        KEEP(*(.fini_array .fini_array.*))
+    } :rodata
+    __fini_array_end = .;
+
+    /* -------- DATA -------- */
+    . = ALIGN(0x1000);
+    __data_start = .;
+    .data : ALIGN(0x1000)
+    {
+        *(.data .data.*)
+        *(.gnu.linkonce.d.*)
+        *(.got .got.* .got.plt)
     } :data
- 
-    /* Dynamic section needed for PIE */
-    .dynamic : {
+    __data_end = .;
+
+    /* -------- DYNAMIC (for PIE) -------- */
+    .dynamic : ALIGN(0x10)
+    {
         *(.dynamic)
     } :data :dynamic
- 
-    .bss : {
+
+    /* -------- BSS -------- */
+    . = ALIGN(0x1000);
+    __bss_start = .;
+    .bss (NOLOAD) : ALIGN(0x1000)
+    {
         *(COMMON)
-        *(.bss*)
+        *(.bss .bss.*)
+        *(.gnu.linkonce.b.*)
     } :data
+    __bss_end = .;
 
-    data_end_addr = .;
+    __kernel_end = .;
 
-    /DISCARD/ : {
+    /* Old names kept alive for compatibility */
+    text_start_addr   = __text_start;
+    text_end_addr     = __text_end;
+    rodata_start_addr = __rodata_start;
+    rodata_end_addr   = __rodata_end;
+    data_start_addr   = __data_start;
+    data_end_addr     = __data_end;
+
+    /DISCARD/ :
+    {
+        *(.comment)
         *(.note .note.*)
+        *(.eh_frame .eh_frame.*)
+        *(.eh_frame_hdr)
+        *(.gnu_debuglink)
+        *(.gnu.lto_*)
     }
 }
