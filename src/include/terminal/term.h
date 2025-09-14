@@ -1,9 +1,9 @@
 #ifndef _TERM_H
 #define _TERM_H
 
+#include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
-#include <stdbool.h>
 
 #define TERM_MAX_ESC_VALUES 16
 
@@ -20,38 +20,38 @@ struct term_context
 {
     /* internal use */
 
-    size_t tab_size;
-    bool autoflush;
-    bool scroll_enabled;
-    bool control_sequence;
-    bool csi;
-    bool escape;
-    bool rrr;
-    bool discard_next;
-    bool bold;
-    bool reverse_video;
-    bool dec_private;
-    bool insert_mode;
-    uint8_t g_select;
-    uint8_t charsets[2];
-    size_t current_charset;
-    size_t escape_offset;
-    size_t esc_values_i;
-    size_t saved_cursor_x;
-    size_t saved_cursor_y;
-    size_t current_primary;
-    size_t scroll_top_margin;
-    size_t scroll_bottom_margin;
+    size_t   tab_size;
+    bool     autoflush;
+    bool     scroll_enabled;
+    bool     control_sequence;
+    bool     csi;
+    bool     escape;
+    bool     rrr;
+    bool     discard_next;
+    bool     bold;
+    bool     reverse_video;
+    bool     dec_private;
+    bool     insert_mode;
+    uint8_t  g_select;
+    uint8_t  charsets[2];
+    size_t   current_charset;
+    size_t   escape_offset;
+    size_t   esc_values_i;
+    size_t   saved_cursor_x;
+    size_t   saved_cursor_y;
+    size_t   current_primary;
+    size_t   scroll_top_margin;
+    size_t   scroll_bottom_margin;
     uint32_t esc_values[TERM_MAX_ESC_VALUES];
-    bool saved_state_bold;
-    bool saved_state_reverse_video;
-    size_t saved_state_current_charset;
-    size_t saved_state_current_primary;
+    bool     saved_state_bold;
+    bool     saved_state_reverse_video;
+    size_t   saved_state_current_charset;
+    size_t   saved_state_current_primary;
 
     /* to be set by backend */
 
     size_t rows, cols;
-    bool in_bootloader;
+    bool   in_bootloader;
 
     void (*raw_putchar)(struct term_context *, uint8_t c);
     void (*clear)(struct term_context *, bool move);
@@ -67,7 +67,11 @@ struct term_context
     void (*set_text_bg_rgb)(struct term_context *, uint32_t bg);
     void (*set_text_fg_default)(struct term_context *);
     void (*set_text_bg_default)(struct term_context *);
-    void (*move_character)(struct term_context *, size_t new_x, size_t new_y, size_t old_x, size_t old_y);
+    void (*move_character)(struct term_context *,
+                           size_t new_x,
+                           size_t new_y,
+                           size_t old_x,
+                           size_t old_y);
     void (*scroll)(struct term_context *);
     void (*revscroll)(struct term_context *);
     void (*swap_palette)(struct term_context *);
@@ -79,7 +83,8 @@ struct term_context
 
     /* to be set by client */
 
-    void (*callback)(struct term_context *, uint64_t, uint64_t, uint64_t, uint64_t);
+    void (*callback)(
+        struct term_context *, uint64_t, uint64_t, uint64_t, uint64_t);
 };
 
 void term_context_reinit(struct term_context *ctx);

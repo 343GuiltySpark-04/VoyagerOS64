@@ -1,15 +1,15 @@
-#include "../../include/drivers/keyboard/keyboard_map.h"
 #include "../../include/drivers/keyboard/keyboard.h"
+#include "../../include/KernelUtils.h"
+#include "../../include/drivers/keyboard/keyboard_map.h"
 #include "../../include/io.h"
+#include "../../include/kernel.h"
+#include "../../include/liballoc.h"
+#include "../../include/lock.h"
 #include "../../include/pic.h"
 #include "../../include/printf.h"
-#include "../../include/KernelUtils.h"
-#include "../../include/terminal/term.h"
-#include "../../include/liballoc.h"
-#include "../../include/serial.h"
-#include "../../include/lock.h"
-#include "../../include/kernel.h"
 #include "../../include/sched.h"
+#include "../../include/serial.h"
+#include "../../include/terminal/term.h"
 
 #define KBD_STACK_SIZE 255
 
@@ -27,10 +27,8 @@ static spinlock_t kbdlock_t = SPINLOCK_INIT;
  */
 void kbd_push(char data)
 {
-
     if (kbd_top == KBD_STACK_SIZE - 1)
     {
-
         kerror_mode = 1;
 
         printf_("%s\n", "ERROR: Keyboard stack overflow!");
@@ -39,7 +37,6 @@ void kbd_push(char data)
     }
     else
     {
-
         kbd_top++;
         kbd_stack[kbd_top] = data;
     }
@@ -51,17 +48,14 @@ void kbd_push(char data)
  */
 char kbd_pop()
 {
-
     int data;
 
     if (kbd_top == -1)
     {
-
         return 0;
     }
     else
     {
-
         data = kbd_stack[kbd_top];
 
         kbd_top--;
@@ -71,12 +65,12 @@ char kbd_pop()
 }
 
 /**
- * @brief This is the keyboard interrupt handler. It reads the status and pushes the keycode to the keyboard stack.
+ * @brief This is the keyboard interrupt handler. It reads the status and pushes
+ * the keycode to the keyboard stack.
  * @return Returns nothing. If there is an error it returns
  */
 void keyboard_handler()
 {
-
     spinlock_acquire(&kbdlock_t);
 
     uint8_t status = inb(KEYBOARD_STATUS_PORT);
@@ -85,14 +79,13 @@ void keyboard_handler()
 
     if (status & 0x1)
     {
-
         char keycode = inb(KEYBOARD_DATA_PORT);
 
         inb(KEYBOARD_DATA_PORT);
 
         // kbd_push(keyboard_map[keycode]);
 
-        //stdin("k", keyboard_map[keycode]);
+        // stdin("k", keyboard_map[keycode]);
 
         if (keycode < 0 || keycode >= 128)
         {
@@ -105,12 +98,10 @@ void keyboard_handler()
 
         if (keycode == 0x1c)
         {
-
             k_char = '+';
         }
         else
         {
-
             k_char = keyboard_map[keycode];
         }
 
@@ -118,12 +109,10 @@ void keyboard_handler()
 
         if (term_context)
         {
-
             // term_write(term_context, &keyboard_map[keycode], sizeof(char));
         }
         else
         {
-
             printf_("%s\n", "ERROR: TERMINAL WRITE FAILURE!");
 
             spinlock_release(&kbdlock_t);
@@ -143,13 +132,11 @@ void keyboard_handler()
  */
 char k_getchar()
 {
-
     char c;
 
     while (k_char > 0)
     {
-
-        c = k_char;
+        c      = k_char;
         k_char = 0;
     }
 
@@ -162,7 +149,6 @@ char k_getchar()
  */
 void keyboard_init()
 {
-
     pic_unmask_irq(1);
     printf_("%s\n", "Keyboard Init");
 }

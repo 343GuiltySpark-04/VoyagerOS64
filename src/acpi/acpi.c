@@ -5,9 +5,9 @@
 #include "../include/limine.h"
 #include "../include/paging/frameallocator.h"
 #include "../include/paging/paging.h"
+#include "../include/panic.h"
 #include "../include/printf.h"
 #include "../include/string.h"
-#include "../include/panic.h"
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
@@ -24,21 +24,19 @@ struct sdt *sdt;
 
 struct rsdp
 {
-
-    char signature[8];
-    uint8_t checksum;
-    char oem_id[6];
-    uint8_t revision;
+    char     signature[8];
+    uint8_t  checksum;
+    char     oem_id[6];
+    uint8_t  revision;
     uint32_t rsdt_addr;
     uint32_t length;
     uint64_t xsdt_addr;
-    uint8_t ext_checksum;
-    char reserved[3];
+    uint8_t  ext_checksum;
+    char     reserved[3];
 };
 
 struct rsdt
 {
-
     struct sdt;
     char data[];
 };
@@ -64,12 +62,10 @@ void acpi_init(void)
 
     if (rsdp_resp == NULL || rsdp_resp->address == NULL)
     {
-
         panic("ACPI Not Supported by This Machine!");
     }
     else if (has_ACPI == false)
     {
-
         panic("ACPI Not Supported by This Machine!");
     }
 
@@ -77,11 +73,12 @@ void acpi_init(void)
 
     if (use_xsdt())
     {
-        rsdt = (struct rsdt *)(rsdp->xsdt_addr + HIGHER_HALF_MEMORY_OFFSET);
+        rsdt = (struct rsdt *) (rsdp->xsdt_addr + HIGHER_HALF_MEMORY_OFFSET);
     }
     else
     {
-        rsdt = (struct rsdt *)((uint64_t)rsdp->rsdt_addr + HIGHER_HALF_MEMORY_OFFSET);
+        rsdt = (struct rsdt *) ((uint64_t) rsdp->rsdt_addr +
+                                HIGHER_HALF_MEMORY_OFFSET);
     }
 
     printf_("acpi: Revision: %lu\n", rsdp->revision);
@@ -91,7 +88,7 @@ void acpi_init(void)
     struct sdt *fadt = acpi_find_sdt("FACP", 0);
     if (fadt != NULL && fadt->length >= 116)
     {
-        uint32_t fadt_flags = *((uint32_t *)fadt + 28);
+        uint32_t fadt_flags = *((uint32_t *) fadt + 28);
 
         if ((fadt_flags & (1 << 20)) != 0)
         {
@@ -118,13 +115,13 @@ void *acpi_find_sdt(const char signature[static 4], size_t index)
         struct sdt *sdt = NULL;
         if (use_xsdt())
         {
-            sdt = (struct sdt *)(*((uint64_t *)rsdt->data + i) +
-                                 HIGHER_HALF_MEMORY_OFFSET);
+            sdt = (struct sdt *) (*((uint64_t *) rsdt->data + i) +
+                                  HIGHER_HALF_MEMORY_OFFSET);
         }
         else
         {
-            sdt = (struct sdt *)(*((uint32_t *)rsdt->data + i) +
-                                 HIGHER_HALF_MEMORY_OFFSET);
+            sdt = (struct sdt *) (*((uint32_t *) rsdt->data + i) +
+                                  HIGHER_HALF_MEMORY_OFFSET);
         }
 
         if (memcmp(sdt->signature, signature, 4) != 0)
@@ -138,7 +135,10 @@ void *acpi_find_sdt(const char signature[static 4], size_t index)
             continue;
         }
 
-        printf_("acpi: Found '%S' at 0x%llx, length=%lu\n", signature, 4, sdt,
+        printf_("acpi: Found '%S' at 0x%llx, length=%lu\n",
+                signature,
+                4,
+                sdt,
                 sdt->length);
         return sdt;
     }

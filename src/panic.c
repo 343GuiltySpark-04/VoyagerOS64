@@ -1,23 +1,23 @@
-#include "include/printf.h"
-#include <stdint.h>
-#include <stdbool.h>
-#include <stdarg.h>
-#include "include/stack_trace.h"
 #include "include/KernelUtils.h"
 #include "include/kernel.h"
+#include "include/printf.h"
+#include "include/stack_trace.h"
+#include <stdarg.h>
+#include <stdbool.h>
+#include <stdint.h>
 
 extern void halt();
 
 /**
- * @brief Panic with a nicely formatted message. This is useful for situations where you are certain an unrecoverable error will occur and want to be informative (feel free to abuse sarcasm in them) about the problem.
+ * @brief Panic with a nicely formatted message. This is useful for situations
+ * where you are certain an unrecoverable error will occur and want to be
+ * informative (feel free to abuse sarcasm in them) about the problem.
  * @param fmt printf style format string for the panic message
  */
 void panic(const char *fmt, ...)
 {
-
     if (init_done == 1)
     {
-
         kerror_mode = 1;
     }
     static char buf[1024];

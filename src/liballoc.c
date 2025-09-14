@@ -1,6 +1,6 @@
 #include "include/liballoc.h"
-#include "include/printf.h"
 #include "include/KernelUtils.h"
+#include "include/printf.h"
 
 /**  Durand's Ridiculously Amazing Super Duper Memory functions.  */
 
@@ -16,15 +16,15 @@
 
 #define MODE MODE_BEST
 
-struct boundary_tag *l_freePages[MAXEXP]; //< Allowing for 2^MAXEXP blocks
-int l_completePages[MAXEXP];              //< Allowing for 2^MAXEXP blocks
+struct boundary_tag *l_freePages[MAXEXP];     //< Allowing for 2^MAXEXP blocks
+int                  l_completePages[MAXEXP]; //< Allowing for 2^MAXEXP blocks
 
 unsigned int l_allocated = 0; //< The real amount of memory allocated.
-unsigned int l_inuse = 0;     //< The amount of memory in use (malloc'ed).
+unsigned int l_inuse     = 0; //< The amount of memory in use (malloc'ed).
 
-static int l_initialized = 0; //< Flag to indicate initialization.
-static int l_pageSize = 4096; //< Individual page size
-static int l_pageCount = 16;  //< Minimum number of pages to allocate.
+static int l_initialized = 0;    //< Flag to indicate initialization.
+static int l_pageSize    = 4096; //< Individual page size
+static int l_pageCount   = 16;   //< Minimum number of pages to allocate.
 
 // ***********   HELPER FUNCTIONS  *******************************
 
@@ -36,7 +36,6 @@ static inline int getexp(unsigned int size)
 {
     if (size < (1 << MINEXP))
     {
-
         if (k_mode.liballoc_debug == 1)
         {
             printf("getexp returns -1 for %i less than MINEXP\n", size);
@@ -55,7 +54,10 @@ static inline int getexp(unsigned int size)
 
     if (k_mode.liballoc_debug == 1)
     {
-        printf("getexp returns %i (%i bytes) for %i size\n", shift - 1, (1 << (shift - 1)), size);
+        printf("getexp returns %i (%i bytes) for %i size\n",
+               shift - 1,
+               (1 << (shift - 1)),
+               size);
     }
 
     return shift - 1;
@@ -65,17 +67,17 @@ static void *liballoc_memset(void *s, int c, size_t n)
 {
     int i;
     for (i = 0; i < n; i++)
-        ((char *)s)[i] = c;
+        ((char *) s)[i] = c;
 
     return s;
 }
 
 static void *liballoc_memcpy(void *s1, const void *s2, size_t n)
 {
-    char *cdest;
-    char *csrc;
-    unsigned int *ldest = (unsigned int *)s1;
-    unsigned int *lsrc = (unsigned int *)s2;
+    char         *cdest;
+    char         *csrc;
+    unsigned int *ldest = (unsigned int *) s1;
+    unsigned int *lsrc  = (unsigned int *) s2;
 
     while (n >= sizeof(unsigned int))
     {
@@ -83,8 +85,8 @@ static void *liballoc_memcpy(void *s1, const void *s2, size_t n)
         n -= sizeof(unsigned int);
     }
 
-    cdest = (char *)ldest;
-    csrc = (char *)lsrc;
+    cdest = (char *) ldest;
+    csrc  = (char *) lsrc;
 
     while (n > 0)
     {
@@ -97,7 +99,7 @@ static void *liballoc_memcpy(void *s1, const void *s2, size_t n)
 
 static void dump_array()
 {
-    int i = 0;
+    int                  i   = 0;
     struct boundary_tag *tag = NULL;
 
     printf("------ Free pages array ---------\n");
@@ -145,7 +147,7 @@ static inline void insert_tag(struct boundary_tag *tag, int index)
     if (l_freePages[realIndex] != NULL)
     {
         l_freePages[realIndex]->prev = tag;
-        tag->next = l_freePages[realIndex];
+        tag->next                    = l_freePages[realIndex];
     }
 
     l_freePages[realIndex] = tag;
@@ -161,8 +163,8 @@ static inline void remove_tag(struct boundary_tag *tag)
     if (tag->next != NULL)
         tag->next->prev = tag->prev;
 
-    tag->next = NULL;
-    tag->prev = NULL;
+    tag->next  = NULL;
+    tag->prev  = NULL;
     tag->index = -1;
 }
 
@@ -196,18 +198,20 @@ static inline struct boundary_tag *absorb_right(struct boundary_tag *tag)
 
 static inline struct boundary_tag *split_tag(struct boundary_tag *tag)
 {
-    unsigned int remainder = tag->real_size - sizeof(struct boundary_tag) - tag->size;
+    unsigned int remainder =
+        tag->real_size - sizeof(struct boundary_tag) - tag->size;
 
     struct boundary_tag *new_tag =
-        (struct boundary_tag *)((unsigned int)tag + sizeof(struct boundary_tag) + tag->size);
+        (struct boundary_tag *) ((unsigned int) tag +
+                                 sizeof(struct boundary_tag) + tag->size);
 
-    new_tag->magic = LIBALLOC_MAGIC;
+    new_tag->magic     = LIBALLOC_MAGIC;
     new_tag->real_size = remainder;
 
     new_tag->next = NULL;
     new_tag->prev = NULL;
 
-    new_tag->split_left = tag;
+    new_tag->split_left  = tag;
     new_tag->split_right = tag->split_right;
 
     if (new_tag->split_right != NULL)
@@ -225,8 +229,8 @@ static inline struct boundary_tag *split_tag(struct boundary_tag *tag)
 
 static struct boundary_tag *allocate_new_tag(unsigned int size)
 {
-    unsigned int pages;
-    unsigned int usage;
+    unsigned int         pages;
+    unsigned int         usage;
     struct boundary_tag *tag;
 
     // This is how much space is required.
@@ -241,28 +245,32 @@ static struct boundary_tag *allocate_new_tag(unsigned int size)
     if (pages < l_pageCount)
         pages = l_pageCount;
 
-    tag = (struct boundary_tag *)liballoc_alloc(pages);
+    tag = (struct boundary_tag *) liballoc_alloc(pages);
 
     if (tag == NULL)
         return NULL; // uh oh, we ran out of memory.
 
-    tag->magic = LIBALLOC_MAGIC;
-    tag->size = size;
+    tag->magic     = LIBALLOC_MAGIC;
+    tag->size      = size;
     tag->real_size = pages * l_pageSize;
-    tag->index = -1;
+    tag->index     = -1;
 
-    tag->next = NULL;
-    tag->prev = NULL;
-    tag->split_left = NULL;
+    tag->next        = NULL;
+    tag->prev        = NULL;
+    tag->split_left  = NULL;
     tag->split_right = NULL;
 
     if (k_mode.liballoc_debug == 1)
     {
-        printf("Resource allocated %x of %i pages (%i bytes) for %i size.\n", tag, pages, pages * l_pageSize, size);
+        printf("Resource allocated %x of %i pages (%i bytes) for %i size.\n",
+               tag,
+               pages,
+               pages * l_pageSize,
+               size);
 
         l_allocated += pages * l_pageSize;
 
-        printf("Total memory usage = %i KB\n", (int)((l_allocated / (1024))));
+        printf("Total memory usage = %i KB\n", (int) ((l_allocated / (1024))));
     }
 
     return tag;
@@ -270,8 +278,8 @@ static struct boundary_tag *allocate_new_tag(unsigned int size)
 
 void *malloc(size_t size)
 {
-    int index;
-    void *ptr;
+    int                  index;
+    void                *ptr;
     struct boundary_tag *tag = NULL;
 
     liballoc_lock();
@@ -284,7 +292,7 @@ void *malloc(size_t size)
         }
         for (index = 0; index < MAXEXP; index++)
         {
-            l_freePages[index] = NULL;
+            l_freePages[index]     = NULL;
             l_completePages[index] = 0;
         }
         l_initialized = 1;
@@ -299,11 +307,14 @@ void *malloc(size_t size)
     while (tag != NULL)
     {
         // If there's enough space in this tag.
-        if ((tag->real_size - sizeof(struct boundary_tag)) >= (size + sizeof(struct boundary_tag)))
+        if ((tag->real_size - sizeof(struct boundary_tag)) >=
+            (size + sizeof(struct boundary_tag)))
         {
             if (k_mode.liballoc_debug == 1)
             {
-                printf("Tag search found %i >= %i\n", (tag->real_size - sizeof(struct boundary_tag)), (size + sizeof(struct boundary_tag)));
+                printf("Tag search found %i >= %i\n",
+                       (tag->real_size - sizeof(struct boundary_tag)),
+                       (size + sizeof(struct boundary_tag)));
             }
             break;
         }
@@ -338,11 +349,20 @@ void *malloc(size_t size)
 
     if (k_mode.liballoc_debug == 1)
     {
-        printf("Found tag with %i bytes available (requested %i bytes, leaving %i), which has exponent: %i (%i bytes)\n", tag->real_size - sizeof(struct boundary_tag), size, tag->real_size - size - sizeof(struct boundary_tag), index, 1 << index);
+        printf("Found tag with %i bytes available (requested %i bytes, leaving "
+               "%i), which has exponent: %i (%i bytes)\n",
+               tag->real_size - sizeof(struct boundary_tag),
+               size,
+               tag->real_size - size - sizeof(struct boundary_tag),
+               index,
+               1 << index);
     }
-    unsigned int remainder = tag->real_size - size - sizeof(struct boundary_tag) * 2; // Support a new tag + remainder
+    unsigned int remainder =
+        tag->real_size - size -
+        sizeof(struct boundary_tag) * 2; // Support a new tag + remainder
 
-    if (((int)(remainder) > 0) /*&& ( (tag->real_size - remainder) >= (1<<MINEXP))*/)
+    if (((int) (remainder) >
+         0) /*&& ( (tag->real_size - remainder) >= (1<<MINEXP))*/)
     {
         int childIndex = getexp(remainder);
 
@@ -350,26 +370,37 @@ void *malloc(size_t size)
         {
             if (k_mode.liballoc_debug == 1)
             {
-                printf("Seems to be splittable: %i >= 2^%i .. %i\n", remainder, childIndex, (1 << childIndex));
+                printf("Seems to be splittable: %i >= 2^%i .. %i\n",
+                       remainder,
+                       childIndex,
+                       (1 << childIndex));
             }
 
             struct boundary_tag *new_tag = split_tag(tag);
 
-            new_tag = new_tag; // Get around the compiler warning about unused variables.
+            new_tag = new_tag; // Get around the compiler warning about unused
+                               // variables.
 
             if (k_mode.liballoc_debug == 1)
             {
-                printf("Old tag has become %i bytes, new tag is now %i bytes (%i exp)\n", tag->real_size, new_tag->real_size, new_tag->index);
+                printf("Old tag has become %i bytes, new tag is now %i bytes "
+                       "(%i exp)\n",
+                       tag->real_size,
+                       new_tag->real_size,
+                       new_tag->index);
             }
         }
     }
 
-    ptr = (void *)((unsigned int)tag + sizeof(struct boundary_tag));
+    ptr = (void *) ((unsigned int) tag + sizeof(struct boundary_tag));
 
     if (k_mode.liballoc_debug == 1)
     {
         l_inuse += size;
-        printf("malloc: %x,  %i, %i\n", ptr, (int)l_inuse / 1024, (int)l_allocated / 1024);
+        printf("malloc: %x,  %i, %i\n",
+               ptr,
+               (int) l_inuse / 1024,
+               (int) l_allocated / 1024);
         dump_array();
     }
 
@@ -379,7 +410,7 @@ void *malloc(size_t size)
 
 void free(void *ptr)
 {
-    int index;
+    int                  index;
     struct boundary_tag *tag;
 
     printf_("%s", "INFO: Free ptr: ");
@@ -390,7 +421,8 @@ void free(void *ptr)
 
     liballoc_lock();
 
-    tag = (struct boundary_tag *)((unsigned int)ptr - sizeof(struct boundary_tag));
+    tag = (struct boundary_tag *) ((unsigned int) ptr -
+                                   sizeof(struct boundary_tag));
 
     if (tag->magic != LIBALLOC_MAGIC)
     {
@@ -401,7 +433,10 @@ void free(void *ptr)
     if (k_mode.liballoc_debug == 1)
     {
         l_inuse -= tag->size;
-        printf("free: %x, %i, %i\n", ptr, (int)l_inuse / 1024, (int)l_allocated / 1024);
+        printf("free: %x, %i, %i\n",
+               ptr,
+               (int) l_inuse / 1024,
+               (int) l_allocated / 1024);
     }
 
     // MELT LEFT...
@@ -409,7 +444,11 @@ void free(void *ptr)
     {
         if (k_mode.liballoc_debug == 1)
         {
-            printf("Melting tag left into available memory. Left was %i, becomes %i (%i)\n", tag->split_left->real_size, tag->split_left->real_size + tag->real_size, tag->split_left->real_size);
+            printf("Melting tag left into available memory. Left was %i, "
+                   "becomes %i (%i)\n",
+                   tag->split_left->real_size,
+                   tag->split_left->real_size + tag->real_size,
+                   tag->split_left->real_size);
         }
         tag = melt_left(tag);
         remove_tag(tag);
@@ -420,7 +459,11 @@ void free(void *ptr)
     {
         if (k_mode.liballoc_debug == 1)
         {
-            printf("Melting tag right into available memory. This was was %i, becomes %i (%i)\n", tag->real_size, tag->split_right->real_size + tag->real_size, tag->split_right->real_size);
+            printf("Melting tag right into available memory. This was was %i, "
+                   "becomes %i (%i)\n",
+                   tag->real_size,
+                   tag->split_right->real_size + tag->real_size,
+                   tag->split_right->real_size);
         }
         tag = absorb_right(tag);
     }
@@ -433,7 +476,6 @@ void free(void *ptr)
     // A whole, empty block?
     if ((tag->split_left == NULL) && (tag->split_right == NULL))
     {
-
         if (l_completePages[index] == MAXCOMPLETE)
         {
             // Too many standing by to keep. Free this one.
@@ -446,7 +488,6 @@ void free(void *ptr)
 
             if (k_mode.addr_debug)
             {
-
                 printf_("%s", "INFO: Free, liballoc_free call data: tag: ");
                 printf_("0x%llx", tag);
                 printf_("%s", " Pages: ");
@@ -475,7 +516,11 @@ void free(void *ptr)
 
     if (k_mode.liballoc_debug == 1)
     {
-        printf("Returning tag with %i bytes (requested %i bytes), which has exponent: %i\n", tag->real_size, tag->size, index);
+        printf("Returning tag with %i bytes (requested %i bytes), which has "
+               "exponent: %i\n",
+               tag->real_size,
+               tag->size,
+               index);
         dump_array();
     }
 
@@ -484,7 +529,7 @@ void free(void *ptr)
 
 void *calloc(size_t nobj, size_t size)
 {
-    int real_size;
+    int   real_size;
     void *p;
 
     real_size = nobj * size;
@@ -498,13 +543,12 @@ void *calloc(size_t nobj, size_t size)
 
 void *realloc(void *p, size_t size)
 {
-
     printf_("%s", "INFO: Size requested of realloc is: ");
     printf_("0x%llx\n", size);
 
-    void *ptr;
+    void                *ptr;
     struct boundary_tag *tag;
-    int real_size;
+    int                  real_size;
 
     if (size == 0)
     {
@@ -516,7 +560,8 @@ void *realloc(void *p, size_t size)
 
     if (liballoc_lock != NULL)
         liballoc_lock(); // lockit
-    tag = (struct boundary_tag *)((unsigned int)p - sizeof(struct boundary_tag));
+    tag       = (struct boundary_tag *) ((unsigned int) p -
+                                   sizeof(struct boundary_tag));
     real_size = tag->size;
     if (liballoc_unlock != NULL)
         liballoc_unlock();

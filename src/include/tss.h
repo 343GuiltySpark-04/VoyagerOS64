@@ -1,6 +1,6 @@
 #pragma once
-#include <stdint.h>
 #include "global_defs.h"
+#include <stdint.h>
 
 #ifndef _TSS_H
 #define _TSS_H

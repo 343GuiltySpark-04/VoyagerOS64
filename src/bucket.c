@@ -21,18 +21,19 @@
  *
  */
 
-#include <stdint.h>
-#include <stddef.h>
 #include "include/paging/frameallocator.h"
 #include "include/paging/paging.h"
+#include <stddef.h>
+#include <stdint.h>
 
 #define MODNAME "bucket.c"
 
 //  A few comments about the code:
 // there are a few non-standard typedef's within this code.
 // for example, the HANDLE typedef is simply a 'void *'.
-// a few others in malloc.cpp are bit64u and bit32u.  These are simply 64-bit and 32-bit unsigned integers.
-// in fact, the double-forwardslash found at the beginning of this line is considered non-standard.
+// a few others in malloc.cpp are bit64u and bit32u.  These are simply 64-bit
+// and 32-bit unsigned integers. in fact, the double-forwardslash found at the
+// beginning of this line is considered non-standard.
 //  therefore, you might wish to modify it to use /*  and   */
 /*
 // kernel's memory heap
@@ -55,16 +56,14 @@ int main( ... ) {
 // this function allocates 'size' pages of virtual memory from the system
 void *mmap(size_t size)
 {
-
     void *ptr = frame_request_multiple(size);
 
     if (ptr == NULL)
     {
-
         return NULL;
     }
 
-    void *realPtr = (void *)TranslateToHighHalfMemoryAddress((uint64_t)ptr);
+    void *realPtr = (void *) TranslateToHighHalfMemoryAddress((uint64_t) ptr);
 
     return realPtr;
 
@@ -91,12 +90,10 @@ void *mmap(size_t size)
 // this function free's the allocated virtual memory
 void mmap_free(void *ptr, size_t size)
 {
-
-    void *realPtr = (void *)TranslateToPhysicalMemoryAddress((uint64_t)ptr);
+    void *realPtr = (void *) TranslateToPhysicalMemoryAddress((uint64_t) ptr);
 
     if (k_mode.addr_debug)
     {
-
         printf("%s", "INFO: liballoc_free ptr: ");
         printf("0x%llx\n", ptr);
         printf("%s", "INFO: realptr: ");

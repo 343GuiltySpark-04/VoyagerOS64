@@ -3,11 +3,11 @@
 
 #include <stdint.h>
 
-void lapic_init(void);
-void lapic_eoi(void);
-void lapic_timer_oneshot(uint32_t us, void *function);
-void lapic_send_ipi(uint32_t lapic_id, uint32_t vec);
-void lapic_timer_calibrate(void);
+void     lapic_init(void);
+void     lapic_eoi(void);
+void     lapic_timer_oneshot(uint32_t us, void *function);
+void     lapic_send_ipi(uint32_t lapic_id, uint32_t vec);
+void     lapic_timer_calibrate(void);
 uint32_t lapic_get_id(void);
 
 #endif

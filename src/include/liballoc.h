@@ -28,7 +28,7 @@ extern "C"
         unsigned int magic;     //< It's a kind of ...
         unsigned int size;      //< Requested size.
         unsigned int real_size; //< Actual size.
-        int index;              //< Location in the page table.
+        int          index;     //< Location in the page table.
 
         struct boundary_tag *split_left;  //< Linked-list info for broken pages.
         struct boundary_tag *split_right; //< The same.
@@ -76,7 +76,7 @@ extern "C"
     void *malloc(size_t);          //< The standard function.
     void *realloc(void *, size_t); //< The standard function.
     void *calloc(size_t, size_t);  //< The standard function.
-    void free(void *);             //< The standard function.
+    void  free(void *);            //< The standard function.
 
 #ifdef __cplusplus
 }

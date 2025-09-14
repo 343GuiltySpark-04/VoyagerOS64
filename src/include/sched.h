@@ -3,9 +3,9 @@
 #ifndef _SCHED_H
 #define _SCHED_H
 
-#include <stdint.h>
-#include <stdbool.h>
 #include "global_defs.h"
+#include <stdbool.h>
+#include <stdint.h>
 
 #define SYSCALL_YIELD 1
 #define SYSCALL_FORK 2
@@ -21,7 +21,6 @@ typedef enum
 
 typedef struct process
 {
-
     int pid;
 
     uint64_t *rsp;
@@ -38,7 +37,7 @@ extern process_t *current;
 void switch_to(process_t *next);
 
 process_t *create_process(void (*entry)(void));
-void schedule(void);
-void init_scheduler(void);
+void       schedule(void);
+void       init_scheduler(void);
 
 #endif

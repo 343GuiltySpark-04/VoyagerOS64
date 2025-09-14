@@ -7,15 +7,16 @@
 
 // framealloc.h
 #pragma once
-#include <stdint.h>
-#include <stddef.h>
 #include <stdbool.h>
+#include <stddef.h>
+#include <stdint.h>
 
 #include "../early_alloc.h" // for paddr_t
 
-void frame_init(void);            // build bitmaps from Limine memmap, mark reserved ranges
-paddr_t frame_alloc(void);        // physical frame (4KiB), panics on OOM
-void n_frame_free(paddr_t paddr); // guards: alignment, bounds, double-free, non-usable
+void frame_init(void); // build bitmaps from Limine memmap, mark reserved ranges
+paddr_t frame_alloc(void); // physical frame (4KiB), panics on OOM
+void    n_frame_free(
+       paddr_t paddr); // guards: alignment, bounds, double-free, non-usable
 size_t frame_free_count(void);
 size_t frame_total_count(void);
 

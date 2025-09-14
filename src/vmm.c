@@ -1,32 +1,37 @@
+#include "include/paging/vmm.h"
 #include "include/bitmap.h"
 #include "include/paging/frameallocator.h"
 #include "include/paging/paging.h"
-#include "include/paging/vmm.h"
+#include "include/printf.h"
 #include "include/registers.h"
 #include "include/string.h"
-#include "include/printf.h"
 
 static struct PageTable *vmm_page_table;
-struct dummy_proc *test_proc;
+struct dummy_proc       *test_proc;
 
 uint64_t proc_page_size = 0;
 
 /**
-* @brief Clones the VMM table and allocates a new frame. This is used to test the paging system
-*/
+ * @brief Clones the VMM table and allocates a new frame. This is used to test
+ * the paging system
+ */
 void VMM_table_clone()
 {
-
     static struct PageTable *table_frame;
     static struct PageTable *current_table;
     static struct PageTable *higher_frame;
 
-    table_frame = (struct PageTable *)frame_request();
-    current_table = (struct PageTable *)readCR3();
+    table_frame   = (struct PageTable *) frame_request();
+    current_table = (struct PageTable *) readCR3();
 
-    PagingMapMemory(current_table, TranslateToHighHalfMemoryAddress((uint64_t)table_frame), table_frame, PAGING_FLAG_PRESENT | PAGING_FLAG_WRITABLE | PAGING_FLAG_USER_ACCESSIBLE);
+    PagingMapMemory(current_table,
+                    TranslateToHighHalfMemoryAddress((uint64_t) table_frame),
+                    table_frame,
+                    PAGING_FLAG_PRESENT | PAGING_FLAG_WRITABLE |
+                        PAGING_FLAG_USER_ACCESSIBLE);
 
-    higher_frame = (struct PageTable *)TranslateToHighHalfMemoryAddress((uint64_t)table_frame);
+    higher_frame = (struct PageTable *) TranslateToHighHalfMemoryAddress(
+        (uint64_t) table_frame);
 
     memset(higher_frame, 0, sizeof(struct PageTable));
 
@@ -35,5 +40,5 @@ void VMM_table_clone()
     printf_("%s\n", "pages used by test: ");
     printf_("%i\n", proc_page_size);
 
-    test_proc = (struct dummy_proc *)frame_request_multiple(proc_page_size);
+    test_proc = (struct dummy_proc *) frame_request_multiple(proc_page_size);
 }

@@ -1,56 +1,59 @@
 #include "include/cpuUtils.h"
+#include "include/KernelUtils.h"
+#include "include/cpu.h"
 #include "include/global_defs.h"
 #include "include/kernel.h"
+#include "include/liballoc.h"
 #include "include/limine.h"
 #include "include/memUtils.h"
 #include "include/paging/frameallocator.h"
 #include "include/paging/paging.h"
+#include "include/panic.h"
 #include "include/printf.h"
 #include "include/proc.h"
 #include "include/registers.h"
 #include "include/sched.h"
-#include "include/cpu.h"
-#include "include/liballoc.h"
-#include "include/panic.h"
-#include "include/KernelUtils.h"
 #include <cpuid.h>
 #include <stdbool.h>
 #include <stddef.h>
 
-extern int cpuid_check_sse();
-extern int cpuid_check_xsave();
-extern int cpuid_check_pcid();
-extern int cpuid_check_pae();
-extern int cpuid_check_mce();
-extern int cpuid_check_apic();
-extern int cpuid_check_mca();
-extern int cpuid_check_acpi();
-extern int cpuid_check_ds();
-extern int cpuid_check_tm();
-extern int cpuid_check_sep();
-extern int cpuid_check_htt();
-extern int cpuid_check_rdseed();
-extern int cpuid_check_rdrand();
-extern int cpuid_check_fpu();
-extern int cpuid_check_oxsave();
-extern int cpuid_check_avx();
-extern int cpuid_check_fxsr();
+extern int      cpuid_check_sse();
+extern int      cpuid_check_xsave();
+extern int      cpuid_check_pcid();
+extern int      cpuid_check_pae();
+extern int      cpuid_check_mce();
+extern int      cpuid_check_apic();
+extern int      cpuid_check_mca();
+extern int      cpuid_check_acpi();
+extern int      cpuid_check_ds();
+extern int      cpuid_check_tm();
+extern int      cpuid_check_sep();
+extern int      cpuid_check_htt();
+extern int      cpuid_check_rdseed();
+extern int      cpuid_check_rdrand();
+extern int      cpuid_check_fpu();
+extern int      cpuid_check_oxsave();
+extern int      cpuid_check_avx();
+extern int      cpuid_check_fxsr();
 extern uint32_t get_apic_base_address();
-extern int test_em();
-extern void cfg_XCR0();
+extern int      test_em();
+extern void     cfg_XCR0();
 extern uint64_t rdrand_asm();
 extern uint64_t rdseed_asm();
 extern uint64_t read_XCR0();
 extern uint64_t get_xsave_size();
-extern void halt();
+extern void     halt();
 
 size_t xsave_bank ALIGN_16BIT;
 
 bool has_ACPI;
 
 /**
- * @brief Generate a 64 - bit pseudo - random number using RDSEED or RDRAND. This is used to generate pseudorandom numbers that are guaranteed to be in the range 0 to 2^64 - 1.
- * @return The pseudo - random number as a 64 - bit integer with at least 64 bits of entropy.
+ * @brief Generate a 64 - bit pseudo - random number using RDSEED or RDRAND.
+ * This is used to generate pseudorandom numbers that are guaranteed to be in
+ * the range 0 to 2^64 - 1.
+ * @return The pseudo - random number as a 64 - bit integer with at least 64
+ * bits of entropy.
  */
 uint64_t rand_asm()
 {
@@ -59,7 +62,8 @@ uint64_t rand_asm()
     uint64_t seed = cpuid_check_rdseed();
     uint64_t rand = cpuid_check_rdrand();
 
-    // This function checks the cpuid_check_rdseed and cpuid_check_rdrand parameters.
+    // This function checks the cpuid_check_rdseed and cpuid_check_rdrand
+    // parameters.
     if (seed == 1)
     {
         result = rdseed_asm();
@@ -71,7 +75,6 @@ uint64_t rand_asm()
     }
     else
     {
-
         panic("NO HARDWARE RNG CAPABILITES DETECTED!");
     }
 
@@ -79,11 +82,11 @@ uint64_t rand_asm()
 }
 
 /**
- * @brief CPUID Readout As Follows ( read CR0 CR4 ) Check all CPUIDs and print which are supported.
+ * @brief CPUID Readout As Follows ( read CR0 CR4 ) Check all CPUIDs and print
+ * which are supported.
  */
 void cpuid_readout()
 {
-
     printf_("%s\n", "-----------------------------");
     printf_("%s\n", "CPUID Readout As Follows");
     printf_("%s\n", "-----------------------------");
@@ -135,7 +138,6 @@ int get_model(void)
  */
 void fpu_init()
 {
-
     printf_("%s\n", "INFO: Enabling the x87 FPU");
 
     writeCR0(readCRO() | 1 << 1);
@@ -154,15 +156,15 @@ void fpu_init()
 }
 
 /**
- * @brief Allocate space for xsave. This is called at boot time to set up the bank of memory that will be used
+ * @brief Allocate space for xsave. This is called at boot time to set up the
+ * bank of memory that will be used
  */
 void alloc_xsave()
 {
-
-    xsave_bank = (size_t)get_xsave_size();
+    xsave_bank = (size_t) get_xsave_size();
 
     printf_("%s", "INFO: Allocating a XSAVE Bank with a size of: ");
-    printf_("0x%llx\n", (size_t)get_xsave_size());
+    printf_("0x%llx\n", (size_t) get_xsave_size());
 
     malloc(xsave_bank);
 }
@@ -172,13 +174,11 @@ void alloc_xsave()
  */
 void check_fpu()
 {
-
     int found = cpuid_check_fpu();
 
     // if found 1 print FPU Yes Yes
     if (found == 1)
     {
-
         printf_("%s\n", "FPU: Yes");
 
         if (k_mode.fpu_allowed == 1)
@@ -188,7 +188,6 @@ void check_fpu()
     }
     else
     {
-
         printf_("%s\n", "FPU: No");
     }
 }
@@ -198,18 +197,15 @@ void check_fpu()
  */
 void check_fxsr()
 {
-
     int found = cpuid_check_fxsr();
 
     // Prints the FXSR Yes No.
     if (found == 1)
     {
-
         printf_("%s\n", "FXSR: Yes");
     }
     else
     {
-
         printf_("%s\n", "FXSR: No");
     }
 }
@@ -220,7 +216,6 @@ void check_fxsr()
  */
 void no_sse()
 {
-
     printf_("%s\n", "SSE Extensions Unavailable.");
     printf_("%s\n", "Floating Point Math will be offline.");
 }
@@ -231,27 +226,26 @@ void no_sse()
  */
 void no_xsave()
 {
-
     printf_("%s\n", "XSAVE Extensions Unavailable.");
     printf_("%s\n", "Floating Point Math will be offline.");
 }
 
 /**
- * @brief \ brief Disable OXSAVE extensions and print warning to stdout. \ ingroup guile_ox
+ * @brief \ brief Disable OXSAVE extensions and print warning to stdout.
+ * \ ingroup guile_ox
  */
 void no_oxsave()
 {
-
     printf_("%s\n", "OXSAVE Extensions Unavailable.");
     printf_("%s\n", "Floating Point Math will be offline.");
 }
 
 /**
- * @brief \ brief Print message to indicate AVX extensions are no longer available. \ return void \ par Purpose
+ * @brief \ brief Print message to indicate AVX extensions are no longer
+ * available. \ return void \ par Purpose
  */
 void no_avx()
 {
-
     printf_("%s\n", "AVX Extensions Unavailable.");
     printf_("%s\n", "Floating Point Math will be offline.");
 }
@@ -261,39 +255,34 @@ void no_avx()
  */
 void check_rdseed()
 {
-
     int found = cpuid_check_rdseed();
 
     // Prints the RDSEED Yes No.
     if (found == 1)
     {
-
         printf_("%s\n", "RDSEED: Yes");
     }
     else
     {
-
         printf_("%s\n", "RDSEED: No");
     }
 }
 
 /**
- * @brief Check if RDRAND is available on the CPU and display if it is. This is called from cpuid_get_cpus
+ * @brief Check if RDRAND is available on the CPU and display if it is. This is
+ * called from cpuid_get_cpus
  */
 void check_rdrand()
 {
-
     int found = cpuid_check_rdrand();
 
     // Prints the RDRAND Yes No
     if (found == 1)
     {
-
         printf_("%s\n", "RDRAND: Yes");
     }
     else
     {
-
         printf_("%s\n", "RDRAND: No");
     }
 }
@@ -304,22 +293,21 @@ void check_rdrand()
  */
 void check_sep()
 {
-
     int found = cpuid_check_sep();
 
     // Prints the sysenter flag.
     if (found == 1)
     {
-
         sysenter = true;
         printf_("%s\n", "SEP (SYSENTER/EXIT): Yes");
     }
     else
     {
-
         sysenter = false;
         printf_("%s\n", "SEP (SYSENTER/EXIT): No");
-        printf_("%s\n", "You Realized How Fucked You Are Without This? Halting Get A Better PC.");
+        printf_("%s\n",
+                "You Realized How Fucked You Are Without This? Halting Get A "
+                "Better PC.");
         halt();
     }
 }
@@ -329,12 +317,10 @@ void check_sep()
  */
 void check_sse()
 {
-
     int found = cpuid_check_sse();
 
     if (found == 1)
     {
-
         printf_("%s\n", "SSE Extensions Available.");
 
         printf_("%s\n", "Enabling....");
@@ -352,27 +338,26 @@ void check_sse()
 }
 
 /**
- * @brief cpuid_check_oxsave Check to see if OXSAVE is available on the CPU and print a message if
+ * @brief cpuid_check_oxsave Check to see if OXSAVE is available on the CPU and
+ * print a message if
  */
 void check_oxsave()
 {
-
     int found = cpuid_check_oxsave();
 
     // Prints the extension available.
     if (found == 1)
     {
-
         printf_("%s\n", "OXSAVE Extensions Available.");
     }
 }
 
 /**
- * @brief Check if AVX is available on the CPU and print a message if it is not. This is called from cpuid_get_avx
+ * @brief Check if AVX is available on the CPU and print a message if it is not.
+ * This is called from cpuid_get_avx
  */
 void check_avx()
 {
-
     int found = cpuid_check_avx();
 
     // Prints the available AVX Extensions Available.
@@ -388,13 +373,12 @@ void check_avx()
  */
 void check_xsave()
 {
-
     int found = cpuid_check_xsave();
 
-    // Prints the XSAVE Extensions Available Enabling and XSAVE Extensions Available.
+    // Prints the XSAVE Extensions Available Enabling and XSAVE Extensions
+    // Available.
     if (found == 1)
     {
-
         printf_("%s\n", "XSAVE Extensions Available.");
 
         printf_("%s\n", "Enabling....");
@@ -413,18 +397,15 @@ void check_xsave()
  */
 void check_pcid()
 {
-
     int found = cpuid_check_pcid();
 
     // Prints PCID Yes No if found 1.
     if (found == 1)
     {
-
         printf_("%s\n", "PCID: Yes");
     }
     else
     {
-
         printf_("%s\n", "PCID: No");
     }
 }
@@ -435,17 +416,14 @@ void check_pcid()
  */
 void check_pae()
 {
-
     int found = cpuid_check_pae();
 
     if (found == 1)
     {
-
         printf_("%s\n", "PAE: Yes");
     }
     else
     {
-
         printf_("%s\n", "PAE: No");
     }
 }
@@ -455,17 +433,14 @@ void check_pae()
  */
 void check_htt()
 {
-
     int found = cpuid_check_htt();
 
     if (found == 1)
     {
-
         printf_("%s\n", "HTT: Yes");
     }
     else
     {
-
         printf_("%s\n", "HTT: No");
     }
 }
@@ -476,17 +451,14 @@ void check_htt()
  */
 void check_mce()
 {
-
     int found = cpuid_check_mce();
 
     if (found == 1)
     {
-
         printf_("%s\n", "MCE: Yes");
     }
     else
     {
-
         printf_("%s\n", "MCE: No");
     }
 }
@@ -497,17 +469,14 @@ void check_mce()
  */
 void check_apic()
 {
-
     int found = cpuid_check_apic();
 
     if (found == 1)
     {
-
         printf_("%s\n", "APIC: Yes");
     }
     else
     {
-
         printf_("%s\n", "APIC: No");
     }
 }
@@ -518,17 +487,14 @@ void check_apic()
  */
 void check_mca()
 {
-
     int found = cpuid_check_mca();
 
     if (found == 1)
     {
-
         printf("%s\n", "MCA: Yes");
     }
     else
     {
-
         printf_("%s\n", "MCA: No");
     }
 }
@@ -539,19 +505,16 @@ void check_mca()
  */
 void check_acpi()
 {
-
     int found = cpuid_check_acpi();
 
     if (found == 1)
     {
-
         has_ACPI = true;
 
         printf_("%s\n", "ACPI: Yes");
     }
     else
     {
-
         has_ACPI = false;
 
         printf_("%s\n", "ACPI: No");
@@ -564,17 +527,14 @@ void check_acpi()
  */
 void check_ds()
 {
-
     int found = cpuid_check_ds();
 
     if (found == 1)
     {
-
         printf_("%s\n", "DS: Yes");
     }
     else
     {
-
         printf_("%s\n", "DS: No");
     }
 }
@@ -585,17 +545,14 @@ void check_ds()
  */
 void check_tm()
 {
-
     int found = cpuid_check_tm();
 
     if (found == 1)
     {
-
         printf_("%s\n", "TM: Yes");
     }
     else
     {
-
         printf_("%s\n", "TM: No");
     }
 }

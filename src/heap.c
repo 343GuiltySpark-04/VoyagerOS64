@@ -1,10 +1,11 @@
 /* Leonard Kevin McGuire Jr (kmcg3413@gmail.com) (www.kmcg3413.net) */
 
-#include <stdint.h>
 #include "include/heap.h"
+#include <stdint.h>
 
 /**
- * @brief Initialize a heap. This is called at the start of a program to initialize the heap.
+ * @brief Initialize a heap. This is called at the start of a program to
+ * initialize the heap.
  * @param * heap
  * @return Returns nothing ; kheapBMInit () does nothing
  */
@@ -21,17 +22,26 @@ void k_heapBMInit(KHEAPBM *heap)
  * @param bsize The size of the block in bytes.
  * @return 0 on success - 1 on failure
  */
-int k_heapBMAddBlock(KHEAPBM *heap, uintptr_t addr, uint64_t size, uint64_t bsize)
+int k_heapBMAddBlock(KHEAPBM  *heap,
+                     uintptr_t addr,
+                     uint64_t  size,
+                     uint64_t  bsize)
 {
     KHEAPBLOCKBM *b;
-    uintptr_t bmsz;
-    uint8_t *bm;
+    uintptr_t     bmsz;
+    uint8_t      *bm;
 
-    b = (KHEAPBLOCKBM *)addr;
+    b    = (KHEAPBLOCKBM *) addr;
     bmsz = k_heapBMGetBMSize(size, bsize);
-    bm = (uint8_t *)(addr + sizeof(KHEAPBLOCKBM));
+    bm   = (uint8_t *) (addr + sizeof(KHEAPBLOCKBM));
     /* important to set isBMInside... (last argument) */
-    return k_heapBMAddBlockEx(heap, addr + sizeof(KHEAPBLOCKBM), size - sizeof(KHEAPBLOCKBM), bsize, b, bm, 1);
+    return k_heapBMAddBlockEx(heap,
+                              addr + sizeof(KHEAPBLOCKBM),
+                              size - sizeof(KHEAPBLOCKBM),
+                              bsize,
+                              b,
+                              bm,
+                              1);
 }
 
 /**
@@ -56,14 +66,20 @@ uintptr_t k_heapBMGetBMSize(uintptr_t size, uint64_t bsize)
  * @param isBMInside If true the block is in the bitmap.
  * @return 0 on success - 1 on failure
  */
-int k_heapBMAddBlockEx(KHEAPBM *heap, uintptr_t addr, uint64_t size, uint64_t bsize, KHEAPBLOCKBM *b, uint8_t *bm, uint8_t isBMInside)
+int k_heapBMAddBlockEx(KHEAPBM      *heap,
+                       uintptr_t     addr,
+                       uint64_t      size,
+                       uint64_t      bsize,
+                       KHEAPBLOCKBM *b,
+                       uint8_t      *bm,
+                       uint8_t       isBMInside)
 {
-    b->size = size;
+    b->size  = size;
     b->bsize = bsize;
-    b->data = addr;
-    b->bm = bm;
+    b->data  = addr;
+    b->bm    = bm;
 
-    b->next = heap->fblock;
+    b->next      = heap->fblock;
     heap->fblock = b;
 
     // Clear the bitmap.
@@ -73,7 +89,8 @@ int k_heapBMAddBlockEx(KHEAPBM *heap, uintptr_t addr, uint64_t size, uint64_t bs
     }
 
     // Calculate the number of blocks needed for the bitmap.
-    uint64_t bcnt = (size / bsize) * bsize < size ? (size / bsize) + 1 : (size / bsize);
+    uint64_t bcnt =
+        (size / bsize) * bsize < size ? (size / bsize) + 1 : (size / bsize);
 
     // If BM is not inside leave this space available.
     if (isBMInside)
@@ -129,12 +146,12 @@ void *k_heapBMAlloc(KHEAPBM *heap, uint64_t size)
 void *k_heapBMAllocBound(KHEAPBM *heap, uint64_t size, uint64_t bound)
 {
     KHEAPBLOCKBM *b;
-    uint8_t *bm;
-    uint64_t bcnt;
-    uint64_t x, y, z;
-    uint64_t bneed;
-    uint8_t nid;
-    uint64_t max;
+    uint8_t      *bm;
+    uint64_t      bcnt;
+    uint64_t      x, y, z;
+    uint64_t      bneed;
+    uint8_t       nid;
+    uint64_t      max;
 
     bound = ~(~0 << bound);
     /* iterate blocks */
@@ -143,9 +160,10 @@ void *k_heapBMAllocBound(KHEAPBM *heap, uint64_t size, uint64_t bound)
         /* check if block has enough room */
         if (b->size - (b->used * b->bsize) >= size)
         {
-            bcnt = b->size / b->bsize;
-            bneed = (size / b->bsize) * b->bsize < size ? size / b->bsize + 1 : size / b->bsize;
-            bm = (uint8_t *)b->bm;
+            bcnt  = b->size / b->bsize;
+            bneed = (size / b->bsize) * b->bsize < size ? size / b->bsize + 1
+                                                        : size / b->bsize;
+            bm    = (uint8_t *) b->bm;
 
             for (x = (b->lfb + 1 >= bcnt ? 0 : b->lfb + 1); x != b->lfb; ++x)
             {
@@ -156,7 +174,8 @@ void *k_heapBMAllocBound(KHEAPBM *heap, uint64_t size, uint64_t bound)
                 }
 
                 /*
-                    this is used to allocate on specified boundaries larger than the block size
+                    this is used to allocate on specified boundaries larger than
+                   the block size
                 */
                 if ((((x * b->bsize) + b->data) & bound) != 0)
                     continue;
@@ -184,7 +203,7 @@ void *k_heapBMAllocBound(KHEAPBM *heap, uint64_t size, uint64_t bound)
 
                         /* count used blocks NOT bytes */
                         b->used += y;
-                        return (void *)((x * b->bsize) + b->data);
+                        return (void *) ((x * b->bsize) + b->data);
                     }
 
                     /* x will be incremented by one ONCE more in our FOR loop */
@@ -208,11 +227,11 @@ void *k_heapBMAllocBound(KHEAPBM *heap, uint64_t size, uint64_t bound)
 void k_heapBMSet(KHEAPBM *heap, uintptr_t ptr, uintptr_t size, uint8_t rval)
 {
     KHEAPBLOCKBM *b;
-    uintptr_t ptroff, endoff;
-    uint64_t bi, x, ei;
-    uint8_t *bm;
-    uint8_t id;
-    uint64_t max;
+    uintptr_t     ptroff, endoff;
+    uint64_t      bi, x, ei;
+    uint8_t      *bm;
+    uint8_t       id;
+    uint64_t      max;
 
     for (b = heap->fblock; b; b = b->next)
     {
@@ -241,11 +260,13 @@ void k_heapBMSet(KHEAPBM *heap, uintptr_t ptr, uintptr_t size, uint8_t rval)
             /* access bitmap pointer in local variable */
             bm = b->bm;
 
-            ptr = ptr + size;
+            ptr    = ptr + size;
             endoff = ptr - b->data;
 
             /* end index inside bitmap */
-            ei = (endoff / b->bsize) * b->bsize < endoff ? (endoff / b->bsize) + 1 : endoff / b->bsize;
+            ei = (endoff / b->bsize) * b->bsize < endoff
+                     ? (endoff / b->bsize) + 1
+                     : endoff / b->bsize;
             ++ei;
 
             /* region could span past end of a block so adjust */
@@ -268,7 +289,8 @@ void k_heapBMSet(KHEAPBM *heap, uintptr_t ptr, uintptr_t size, uint8_t rval)
                 b->used += ei - bi;
             }
 
-            /* do not return as region could span multiple blocks.. so check the rest */
+            /* do not return as region could span multiple blocks.. so check the
+             * rest */
         }
     }
 
@@ -284,18 +306,18 @@ void k_heapBMSet(KHEAPBM *heap, uintptr_t ptr, uintptr_t size, uint8_t rval)
 void k_heapBMFree(KHEAPBM *heap, void *ptr)
 {
     KHEAPBLOCKBM *b;
-    uintptr_t ptroff;
-    uint64_t bi, x;
-    uint8_t *bm;
-    uint8_t id;
-    uint64_t max;
+    uintptr_t     ptroff;
+    uint64_t      bi, x;
+    uint8_t      *bm;
+    uint8_t       id;
+    uint64_t      max;
 
     for (b = heap->fblock; b; b = b->next)
     {
-        if ((uintptr_t)ptr > b->data && (uintptr_t)ptr < b->data + b->size)
+        if ((uintptr_t) ptr > b->data && (uintptr_t) ptr < b->data + b->size)
         {
             /* found block */
-            ptroff = (uintptr_t)ptr - b->data; /* get offset to get block */
+            ptroff = (uintptr_t) ptr - b->data; /* get offset to get block */
             /* block offset in BM */
             bi = ptroff / b->bsize;
             /* .. */

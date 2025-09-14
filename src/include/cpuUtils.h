@@ -2,11 +2,11 @@
 #ifndef _CPU_UTILS_H
 #define _CPU_UTILS_H
 
+#include "registers.h"
 #include "tss.h"
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
-#include "registers.h"
 
 /* Vendor strings from CPUs. */
 #define CPUID_VENDOR_OLDAMD \
@@ -52,7 +52,7 @@ extern size_t xsave_bank;
 
 void alloc_xsave();
 
-int get_model(void);
+int  get_model(void);
 void cpuid_readout();
 
 #endif

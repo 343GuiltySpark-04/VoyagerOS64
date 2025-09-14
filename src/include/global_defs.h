@@ -1,6 +1,6 @@
 #pragma once
-#include <stdint.h>
 #include "printf.h"
+#include <stdint.h>
 
 #define PACKED __attribute__((packed))
 
@@ -36,7 +36,7 @@
         }                                                \
     } while (0)
 
-typedef int32_t mode_t;
-typedef signed long ssize_t;
+typedef int32_t            mode_t;
+typedef signed long        ssize_t;
 typedef unsigned long long lsize_t;
-typedef void *HANDLE;
+typedef void              *HANDLE;

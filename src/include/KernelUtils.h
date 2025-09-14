@@ -1,7 +1,7 @@
 #pragma once
-#include <stdint.h>
-#include "limine.h"
 #include "global_defs.h"
+#include "limine.h"
+#include <stdint.h>
 
 #ifndef _KERNEL_UTILS_H
 #define _KERNEL_UTILS_H
@@ -16,11 +16,12 @@ extern struct PageTable *page_table;
 
 extern uint32_t total_pages;
 
-// struct contains kernel behavior setting switches. their values are set in KernelUtils.c
+// struct contains kernel behavior setting switches. their values are set in
+// KernelUtils.c
 struct PACKED kswitches
 {
-
-    // how many frames back to trace (used as default a differant value can be set in the args)
+    // how many frames back to trace (used as default a differant value can be
+    // set in the args)
     uint8_t stack_trace_size;
 
     // a value of 1 or 0 or 2, 1 enables 0 disables 2 sets to dump.
@@ -32,7 +33,8 @@ struct PACKED kswitches
     // a value of 1 or 0, 1 enables 0 disables.
     uint8_t sched_debug;
 
-    // a value of 1 or 0, 1 enables 0 disables. I suggest running with 256mb of ram to avoid a log from hell.
+    // a value of 1 or 0, 1 enables 0 disables. I suggest running with 256mb of
+    // ram to avoid a log from hell.
     uint8_t addr_debug;
 
     uint8_t hw_rng_support;

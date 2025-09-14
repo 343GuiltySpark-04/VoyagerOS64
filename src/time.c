@@ -1,16 +1,16 @@
-#include "include/io.h"
-#include "include/printf.h"
-#include "include/pic.h"
-#include "include/sched.h"
-#include "include/kernel.h"
 #include "include/time.h"
-#include "include/lock.h"
+#include "include/apic/lapic.h"
+#include "include/idt.h"
+#include "include/io.h"
+#include "include/kernel.h"
+#include "include/lib/vector.h"
 #include "include/liballoc.h"
 #include "include/limine.h"
-#include "include/lib/vector.h"
+#include "include/lock.h"
 #include "include/memUtils.h"
-#include "include/idt.h"
-#include "include/apic/lapic.h"
+#include "include/pic.h"
+#include "include/printf.h"
+#include "include/sched.h"
 #include <stdint.h>
 
 #define CHANNEL_ZERO 0x40
@@ -34,15 +34,10 @@ bool timer_fired;
 struct timespec time_mono = {0, 0};
 struct timespec time_real = {0, 0};
 
-static spinlock_t timers_lock = SPINLOCK_INIT;
+static spinlock_t timers_lock                   = SPINLOCK_INIT;
 static VECTOR_TYPE(struct timer *) armed_timers = VECTOR_INIT;
 
-static volatile struct limine_boot_time_request boot_time_req = {
-
-    .id = LIMINE_BOOT_TIME_REQUEST,
-    .revision = 0
-
-};
+extern volatile struct limine_boot_time_request boot_time_req;
 
 /**
  * @brief Create a new timer.
@@ -51,12 +46,10 @@ static volatile struct limine_boot_time_request boot_time_req = {
  */
 struct timer *timer_new(struct timespec when)
 {
-
     struct timer *timer = ALLOC(struct timer);
 
     if (timer == NULL)
     {
-
         return NULL;
     }
 
@@ -71,7 +64,6 @@ struct timer *timer_new(struct timespec when)
  */
 void timer_arm(struct timer *timer)
 {
-
     spinlock_test_and_acq(&timers_lock);
 
     timer->index = armed_timers.length;
@@ -88,15 +80,16 @@ void timer_arm(struct timer *timer)
  */
 void timer_disarm(struct timer *timer)
 {
-
     spinlock_test_and_acq(&timers_lock);
 
-    if (armed_timers.length == 0 || timer->index == -1 || (size_t)timer->index >= armed_timers.length)
+    if (armed_timers.length == 0 || timer->index == -1 ||
+        (size_t) timer->index >= armed_timers.length)
     {
         goto cleanup;
     }
 
-    armed_timers.data[timer->index] = VECTOR_ITEM(&armed_timers, armed_timers.length - 1);
+    armed_timers.data[timer->index] =
+        VECTOR_ITEM(&armed_timers, armed_timers.length - 1);
     VECTOR_ITEM(&armed_timers, timer->index)->index = timer->index;
     VECTOR_REMOVE(&armed_timers, armed_timers.length - 1);
 
@@ -112,7 +105,6 @@ cleanup:
  */
 void time_init(void)
 {
-
     struct limine_boot_time_response *boot_time_resp = boot_time_req.response;
 
     time_real.tv_sec = boot_time_resp->boot_time;
@@ -122,13 +114,7 @@ void time_init(void)
 
 static const char *weekday[] = {
 
-    "Sun",
-    "Mon",
-    "Tue",
-    "Wen",
-    "Thu",
-    "Fri",
-    "Sat"
+    "Sun", "Mon", "Tue", "Wen", "Thu", "Fri", "Sat"
 
 };
 
@@ -158,7 +144,7 @@ uint16_t pit_get_current_count(void)
     outb(0x43, 0x00);
     uint8_t lo = inb(0x40);
     uint8_t hi = inb(0x40) << 8;
-    return ((uint16_t)hi << 8) | lo;
+    return ((uint16_t) hi << 8) | lo;
 }
 
 /**
@@ -168,8 +154,8 @@ uint16_t pit_get_current_count(void)
 void pit_set_reload_value(uint16_t new_count)
 {
     outb(0x43, 0x34);
-    outb(0x40, (uint8_t)new_count);
-    outb(0x40, (uint8_t)(new_count >> 8));
+    outb(0x40, (uint8_t) new_count);
+    outb(0x40, (uint8_t) (new_count >> 8));
 }
 
 /**
@@ -183,7 +169,7 @@ void pit_set_frequency(uint64_t frequency)
     {
         new_divisor++;
     }
-    pit_set_reload_value((uint16_t)new_divisor);
+    pit_set_reload_value((uint16_t) new_divisor);
 }
 
 /**
@@ -191,11 +177,9 @@ void pit_set_frequency(uint64_t frequency)
  */
 void sys_clock_handler()
 {
-
     struct timespec interval = {
 
-        .tv_sec = 0,
-        .tv_nsec = 1000000000 / PIT_FREQ
+        .tv_sec = 0, .tv_nsec = 1000000000 / PIT_FREQ
 
     };
 
@@ -225,7 +209,6 @@ void sys_clock_handler()
 
     if (timer_fired == false)
     {
-
         timer_fired = true;
     }
     // schedule();
@@ -234,14 +217,13 @@ void sys_clock_handler()
 }
 
 /**
- * @brief Sys clock handler alternative. This is called by the interrupt handler to indicate that the system clock has expired
+ * @brief Sys clock handler alternative. This is called by the interrupt handler
+ * to indicate that the system clock has expired
  */
 void sys_clock_handler_alt()
 {
-
     if (timer_fired == false)
     {
-
         timer_fired = true;
     }
 
@@ -250,7 +232,6 @@ void sys_clock_handler_alt()
 
     if (allow_sched == true)
     {
-
         schedule();
     }
 }
@@ -263,7 +244,6 @@ uint8_t task_timer_count = 0;
  */
 void task_switch_handler()
 {
-
     printf_("%s\n", "Switched!");
 
     task_timer_count = 0;
@@ -283,7 +263,6 @@ void delta_int(uint64_t delta, uint8_t vector)
  */
 void init_PIT()
 {
-
     pit_set_frequency(PIT_FREQ);
 
     pic_unmask_irq(0);
@@ -297,7 +276,6 @@ void init_PIT()
  */
 int get_update_flag()
 {
-
     outb(CMOS_ADDR, 0x0A);
     return (inb(CMOS_DATA) & 0x80);
 }
@@ -309,7 +287,6 @@ int get_update_flag()
  */
 uint8_t get_RTC_register(int reg)
 {
-
     outb(CMOS_ADDR, reg);
     return inb(CMOS_DATA);
 }
@@ -329,17 +306,18 @@ void read_rtc()
     unsigned char last_century;
     unsigned char registerB;
 
-    // Note: This uses the "read registers until you get the same values twice in a row" technique
+    // Note: This uses the "read registers until you get the same values twice
+    // in a row" technique
     //       to avoid getting dodgy/inconsistent values due to RTC updates
 
     while (get_update_flag())
         ; // Make sure an update isn't in progress
     second = get_RTC_register(0x00);
     minute = get_RTC_register(0x02);
-    hour = get_RTC_register(0x04);
-    day = get_RTC_register(0x07);
-    month = get_RTC_register(0x08);
-    year = get_RTC_register(0x09);
+    hour   = get_RTC_register(0x04);
+    day    = get_RTC_register(0x07);
+    month  = get_RTC_register(0x08);
+    year   = get_RTC_register(0x09);
     if (century_register != 0)
     {
         century = get_RTC_register(century_register);
@@ -347,28 +325,29 @@ void read_rtc()
 
     do
     {
-        last_second = second;
-        last_minute = minute;
-        last_hour = hour;
-        last_day = day;
-        last_month = month;
-        last_year = year;
+        last_second  = second;
+        last_minute  = minute;
+        last_hour    = hour;
+        last_day     = day;
+        last_month   = month;
+        last_year    = year;
         last_century = century;
 
         while (get_update_flag())
             ; // Make sure an update isn't in progress
         second = get_RTC_register(0x00);
         minute = get_RTC_register(0x02);
-        hour = get_RTC_register(0x04);
-        day = get_RTC_register(0x07);
-        month = get_RTC_register(0x08);
-        year = get_RTC_register(0x09);
+        hour   = get_RTC_register(0x04);
+        day    = get_RTC_register(0x07);
+        month  = get_RTC_register(0x08);
+        year   = get_RTC_register(0x09);
         if (century_register != 0)
         {
             century = get_RTC_register(century_register);
         }
-    } while ((last_second != second) || (last_minute != minute) || (last_hour != hour) ||
-             (last_day != day) || (last_month != month) || (last_year != year) ||
+    } while ((last_second != second) || (last_minute != minute) ||
+             (last_hour != hour) || (last_day != day) ||
+             (last_month != month) || (last_year != year) ||
              (last_century != century));
 
     registerB = get_RTC_register(0x0B);
@@ -379,10 +358,10 @@ void read_rtc()
     {
         second = (second & 0x0F) + ((second / 16) * 10);
         minute = (minute & 0x0F) + ((minute / 16) * 10);
-        hour = ((hour & 0x0F) + (((hour & 0x70) / 16) * 10)) | (hour & 0x80);
-        day = (day & 0x0F) + ((day / 16) * 10);
-        month = (month & 0x0F) + ((month / 16) * 10);
-        year = (year & 0x0F) + ((year / 16) * 10);
+        hour   = ((hour & 0x0F) + (((hour & 0x70) / 16) * 10)) | (hour & 0x80);
+        day    = (day & 0x0F) + ((day / 16) * 10);
+        month  = (month & 0x0F) + ((month / 16) * 10);
+        year   = (year & 0x0F) + ((year / 16) * 10);
         if (century_register != 0)
         {
             century = (century & 0x0F) + ((century / 16) * 10);
@@ -416,7 +395,6 @@ void read_rtc()
  */
 void print_date()
 {
-
     // TODO: Work out the kinks
 
     read_rtc();
@@ -458,7 +436,6 @@ int dayofweek(y, m, d)
  */
 void print_sys_time()
 {
-
     printf_("%s", "Elapsed system time is: ");
     printf_("%i", system_timer_ms);
     printf_("%s", ".");
@@ -472,7 +449,6 @@ void print_sys_time()
  */
 void print_load_time()
 {
-
     printf_("%s\n", "Kernel Loaded");
 
     printf_("%s", "Loadtime roughly: ");

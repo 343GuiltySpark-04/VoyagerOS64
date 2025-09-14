@@ -94,6 +94,14 @@ SECTIONS
     data_start_addr   = __data_start;
     data_end_addr     = __data_end;
 
+        /* -------- LIMINE REQUESTS -------- */
+    . = ALIGN(8);
+    .requests : ALIGN(8)
+    {
+        KEEP(*(.requests))
+    }
+
+
     /DISCARD/ :
     {
         *(.comment)

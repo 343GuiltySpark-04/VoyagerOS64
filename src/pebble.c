@@ -24,13 +24,13 @@
 
 #include <stddef.h>
 
-#include "include/string.h"
-#include "include/lock.h"
 #include "include/global_defs.h"
+#include "include/lock.h"
+#include "include/string.h"
 
 #include "include/memUtils.h"
-#include "include/pebble.h"
 #include "include/paging/frameallocator.h"
+#include "include/pebble.h"
 #include "include/printf.h"
 
 #define MODNAME "malloc.cpp"
@@ -41,7 +41,6 @@ static spinlock_t pebble_lock_t = SPINLOCK_INIT;
 //  with a single Pebble in it.  The pebble will be free.
 HANDLE pmalloc_init(size_t size)
 {
-
     struct S_MEMORY_BUCKET *bucket = create_bucket(size);
 
     return bucket;
@@ -51,7 +50,6 @@ HANDLE pmalloc_init(size_t size)
 //  a Bucket for this block, with one (free) Pebble.
 struct S_MEMORY_BUCKET *create_bucket(size_t size)
 {
-
     // do we allocate a minimum?
 #ifdef ALLOC_MIN
     if (size < ALLOC_MIN)
@@ -61,31 +59,36 @@ struct S_MEMORY_BUCKET *create_bucket(size_t size)
     // size must be a even number of pages
     size = (size + (PAGE_SIZE - 1)) & ~(PAGE_SIZE - 1);
 
-    struct S_MEMORY_BUCKET *bucket = (struct S_MEMORY_BUCKET *)mmap(size / PAGE_SIZE, MALLOC_FLAGS_VIRTUAL);
+    struct S_MEMORY_BUCKET *bucket =
+        (struct S_MEMORY_BUCKET *) mmap(size / PAGE_SIZE, MALLOC_FLAGS_VIRTUAL);
     if (bucket != NULL)
     {
-        bucket->magic = MALLOC_MAGIC_BUCKET;
-        bucket->lflags = BUCKET_FLAG_FIRST;
-        bucket->size = size / PAGE_SIZE; // count of pages used
-        bucket->largest = size - sizeof(struct S_MEMORY_BUCKET) - sizeof(struct S_MEMORY_PEBBLE);
+        bucket->magic   = MALLOC_MAGIC_BUCKET;
+        bucket->lflags  = BUCKET_FLAG_FIRST;
+        bucket->size    = size / PAGE_SIZE; // count of pages used
+        bucket->largest = size - sizeof(struct S_MEMORY_BUCKET) -
+                          sizeof(struct S_MEMORY_PEBBLE);
 
-        bucket->prev = NULL; // these will be assigned by the insert_bucket() call
+        bucket->prev =
+            NULL; // these will be assigned by the insert_bucket() call
         bucket->next = NULL;
 
-        struct S_MEMORY_PEBBLE *first = (struct S_MEMORY_PEBBLE *)((uint8_t *)bucket + sizeof(struct S_MEMORY_BUCKET));
+        struct S_MEMORY_PEBBLE *first =
+            (struct S_MEMORY_PEBBLE *) ((uint8_t *) bucket +
+                                        sizeof(struct S_MEMORY_BUCKET));
         bucket->first = first;
 
-        first->magic = MALLOC_MAGIC_PEBBLE;
-        first->sflags = MALLOC_FLAGS_VIRTUAL;
-        first->lflags = PEBBLE_FLAG_FREE;
+        first->magic   = MALLOC_MAGIC_PEBBLE;
+        first->sflags  = MALLOC_FLAGS_VIRTUAL;
+        first->lflags  = PEBBLE_FLAG_FREE;
         first->padding = 0;
-        first->size = bucket->largest;
+        first->size    = bucket->largest;
 #ifdef MEM_USE_DEBUGNAME
         memset(first->name, 0, MAX_DEBUGNAME);
 #endif
         first->parent = bucket;
-        first->prev = NULL;
-        first->next = NULL;
+        first->prev   = NULL;
+        first->next   = NULL;
     }
 
     return bucket;
@@ -94,7 +97,7 @@ struct S_MEMORY_BUCKET *create_bucket(size_t size)
 // insert a bucket at destination
 void insert_bucket(struct S_MEMORY_BUCKET *bucket, void *destination)
 {
-    struct S_MEMORY_BUCKET *dest = (struct S_MEMORY_BUCKET *)destination;
+    struct S_MEMORY_BUCKET *dest = (struct S_MEMORY_BUCKET *) destination;
 
     if (bucket && dest)
         UPDATE_NODE(bucket, dest);
@@ -103,7 +106,6 @@ void insert_bucket(struct S_MEMORY_BUCKET *bucket, void *destination)
 // remove a bucket
 void remove_bucket(struct S_MEMORY_BUCKET *bucket)
 {
-
     // don't remove the initial bucket
     if (bucket && (bucket != kernel_heap))
     {
@@ -118,14 +120,14 @@ void remove_bucket(struct S_MEMORY_BUCKET *bucket)
 // run through the bucket and get the (possibly) new largest size
 size_t bucket_update_largest(struct S_MEMORY_BUCKET *bucket)
 {
-    struct S_MEMORY_PEBBLE *p = bucket->first;
-    size_t ret = 0;
+    struct S_MEMORY_PEBBLE *p   = bucket->first;
+    size_t                  ret = 0;
 
     // check if the pointer is not NULL before accessing its members
     while (p != NULL && p->size > ret)
     {
         ret = p->size;
-        p = p->next;
+        p   = p->next;
     }
 
     // update the value
@@ -137,11 +139,12 @@ size_t bucket_update_largest(struct S_MEMORY_BUCKET *bucket)
 // this takes an already created pebble and tries to place it in a bucket
 // it is assumed that the caller has already checked that this bucket
 //  isn't full and can hold the pebble, though we check anyway.
-struct S_MEMORY_PEBBLE *place_pebble(struct S_MEMORY_BUCKET *bucket, struct S_MEMORY_PEBBLE *pebble)
+struct S_MEMORY_PEBBLE *place_pebble(struct S_MEMORY_BUCKET *bucket,
+                                     struct S_MEMORY_PEBBLE *pebble)
 {
-    struct S_MEMORY_PEBBLE *start = bucket->first;
-    struct S_MEMORY_PEBBLE *best = NULL;
-    size_t best_size = -1;
+    struct S_MEMORY_PEBBLE *start     = bucket->first;
+    struct S_MEMORY_PEBBLE *best      = NULL;
+    size_t                  best_size = -1;
 
     if (bucket->lflags & BUCKET_FLAG_BEST)
     {
@@ -156,7 +159,7 @@ struct S_MEMORY_PEBBLE *place_pebble(struct S_MEMORY_BUCKET *bucket, struct S_ME
             {
                 if (start->size < best_size)
                 {
-                    best = start;
+                    best      = start;
                     best_size = start->size;
                 }
             }
@@ -202,20 +205,25 @@ struct S_MEMORY_PEBBLE *place_pebble(struct S_MEMORY_BUCKET *bucket, struct S_ME
 
 // if the current pebble is large enough, will split a pebble into two
 // else it returns NULL
-struct S_MEMORY_PEBBLE *split_pebble(struct S_MEMORY_PEBBLE *pebble, size_t size)
+struct S_MEMORY_PEBBLE *split_pebble(struct S_MEMORY_PEBBLE *pebble,
+                                     size_t                  size)
 {
     struct S_MEMORY_PEBBLE *new_pebble = NULL;
-    size_t new_size;
+    size_t                  new_size;
 
     if (SPLIT_PEBBLE(pebble->size, size))
     {
         new_size = (size + (PEBBLE_MIN_ALIGN - 1)) & ~(PEBBLE_MIN_ALIGN - 1);
-        new_pebble = (struct S_MEMORY_PEBBLE *)((uint8_t *)pebble + sizeof(struct S_MEMORY_PEBBLE) + new_size);
+        new_pebble =
+            (struct S_MEMORY_PEBBLE *) ((uint8_t *) pebble +
+                                        sizeof(struct S_MEMORY_PEBBLE) +
+                                        new_size);
         memcpy(new_pebble, pebble, sizeof(struct S_MEMORY_PEBBLE));
-        new_pebble->size = pebble->size - new_size - sizeof(struct S_MEMORY_PEBBLE);
+        new_pebble->size =
+            pebble->size - new_size - sizeof(struct S_MEMORY_PEBBLE);
         new_pebble->prev = pebble;
-        pebble->size = new_size;
-        pebble->next = new_pebble;
+        pebble->size     = new_size;
+        pebble->next     = new_pebble;
     }
 
     return new_pebble;
@@ -229,7 +237,9 @@ struct S_MEMORY_PEBBLE *absorb_next(struct S_MEMORY_PEBBLE *pebble)
     {
         if (PEBBLE_IS_FREE(pebble) && PEBBLE_IS_FREE(pebble->next))
         {
-            if (pebble->parent->first == pebble->next) // don't "delete" the Bucket->first pebble before we update it
+            if (pebble->parent->first ==
+                pebble->next) // don't "delete" the Bucket->first pebble before
+                              // we update it
                 pebble->parent->first = pebble;
             pebble->size += pebble->next->size + sizeof(struct S_MEMORY_PEBBLE);
             pebble->next = pebble->next->next;
@@ -249,7 +259,9 @@ struct S_MEMORY_PEBBLE *melt_prev(struct S_MEMORY_PEBBLE *pebble)
     {
         if (PEBBLE_IS_FREE(pebble) && PEBBLE_IS_FREE(pebble->prev))
         {
-            if (pebble->parent->first == pebble) // don't "delete" the Bucket->first pebble before we update it
+            if (pebble->parent->first ==
+                pebble) // don't "delete" the Bucket->first pebble before we
+                        // update it
                 pebble->parent->first = pebble->prev;
             pebble->prev->size += pebble->size + sizeof(struct S_MEMORY_PEBBLE);
             pebble->prev->next = pebble->next;
@@ -264,7 +276,8 @@ struct S_MEMORY_PEBBLE *melt_prev(struct S_MEMORY_PEBBLE *pebble)
 
 // shrink the pebble from the current size to a new smaller size
 //  if the size is now small enough to split the pebble, we do it
-struct S_MEMORY_PEBBLE *shrink_pebble(struct S_MEMORY_PEBBLE *pebble, size_t size)
+struct S_MEMORY_PEBBLE *shrink_pebble(struct S_MEMORY_PEBBLE *pebble,
+                                      size_t                  size)
 {
     struct S_MEMORY_PEBBLE *ret = NULL;
 
@@ -280,9 +293,9 @@ struct S_MEMORY_PEBBLE *shrink_pebble(struct S_MEMORY_PEBBLE *pebble, size_t siz
 #ifdef MALLOC_DEBUG
 void pmalloc_dump(HANDLE bucket)
 {
-    struct S_MEMORY_BUCKET *start = (struct S_MEMORY_BUCKET *)bucket;
+    struct S_MEMORY_BUCKET *start = (struct S_MEMORY_BUCKET *) bucket;
     struct S_MEMORY_PEBBLE *pebble, *prev;
-    int i, j;
+    int                     i, j;
 
     printf("\n\n");
     i = 0;
@@ -299,8 +312,8 @@ void pmalloc_dump(HANDLE bucket)
         printf("   next bucket: %'p\n", start->next);
         printf("  first pebble: %'p\n", start->first);
 
-        j = 0;
-        prev = NULL;
+        j      = 0;
+        prev   = NULL;
         pebble = start->first;
         while (pebble)
         {
@@ -315,11 +328,15 @@ void pmalloc_dump(HANDLE bucket)
 #ifdef MEM_USE_DEBUGNAME
             printf("            name: %s\n", pebble->name);
 #endif
-            printf("          parent: 0x%'p  (%s)\n", pebble->parent, (pebble->parent == start) ? "good" : "error");
-            printf("        previous: 0x%'p  (%s)\n", pebble->prev, (pebble->prev == prev) ? "good" : "error");
+            printf("          parent: 0x%'p  (%s)\n",
+                   pebble->parent,
+                   (pebble->parent == start) ? "good" : "error");
+            printf("        previous: 0x%'p  (%s)\n",
+                   pebble->prev,
+                   (pebble->prev == prev) ? "good" : "error");
             printf("            next: 0x%'p\n", pebble->next);
             j++;
-            prev = pebble;
+            prev   = pebble;
             pebble = pebble->next;
         }
 
@@ -338,18 +355,18 @@ void *pkmalloc(size_t size, uint64_t alignment, uint32_t flags, char *name)
         size = PEBBLE_MIN_SIZE;
 
     struct S_MEMORY_PEBBLE pebble;
-    pebble.magic = MALLOC_MAGIC_PEBBLE;
-    pebble.sflags = flags;
-    pebble.lflags = PEBBLE_FLAG_IN_USE;
+    pebble.magic   = MALLOC_MAGIC_PEBBLE;
+    pebble.sflags  = flags;
+    pebble.lflags  = PEBBLE_FLAG_IN_USE;
     pebble.padding = 0;
-    pebble.size = (size + (PEBBLE_MIN_ALIGN - 1)) & ~(PEBBLE_MIN_ALIGN - 1);
+    pebble.size    = (size + (PEBBLE_MIN_ALIGN - 1)) & ~(PEBBLE_MIN_ALIGN - 1);
 #ifdef MEM_USE_DEBUGNAME
     strncpy(pebble.name, name, MAX_DEBUGNAME);
 #endif
 
     spinlock_acquire(&pebble_lock_t);
 
-    struct S_MEMORY_BUCKET *bucket = (struct S_MEMORY_BUCKET *)kernel_heap;
+    struct S_MEMORY_BUCKET *bucket = (struct S_MEMORY_BUCKET *) kernel_heap;
 
     while (bucket != NULL)
     {
@@ -358,25 +375,27 @@ void *pkmalloc(size_t size, uint64_t alignment, uint32_t flags, char *name)
             ret = place_pebble(bucket, &pebble);
             bucket_update_largest(bucket);
             if (ret != NULL)
-                ret = (uint8_t *)ret + sizeof(struct S_MEMORY_PEBBLE);
+                ret = (uint8_t *) ret + sizeof(struct S_MEMORY_PEBBLE);
             break;
         }
         bucket = bucket->next;
     }
 
-    // if ret == NULL, we didn't find a bucket large enough, or with enough empty space.
+    // if ret == NULL, we didn't find a bucket large enough, or with enough
+    // empty space.
     //  so allocate another bucket
     if (ret == NULL)
     {
-        size_t new_size = pebble.size + (sizeof(struct S_MEMORY_BUCKET) + sizeof(struct S_MEMORY_PEBBLE));
-        bucket = create_bucket(new_size);
+        size_t new_size = pebble.size + (sizeof(struct S_MEMORY_BUCKET) +
+                                         sizeof(struct S_MEMORY_PEBBLE));
+        bucket          = create_bucket(new_size);
         if (bucket)
         {
             insert_bucket(bucket, kernel_heap);
             ret = place_pebble(bucket, &pebble);
             bucket_update_largest(bucket);
             if (ret != NULL)
-                ret = (uint8_t *)ret + sizeof(struct S_MEMORY_PEBBLE);
+                ret = (uint8_t *) ret + sizeof(struct S_MEMORY_PEBBLE);
         }
     }
 
@@ -392,7 +411,7 @@ void *pkmalloc(size_t size, uint64_t alignment, uint32_t flags, char *name)
 void *prealloc(void *ptr, size_t size)
 {
     struct S_MEMORY_PEBBLE *pebble;
-    void *ret = NULL;
+    void                   *ret = NULL;
 
     if (size == 0)
     {
@@ -405,7 +424,8 @@ void *prealloc(void *ptr, size_t size)
 
     spinlock_acquire(&pebble_lock_t);
 
-    pebble = (struct S_MEMORY_PEBBLE *)((uint8_t *)ptr - sizeof(struct S_MEMORY_PEBBLE));
+    pebble = (struct S_MEMORY_PEBBLE *) ((uint8_t *) ptr -
+                                         sizeof(struct S_MEMORY_PEBBLE));
 
     spinlock_release(&pebble_lock_t);
 
@@ -417,7 +437,8 @@ void *prealloc(void *ptr, size_t size)
             ret = NULL;
         else
         {
-            // the new requested size is larger than the current pebble, so allocate a new space
+            // the new requested size is larger than the current pebble, so
+            // allocate a new space
             ret = pkmalloc(size, 0 /* not used */, pebble->sflags, MODNAME);
             if (ret)
                 memcpy(ret, ptr, size);
@@ -428,17 +449,19 @@ void *prealloc(void *ptr, size_t size)
     return ret;
 }
 
-// free a pebble, possibly merging it with a neighbor(s), and possible removing this
+// free a pebble, possibly merging it with a neighbor(s), and possible removing
+// this
 //  now empty Bucket.
 void pmfree(void *ptr)
 {
-
     if (ptr == NULL)
         return;
 
     spinlock_acquire(&pebble_lock_t);
 
-    struct S_MEMORY_PEBBLE *pebble = (struct S_MEMORY_PEBBLE *)((uint8_t *)ptr - sizeof(struct S_MEMORY_PEBBLE));
+    struct S_MEMORY_PEBBLE *pebble =
+        (struct S_MEMORY_PEBBLE *) ((uint8_t *) ptr -
+                                    sizeof(struct S_MEMORY_PEBBLE));
 
     // check that it actually is a pebble
     if (pebble->magic != MALLOC_MAGIC_PEBBLE)
@@ -456,7 +479,8 @@ void pmfree(void *ptr)
 
     // if this empties the bucket, shall we remove the bucket?
     struct S_MEMORY_BUCKET *bucket = pebble->parent;
-    if (PEBBLE_IS_FREE(bucket->first) && (bucket->first->prev == NULL) && (bucket->first->next == NULL))
+    if (PEBBLE_IS_FREE(bucket->first) && (bucket->first->prev == NULL) &&
+        (bucket->first->next == NULL))
         remove_bucket(bucket);
     else
         bucket_update_largest(bucket);

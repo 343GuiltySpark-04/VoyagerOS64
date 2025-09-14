@@ -1,19 +1,19 @@
-#include <stdint.h>
-#include "include/printf.h"
-#include "include/liballoc.h"
 #include "include/sched.h"
-#include "include/lock.h"
-#include "include/gdt.h"
-#include "include/pic.h"
-#include "include/string.h"
-#include "include/idt.h"
-#include <stdbool.h>
-#include "include/stack_trace.h"
 #include "include/KernelUtils.h"
+#include "include/gdt.h"
+#include "include/idt.h"
 #include "include/kernel.h"
+#include "include/liballoc.h"
+#include "include/lock.h"
 #include "include/memUtils.h"
 #include "include/panic.h"
+#include "include/pic.h"
+#include "include/printf.h"
 #include "include/serial.h"
+#include "include/stack_trace.h"
+#include "include/string.h"
+#include <stdbool.h>
+#include <stdint.h>
 
 #define SAVE_STATE()                       \
     asm volatile("pushq %rax");            \
@@ -37,9 +37,7 @@
     asm volatile("movq %cr0, %rax");       \
     asm volatile("orq $0x80000000, %rax"); \
     asm volatile("movq %rax, %cr0");       \
-    asm volatile("ltr %ax"                 \
-                 :                         \
-                 : "a"(TSS_SELECTOR));
+    asm volatile("ltr %ax" : : "a"(TSS_SELECTOR));
 
 #define STACK_SIZE 4096
 
@@ -64,7 +62,7 @@ extern halt();
 static char sched_buff[64];
 
 static int next_pid = 1;
-process_t *current = 0;
+process_t *current  = 0;
 
 bool allow_sched = false;
 
@@ -77,26 +75,25 @@ void init_scheduler(void)
 
 process_t *create_process(void (*entry)(void))
 {
-
     // spinlock_acquire(&schedlock_t);
 
     process_t *p = ALLOC(sizeof(process_t));
-    p->pid = next_pid++;
-    p->state = PROC_READY;
+    p->pid       = next_pid++;
+    p->state     = PROC_READY;
 
     uint64_t *stack = ALLOC(STACK_SIZE);
-    uint64_t *sp = (uint64_t *)((uint8_t *)stack + STACK_SIZE);
+    uint64_t *sp    = (uint64_t *) ((uint8_t *) stack + STACK_SIZE);
 
     // push fake callee-saved registers (switch frame layout)
-    *(--sp) = (uint64_t)0; // r15
-    *(--sp) = (uint64_t)0; // r14
-    *(--sp) = (uint64_t)0; // r13
-    *(--sp) = (uint64_t)0; // r12
-    *(--sp) = (uint64_t)0; // rbx
-    *(--sp) = (uint64_t)0; // rbp
+    *(--sp) = (uint64_t) 0; // r15
+    *(--sp) = (uint64_t) 0; // r14
+    *(--sp) = (uint64_t) 0; // r13
+    *(--sp) = (uint64_t) 0; // r12
+    *(--sp) = (uint64_t) 0; // rbx
+    *(--sp) = (uint64_t) 0; // rbp
 
     // return address for ret in switch_to
-    *(--sp) = (uint64_t)entry;
+    *(--sp) = (uint64_t) entry;
 
     p->rsp = sp;
 
@@ -108,7 +105,7 @@ process_t *create_process(void (*entry)(void))
     }
     else
     {
-        p->next = current->next;
+        p->next       = current->next;
         current->next = p;
     }
 
@@ -119,7 +116,6 @@ process_t *create_process(void (*entry)(void))
 
 void schedule(void)
 {
-
     // spinlock_acquire(&schedlock_t);
 
     printf_("%s", "PID: ");

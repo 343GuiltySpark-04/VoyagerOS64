@@ -1,0 +1,29 @@
+# Copyright (c) 2025 Tristan Adams
+# 
+# This software is released under the MIT License.
+# https://opensource.org/licenses/MIT
+
+# .clang-format
+---
+BasedOnStyle: LLVM   # Start from something strict and ANSI-like
+IndentWidth: 4       # NASA guide: 4 spaces
+UseTab: Never        # Spaces, not tabs
+ColumnLimit: 80      # NASA: wrap around 80 columns
+BreakBeforeBraces: Allman   # NASA: "braces stand alone" style
+AllowShortIfStatementsOnASingleLine: false
+AllowShortLoopsOnASingleLine: false
+AllowShortFunctionsOnASingleLine: false
+SpaceAfterCStyleCast: true  # NASA: space after cast
+SpaceBeforeParens: ControlStatements # NASA: space before ( in if, while
+SpacesInParentheses: false
+SpacesInSquareBrackets: false
+SpaceInEmptyParentheses: false
+PointerAlignment: Right     # NASA: `char *s`, not `char* s`
+AlignConsecutiveAssignments: true
+AlignConsecutiveDeclarations: true
+AlignEscapedNewlines: Left
+AlignTrailingComments: true
+BinPackArguments: false
+BinPackParameters: false
+KeepEmptyLinesAtTheStartOfBlocks: false
+IndentCaseLabels: true

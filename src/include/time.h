@@ -3,10 +3,10 @@
 #ifndef _TIME_H
 #define _TIME_H
 
-#include <stdbool.h>
-#include <stdint.h>
-#include <stddef.h>
 #include "global_defs.h"
+#include <stdbool.h>
+#include <stddef.h>
+#include <stdint.h>
 
 #define PIT_FREQ 750
 #define PIT_DIVIDEND 1193180
@@ -16,13 +16,13 @@ typedef long time_t;
 struct timespec
 {
     time_t tv_sec;
-    long tv_nsec;
+    long   tv_nsec;
 };
 
 struct timer
 {
-    ssize_t index;
-    bool fired;
+    ssize_t         index;
+    bool            fired;
     struct timespec when;
     // struct event event;
 };
@@ -93,14 +93,14 @@ void print_date();
 void print_sys_time();
 
 struct timer *timer_new(struct timespec when);
-void timer_arm(struct timer *timer);
-void timer_disarm(struct timer *timer);
-void print_load_time();
+void          timer_arm(struct timer *timer);
+void          timer_disarm(struct timer *timer);
+void          print_load_time();
 
 uint16_t pit_get_current_count(void);
-void pit_set_reload_value(uint16_t new_count);
-void pit_set_frequency(uint64_t frequency);
-void sys_clock_handler_alt();
-void time_init(void);
+void     pit_set_reload_value(uint16_t new_count);
+void     pit_set_frequency(uint64_t frequency);
+void     sys_clock_handler_alt();
+void     time_init(void);
 
 #endif

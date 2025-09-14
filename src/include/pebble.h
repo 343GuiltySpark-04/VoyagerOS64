@@ -24,14 +24,15 @@
 #ifndef MALLOC_H
 #define MALLOC_H
 
-#include <stdint.h>
 #include <stddef.h>
+#include <stdint.h>
 
 // define this to allow the debug printing stuff
 #define MALLOC_DEBUG
 
 // this is the minimum allocation size
-#define ALLOC_MIN (65536 + sizeof(struct S_MEMORY_BUCKET) + sizeof(struct S_MEMORY_PEBBLE))
+#define ALLOC_MIN \
+    (65536 + sizeof(struct S_MEMORY_BUCKET) + sizeof(struct S_MEMORY_PEBBLE))
 
 // define if we want to add the debug name to the tag
 //#define MEM_USE_DEBUGNAME
@@ -51,61 +52,67 @@
 #define PEBBLE_FLAG_FREE (0 << 0)   // if set, is in use, if clear, free for use
 #define PEBBLE_FLAG_IN_USE (1 << 0) //  ...
 
-#define PEBBLE_MIN_ALIGN 64 // minimum power of 2 to align the next pebble (1 or a power of 2)
-#define PEBBLE_MIN_SIZE 64  // a pebble must be at least this size
+#define PEBBLE_MIN_ALIGN \
+    64 // minimum power of 2 to align the next pebble (1 or a power of 2)
+#define PEBBLE_MIN_SIZE 64 // a pebble must be at least this size
 #if PEBBLE_MIN_SIZE > PEBBLE_MIN_ALIGN
 #error "PEBBLE_MIN_ALIGN must be at least PEBBLE_MIN_SIZE"
 #endif
 
 // macro to see if the free chunk is large enough to split
-//                                 if ceil(current pebble size, 64)              >   new pebble size with a remainder < (sizeof(PEBBLE) + PEBBLE_MIN_SIZE)
-#define SPLIT_PEBBLE(s0, s1) ((((s0) + PEBBLE_MIN_ALIGN - 1) & ~PEBBLE_MIN_SIZE) > ((s1) + sizeof(struct S_MEMORY_PEBBLE) + PEBBLE_MIN_SIZE))
+//                                 if ceil(current pebble size, 64) >   new
+//                                 pebble size with a remainder <
+//                                 (sizeof(PEBBLE) + PEBBLE_MIN_SIZE)
+#define SPLIT_PEBBLE(s0, s1)                              \
+    ((((s0) + PEBBLE_MIN_ALIGN - 1) & ~PEBBLE_MIN_SIZE) > \
+     ((s1) + sizeof(struct S_MEMORY_PEBBLE) + PEBBLE_MIN_SIZE))
 
-#define PEBBLE_IS_FREE(p) (((p)->lflags & PEBBLE_FLAG_IN_USE) == PEBBLE_FLAG_FREE)
+#define PEBBLE_IS_FREE(p) \
+    (((p)->lflags & PEBBLE_FLAG_IN_USE) == PEBBLE_FLAG_FREE)
 
 #pragma pack(push, 1)
 
 struct S_MEMORY_PEBBLE
 {
-  uint32_t magic;   // a pebble in a bucket
-  uint32_t lflags;  // local flags for this pebble
-  uint32_t sflags;  // sent flags for this pebble
-  uint32_t padding; // padding/alignment
-  size_t size;      // count of bytes requested
+    uint32_t magic;   // a pebble in a bucket
+    uint32_t lflags;  // local flags for this pebble
+    uint32_t sflags;  // sent flags for this pebble
+    uint32_t padding; // padding/alignment
+    size_t   size;    // count of bytes requested
 #ifdef MEM_USE_DEBUGNAME
-  char name[MAX_DEBUGNAME + 1];
+    char name[MAX_DEBUGNAME + 1];
 #endif
-  struct S_MEMORY_BUCKET *parent; // parent bucket of this pebble
+    struct S_MEMORY_BUCKET *parent; // parent bucket of this pebble
 
-  // linked list of pebbles
-  struct S_MEMORY_PEBBLE *prev;
-  struct S_MEMORY_PEBBLE *next;
+    // linked list of pebbles
+    struct S_MEMORY_PEBBLE *prev;
+    struct S_MEMORY_PEBBLE *next;
 };
 
 struct S_MEMORY_BUCKET
 {
-  uint32_t magic;  //  a bucket full of pebbles
-  uint32_t lflags; //  local flags for this bucket
-  size_t size;     //  count of 4096 pages used for this bucket
-  size_t largest;  //  largest free block in this bucket
+    uint32_t magic;   //  a bucket full of pebbles
+    uint32_t lflags;  //  local flags for this bucket
+    size_t   size;    //  count of 4096 pages used for this bucket
+    size_t   largest; //  largest free block in this bucket
 
-  // linked list of buckets
-  struct S_MEMORY_BUCKET *prev;
-  struct S_MEMORY_BUCKET *next;
+    // linked list of buckets
+    struct S_MEMORY_BUCKET *prev;
+    struct S_MEMORY_BUCKET *next;
 
-  struct S_MEMORY_PEBBLE *first;
+    struct S_MEMORY_PEBBLE *first;
 };
 
 #pragma pack(pop)
 
-#define UPDATE_NODE(p0, p1)    \
-  {                            \
-    (p0)->next = (p1)->next;   \
-    (p1)->next = (p0);         \
-    (p0)->prev = (p1);         \
-    if ((p0)->next)            \
-      (p0)->next->prev = (p0); \
-  }
+#define UPDATE_NODE(p0, p1)          \
+    {                                \
+        (p0)->next = (p1)->next;     \
+        (p1)->next = (p0);           \
+        (p0)->prev = (p1);           \
+        if ((p0)->next)              \
+            (p0)->next->prev = (p0); \
+    }
 
 #define pmalloc(s, f, n) pkmalloc((s), 1, (f) & ~MALLOC_FLAGS_CLEAR, n)
 #define pcalloc(s, f, n) pkmalloc((s), 1, (f) | MALLOC_FLAGS_CLEAR, n)
@@ -114,8 +121,10 @@ struct S_MEMORY_BUCKET
 
 // local functions
 struct S_MEMORY_BUCKET *create_bucket(size_t size);
-struct S_MEMORY_PEBBLE *place_pebble(struct S_MEMORY_BUCKET *bucket, struct S_MEMORY_PEBBLE *pebble);
-struct S_MEMORY_PEBBLE *split_pebble(struct S_MEMORY_PEBBLE *pebble, size_t size);
+struct S_MEMORY_PEBBLE *place_pebble(struct S_MEMORY_BUCKET *bucket,
+                                     struct S_MEMORY_PEBBLE *pebble);
+struct S_MEMORY_PEBBLE *split_pebble(struct S_MEMORY_PEBBLE *pebble,
+                                     size_t                  size);
 
 // public data/functions
 extern HANDLE kernel_heap;
@@ -127,6 +136,6 @@ void pmalloc_dump(HANDLE bucket);
 
 void *pkmalloc(size_t size, uint64_t alignment, uint32_t flags, char *name);
 void *prealloc(void *ptr, size_t size); // The standard function.
-void pmfree(void *ptr);                 // The standard function.
+void  pmfree(void *ptr);                // The standard function.
 
 #endif // MALLOC_H
