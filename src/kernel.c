@@ -5,7 +5,6 @@
  * https://opensource.org/licenses/MIT
  */
 
-#include "include/kernel.h"
 #include "include/KernelUtils.h"
 #include "include/acpi/acpi.h"
 #include "include/apic/lapic.h"
@@ -16,6 +15,7 @@
 #include "include/heap.h"
 #include "include/idt.h"
 #include "include/io.h"
+#include "include/kernel.h"
 #include "include/liballoc.h"
 #include "include/limine.h"
 #include "include/memUtils.h"
@@ -276,13 +276,13 @@ void _start(void)
 
     asm volatile("int $49");
 
-    pic_mask_irq(0);
-
     // print_memmap();
 
     memory_bringup();
 
     kmalloc_init();
+
+    pic_mask_irq(0);
 
     if (Kaddress_req.response == NULL)
     {

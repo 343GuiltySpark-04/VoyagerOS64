@@ -31,6 +31,7 @@ global float_bank
 global task_switch_int
 global rdseed_asm
 global rdrand_asm
+global breakpoint_gdb
 
 extern no_sse
 extern no_xsave
@@ -48,7 +49,8 @@ rdrand_asm:
     ret
 
 
-
+breakpoint_gdb:
+    int3
 
 float_save:
     xsave [float_bank]

@@ -6,6 +6,7 @@
  */
 
 #pragma once
+#include <stddef.h>
 #include <stdint.h>
 
 #ifdef __cplusplus
@@ -13,10 +14,13 @@ extern "C"
 {
 #endif
 
-    // Build a fresh kernel page table and install it in CR3.
-    // Assumes g_boot_phys_page is set to early_alloc_page() BEFORE calling.
-    // After this, you can run frame_init() and flip to frame_alloc().
+    /* Build a new kernel page table and install it in CR3.
+       Uses early_alloc_page() internally for all page-table pages. */
     void paging_bootstrap(void);
+
+    /* Optional accessors if you want to use them later */
+    uint64_t paging_pml4_phys(void);
+    void    *paging_pml4_virt(void);
 
 #ifdef __cplusplus
 }
