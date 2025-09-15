@@ -14,6 +14,7 @@ global cfg_XCR0
 global test_em
 global read_XCR0
 global get_xsave_size
+global readRIP
 
 
 
@@ -112,4 +113,8 @@ readCR4:
 
 writeCR4:
     mov cr4, rdi
+    ret
+
+readRIP:
+    mov rax, rip
     ret

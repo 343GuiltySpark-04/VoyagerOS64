@@ -41,8 +41,21 @@ static inline void memzero(void *p, size_t n)
 extern uint64_t readCR3();
 extern void     writeCR3(uint64_t arg);
 extern void     breakpoint();
+extern uint64_t readRSP();
+extern uint64_t readRIP();
 
-/* ------------------------------------------------------------------ */
+/* === New helpers: declarations === */
+static bool is_mapped_present_va(uint64_t va, struct page_table *pml4_root);
+static bool is_mapped_present_ptr(const void *va, struct page_table *pml4_root);
+static void clone_upper_half_from_current(struct page_table *new_pml4);
+static void dump_pml4_deltas_uhalf(struct page_table *new_pml4);
+static bool pre_switch_validate(struct page_table *new_pml4,
+                                uint64_t           new_pml4_phys);
+static void install_new_cr3(uint64_t           new_pml4_phys,
+                            struct page_table *new_pml4);
+
+/* ------------------------------------------------------
+------------ */
 /* x86_64 paging bits / helpers                                       */
 /* ------------------------------------------------------------------ */
 #define PTE_P (1ull << 0)   /* Present */
@@ -79,6 +92,17 @@ void *paging_pml4_virt(void)
 {
     return (void *) g_pml4_virt;
 }
+
+// Forward declarations of internal helpers
+static void vaddr_indices(uint64_t va, uint64_t *idx);
+static struct page_table *
+get_or_make_next(struct page_table *cur, uint64_t idx, uint64_t *phys_out);
+static struct page_table *get_or_make_pd(struct page_table *pml4,
+                                         uint64_t           idx0,
+                                         uint64_t           idx1,
+                                         uint64_t          *phys_out);
+static void
+map_4k(struct page_table *pml4, uint64_t va, uint64_t pa, uint64_t flags);
 
 static void map_range_4k(struct page_table *pml4,
                          uint64_t           va,
@@ -321,11 +345,187 @@ static void map_hhdm(struct page_table *pml4)
     }
 }
 
+/* Safe test for VA presence by walking a supplied PML4.
+   Handles 4K, 2M (PD-level PS), and 1G (PDPT-level PS) pages. */
+static bool is_mapped_present_va(uint64_t va, struct page_table *pml4_root)
+{
+    uint64_t idx[4];
+    vaddr_indices(va, idx);
+
+    /* Walk PML4 */
+    uint64_t pml4e = pml4_root->e[idx[0]];
+    if (!(pml4e & PTE_P))
+        return false;
+
+    /* Walk PDPT (via HHDM) */
+    struct page_table *pdpt =
+        (struct page_table *) phys_to_virt(pml4e & ADDR_MASK);
+    uint64_t pdpte = pdpt->e[idx[1]];
+    if (!(pdpte & PTE_P))
+        return false;
+
+    /* 1GiB page? (PS set at PDPT level) */
+    if (pdpte & PTE_PS)
+    {
+        return true;
+    }
+
+    /* Walk PD */
+    struct page_table *pd =
+        (struct page_table *) phys_to_virt(pdpte & ADDR_MASK);
+    uint64_t pde = pd->e[idx[2]];
+    if (!(pde & PTE_P))
+        return false;
+
+    /* 2MiB page? (PS set at PD level) */
+    if (pde & PTE_PS)
+    {
+        return true;
+    }
+
+    /* Walk PT */
+    struct page_table *pt = (struct page_table *) phys_to_virt(pde & ADDR_MASK);
+    uint64_t           pte = pt->e[idx[3]];
+    return (pte & PTE_P) != 0;
+}
+
+static bool is_mapped_present_ptr(const void *va, struct page_table *pml4_root)
+{
+    return is_mapped_present_va((uint64_t) va, pml4_root);
+}
+
+/* ====================== Upper-half cloning (256..511) ======================
+ */
+
+/* Copy PML4 entries 256..511 from CURRENT live table into new_pml4.
+   Do not touch lower-half 0..255. Only copy entries that are Present. */
+static void clone_upper_half_from_current(struct page_table *new_pml4)
+{
+    uint64_t           old_cr3_phys = readCR3();
+    struct page_table *old_pml4 =
+        (struct page_table *) phys_to_virt(old_cr3_phys);
+
+    for (size_t i = 256; i < 512; i++)
+    {
+        uint64_t e = old_pml4->e[i];
+        if (e & PTE_P)
+        {
+            new_pml4->e[i] = e;
+        }
+    }
+}
+
+/* Diagnostic: print deltas across PML4[256..511] old vs new */
+static void dump_pml4_deltas_uhalf(struct page_table *new_pml4)
+{
+    uint64_t           old_cr3_phys = readCR3();
+    struct page_table *old_pml4 =
+        (struct page_table *) phys_to_virt(old_cr3_phys);
+
+    printf("%s\n", "---- PML4 Upper-Half Deltas (old vs new) ----");
+    for (size_t i = 256; i < 512; i++)
+    {
+        uint64_t a = old_pml4->e[i];
+        uint64_t b = new_pml4->e[i];
+        if (a != b)
+        {
+            printf("PML4[%llu]: old=0x%llx  new=0x%llx\n",
+                   (unsigned long long) i,
+                   (unsigned long long) a,
+                   (unsigned long long) b);
+        }
+    }
+    printf("%s\n", "---------------------------------------------");
+}
+
+/* ===================== Pre-switch validation suite ===================== */
+
+
+static bool pre_switch_validate(struct page_table *new_pml4,
+                                uint64_t           new_pml4_phys)
+{
+    bool ok = true;
+
+    uint64_t old_cr3_phys = readCR3();
+    uint64_t rsp          = readRSP();
+    uint64_t rip_approx   = readRIP();
+
+    printf("%s\n", "Pre-switch validation:");
+    printf("  old CR3 phys: 0x%llx\n", (unsigned long long) old_cr3_phys);
+    printf("  new CR3 phys: 0x%llx\n", (unsigned long long) new_pml4_phys);
+    printf("  RSP:          0x%llx\n", (unsigned long long) rsp);
+    printf("  RIP approx:   0x%llx\n", (unsigned long long) rip_approx);
+
+    if (new_pml4 == (struct page_table *) phys_to_virt(old_cr3_phys))
+    {
+        printf("%s\n",
+               "ERROR: new_pml4 == old_pml4 (refusing to stomp live table)");
+        ok = false;
+    }
+
+    /* Probe that the new table can resolve key addresses */
+    bool s_ok = is_mapped_present_va(rsp, new_pml4);
+    bool x_ok = is_mapped_present_va(rip_approx, new_pml4);
+
+    /* HHDM probes: phys 0, current PML4 page, and (if you want) some known
+     * frame */
+    bool h0_ok = is_mapped_present_va(g_hhdm + 0, new_pml4);
+    bool hc_ok = is_mapped_present_va(g_hhdm + old_cr3_phys, new_pml4);
+    bool hn_ok = is_mapped_present_va(g_hhdm + new_pml4_phys, new_pml4);
+
+    printf("  probe stack      : %s\n", s_ok ? "present" : "MISSING");
+    printf("  probe .text      : %s\n", x_ok ? "present" : "MISSING");
+    printf("  probe HHDM+0     : %s\n", h0_ok ? "present" : "MISSING");
+    printf("  probe HHDM+oldCR3: %s\n", hc_ok ? "present" : "MISSING");
+    printf("  probe HHDM+newCR3: %s\n", hn_ok ? "present" : "MISSING");
+
+    if (!(s_ok && x_ok && h0_ok && hc_ok && hn_ok))
+    {
+        ok = false;
+    }
+
+    return ok;
+}
+
+/* ========================== Switch & prove liveness ==========================
+ */
+
+static void install_new_cr3(uint64_t new_pml4_phys, struct page_table *new_pml4)
+{
+    /* Final sanity: */
+    if (!pre_switch_validate(new_pml4, new_pml4_phys))
+    {
+        printf("%s\n",
+               "Pre-switch validation FAILED. Dumping deltas and halting.");
+        dump_pml4_deltas_uhalf(new_pml4);
+        panic("Refusing to install CR3 due to missing mappings");
+    }
+
+    /* Switch */
+    uint64_t old_cr3 = readCR3();
+    printf("Installing CR3... old=0x%llx new=0x%llx\n",
+           (unsigned long long) old_cr3,
+           (unsigned long long) new_pml4_phys);
+    writeCR3(new_pml4_phys);
+
+    /* Verify */
+    uint64_t cr3_after = readCR3();
+    printf("CR3 after install: 0x%llx\n", (unsigned long long) cr3_after);
+
+    /* Light stack touch to ensure RSP mapping lives */
+    asm volatile("push %%rax; pop %%rax" ::: "rax", "memory");
+
+    /* Touch a byte in .text (address of this function is in .text) */
+    volatile uint8_t *p = (volatile uint8_t *) &install_new_cr3;
+    (void) *p;
+
+    printf("%s\n", "CR3 install validation complete.");
+}
+
 /* Public: build and install new PML4 */
 void paging_bootstrap(void)
 {
     printf("%s\n", "Checking for HHDM... ");
-    /* HHDM offset from Limine (must be nonzero for phys->virt table zeroing) */
     if (hhdm_request.response)
         g_hhdm = hhdm_request.response->offset;
     else
@@ -340,14 +540,28 @@ void paging_bootstrap(void)
 
     printf("%s\n", "Building Minimal Mapping... ");
     map_identity_minimal(g_pml4_virt);
-    printf("%s\n", "Mapping Kernel Higher Half... ");
+
+    /* Clone upper-half from the live table so RSP/HHDM/etc survive the switch
+     */
+    printf("%s\n", "Cloning upper-half from current PML4 (256..511) ... ");
+    clone_upper_half_from_current(g_pml4_virt);
+
+    /* (Re)map your kernel sections with your intended flags (authoritative) */
+    printf("%s\n", "Mapping Kernel Higher Half (authoritative flags)... ");
     map_kernel_higher_half(g_pml4_virt);
-    printf("%s\n", "Mapping HHDM... ");
+
+    /* Ensure HHDM is fully mapped (the clone should already include it,
+       but reassert to cover any omissions) */
+    printf("%s\n", "Mapping HHDM (assert aperture)... ");
     map_hhdm(g_pml4_virt);
 
-    /* Install CR3 */
+    /* Preflight logs */
     printf("%s\n", "Installing CR3 Data... ");
-    printf("%s", "INFO: CR3 Value: ");
-    printf("0x%llx\n", g_pml4_phys);
-    writeCR3(g_pml4_phys);
+    printf("INFO: CR3 Value To Be Installed: 0x%llx\n",
+           (unsigned long long) g_pml4_phys);
+    printf("INFO: Stack Pointer (RSP) Value: 0x%llx\n",
+           (unsigned long long) readRSP());
+
+    /* Validate & switch */
+    install_new_cr3(g_pml4_phys, g_pml4_virt);
 }
