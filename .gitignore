@@ -73,3 +73,4 @@ latex/*
 html/*
 *.img
 quick_calc
+.vscode/settings.json
