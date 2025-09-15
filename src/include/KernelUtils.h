@@ -6,10 +6,6 @@
 #ifndef _KERNEL_UTILS_H
 #define _KERNEL_UTILS_H
 
-extern volatile struct limine_memmap_request memmap_req;
-
-extern volatile struct limine_framebuffer_request fbr_req;
-
 extern const struct kswitches k_mode;
 
 extern struct PageTable *page_table;
@@ -62,5 +58,11 @@ extern void restore_floats();
 extern void save_floats();
 
 extern struct term_context *term_context;
+
+uint64_t bytes_to_mib(uint64_t bytes);
+
+uint64_t get_memory_size_gib();
+
+uint64_t bytes_to_gib(uint64_t bytes);
 
 #endif

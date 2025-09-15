@@ -116,5 +116,5 @@ writeCR4:
     ret
 
 readRIP:
-    mov rax, rip
+    lea rax, [rel $]
     ret

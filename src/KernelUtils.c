@@ -42,12 +42,50 @@ const struct kswitches k_mode = {
 extern volatile struct limine_kernel_address_request Kaddress_req;
 
 /**
+ * The function `bytes_to_mib` converts bytes to mebibytes by shifting the value
+ * right by 20 bits.
+ *
+ * @param bytes The `bytes` parameter represents the size in bytes that you want
+ * to convert to mebibytes (MiB). The function `bytes_to_mib` shifts the input
+ * `bytes` to the right by 20 bits to perform the division by 1024*1024, which
+ * is equivalent
+ *
+ * @return The function `bytes_to_mib` is returning the input `bytes` converted
+ * to mebibytes (MiB). It achieves this by right-shifting the input by 20 bits,
+ * effectively dividing the input by 1024*1024 to convert bytes to mebibytes.
+ */
+uint64_t bytes_to_mib(uint64_t bytes)
+{
+    return bytes >> 20; // divide by 1024*1024 using a shift
+}
+
+/**
+ * The function `bytes_to_gib` converts a given number of bytes to gibibytes by
+ * shifting the bytes right by 30 bits.
+ *
+ * @param bytes The `bytes` parameter represents the number of bytes that you
+ * want to convert to gibibytes (GiB). The function `bytes_to_gib` shifts the
+ * input `bytes` to the right by 30 bits to perform the conversion.
+ *
+ * @return The function `bytes_to_gib` takes a value in bytes as input and
+ * returns the equivalent value in gibibytes (GiB). It does this by
+ * right-shifting the input value by 30 bits, which is equivalent to dividing by
+ * 2^30.
+ */
+uint64_t bytes_to_gib(uint64_t bytes)
+{
+    return bytes >> 30;
+}
+
+/**
  * @brief Calculates the size of the memory in bytes.
  * @return The size of the memory in bytes
  */
 uint64_t get_memory_size()
 {
     static uint64_t memorySize = 0;
+
+    static uint64_t result = 0;
 
     if (memorySize > 0)
     {
@@ -59,7 +97,30 @@ uint64_t get_memory_size()
         memorySize += memmap_req.response->entries[i]->length;
     }
 
-    return memorySize;
+    result = bytes_to_mib(memorySize);
+
+    return result;
+}
+
+uint64_t get_memory_size_gib()
+{
+    static uint64_t memorySize = 0;
+
+    static uint64_t result = 0;
+
+    if (memorySize > 0)
+    {
+        return memorySize;
+    }
+
+    for (uint64_t i = 0; i < memmap_req.response->entry_count; i++)
+    {
+        memorySize += memmap_req.response->entries[i]->length;
+    }
+
+    result = bytes_to_gib(memorySize);
+
+    return result;
 }
 
 /**
@@ -145,7 +206,11 @@ void print_memmap()
     printf_("%s", "Number of ACPI Reclaimable Entries: ");
     printf_("%i\n", num_reclaim_acpi);
     printf_("%s", "Memory Size: ");
-    printf_("0x%llx\n", get_memory_size());
+    printf_("%i", get_memory_size());
+    printf_("%s\n", " MiB.");
+    printf_("%s", "Memory Size: ");
+    printf_("%i", get_memory_size_gib());
+    printf_("%s\n", " GiB.");
     printf_("%s\n", "--------------------------------------");
 }
 

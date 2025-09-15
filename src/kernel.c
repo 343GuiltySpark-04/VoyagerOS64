@@ -64,6 +64,8 @@ extern volatile struct limine_kernel_address_request Kaddress_req;
 
 extern volatile struct limine_terminal_request early_term;
 
+extern volatile struct limine_framebuffer_request fbr_req;
+
 extern void     breakpoint();
 extern void     stop_interrupts();
 extern void     start_interrupts();
@@ -276,7 +278,7 @@ void _start(void)
 
     asm volatile("int $49");
 
-    // print_memmap();
+    print_memmap();
 
     memory_bringup();
 

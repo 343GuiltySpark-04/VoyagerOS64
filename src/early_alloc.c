@@ -34,6 +34,9 @@ static paddr_t g_cursor        = 0;
 static paddr_t g_end           = 0;
 static bool    g_region_forced = false;
 
+extern volatile struct limine_memmap_request memmap_req;
+
+
 static inline bool memmap_ready(void)
 {
     return memmap_req.response && memmap_req.response->entry_count > 0;

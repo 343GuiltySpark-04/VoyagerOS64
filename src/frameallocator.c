@@ -17,6 +17,8 @@ temp                    = 0;
 
 extern void halt();
 
+extern volatile struct limine_memmap_request memmap_req;
+
 /**
  * @brief Convert a memory map type to a string.
  * @param type The memory map type to convert.
