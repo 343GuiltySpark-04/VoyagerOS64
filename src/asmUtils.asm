@@ -32,12 +32,20 @@ global task_switch_int
 global rdseed_asm
 global rdrand_asm
 global breakpoint_gdb
+global cpuid_check_tsc
+global get_ts
 
 extern no_sse
 extern no_xsave
 extern no_oxsave
 extern no_avx
 
+
+get_ts:
+    rdtsc
+    shl rdx, 32
+    or rax, rdx
+    ret
 
 
 rdseed_asm:
@@ -78,10 +86,11 @@ start_interrupts:
     ret
 
 serial_debug:
-    mov dx,0x3f8    ;0xE9 if using Bochs, 0x3f8 if using QEMU
-    mov eax,edi
-    out dx,eax
+    mov dx, 0x3f8
+    mov rax, rdi
+    out dx, al       ; only the low 8 bits go out
     ret
+
 
 halt:
     cli
@@ -159,6 +168,10 @@ no_rdrand:
     ret
 
 no_fpu:
+    mov eax, 0
+    ret
+
+no_tsc:
     mov eax, 0
     ret
 
@@ -293,6 +306,14 @@ cpuid_check_sep:
     cpuid
     test edx, 1 << 11
     jz no_sep
+    mov eax, 1
+    ret
+
+cpuid_check_tsc:
+    mov eax, 0x1
+    cpuid
+    bt edx, 4
+    jnc no_tsc
     mov eax, 1
     ret
 

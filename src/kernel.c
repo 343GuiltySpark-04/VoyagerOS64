@@ -278,7 +278,7 @@ void _start(void)
 
     asm volatile("int $49");
 
-    print_memmap();
+    //print_memmap();
 
     memory_bringup();
 

@@ -1,6 +1,6 @@
-#include "include/cpuUtils.h"
 #include "include/KernelUtils.h"
 #include "include/cpu.h"
+#include "include/cpuUtils.h"
 #include "include/global_defs.h"
 #include "include/kernel.h"
 #include "include/liballoc.h"
@@ -35,6 +35,7 @@ extern int      cpuid_check_fpu();
 extern int      cpuid_check_oxsave();
 extern int      cpuid_check_avx();
 extern int      cpuid_check_fxsr();
+extern int      cpuid_check_tsc();
 extern uint32_t get_apic_base_address();
 extern int      test_em();
 extern void     cfg_XCR0();
@@ -109,6 +110,7 @@ void cpuid_readout()
     check_rdseed();
     check_rdrand();
     check_fpu();
+    check_tsc();
 
     printf_("%s", "CR0: ");
     printf_("0x%llx\n", readCRO());
@@ -248,6 +250,20 @@ void no_avx()
 {
     printf_("%s\n", "AVX Extensions Unavailable.");
     printf_("%s\n", "Floating Point Math will be offline.");
+}
+
+void check_tsc()
+{
+    int found = cpuid_check_tsc();
+
+    if (found == 1)
+    {
+        printf("%s\n", "TSC: YES");
+    }
+    else
+    {
+        printf("%s\n", "TSC: NO");
+    }
 }
 
 /**
