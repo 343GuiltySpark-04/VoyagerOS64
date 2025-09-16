@@ -9,5 +9,6 @@ extern uint64_t get_ts();
 
 void inline serial_print(const char *str);
 void inline serial_print_line(const char *str);
+void serial_print_with_ts(const char *msg);
 
 #endif

@@ -41,6 +41,30 @@ void inline serial_print(const char *str)
 }
 
 /**
+ * The function `serial_print_with_ts` prints a timestamp followed by a message
+ * to a serial output.
+ *
+ * @param msg The `msg` parameter in the `serial_print_with_ts` function is a
+ * pointer to a constant character string. This string contains the message that
+ * you want to print along with a timestamp.
+ */
+void serial_print_with_ts(const char *msg)
+{
+    char ts[32];
+    u64_to_str(get_ts(), ts);
+
+    serial_debug('[');
+    for (char *p = ts; *p; p++)
+        serial_debug(*p);
+    serial_debug(']');
+    serial_debug(' ');
+
+    for (const char *p = msg; *p; p++)
+        serial_debug(*p);
+    serial_debug('\n');
+}
+
+/**
  * @brief Print a string ending with a new line break to serial port
  * @param str String to print
  * @return void

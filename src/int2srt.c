@@ -41,3 +41,18 @@ char int_to_str(int value, char *buffer)
 
     return buffer;
 }
+
+void u64_to_str(uint64_t val, char *buf)
+{
+    char tmp[21];
+    int  i = 0;
+    do
+    {
+        tmp[i++] = '0' + (val % 10);
+        val /= 10;
+    } while (val > 0);
+    buf[i] = '\0';
+    for (int j = 0; j < i; j++)
+        buf[j] = tmp[i - j - 1];
+    buf[i] = '\0';
+}

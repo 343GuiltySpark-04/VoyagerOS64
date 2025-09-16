@@ -41,6 +41,8 @@ struct PACKED kswitches
     uint8_t liballoc_debug;
 
     uint8_t fpu_allowed;
+
+    uint8_t timestamp;
 };
 
 void print_memmap();

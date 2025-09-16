@@ -35,7 +35,8 @@ const struct kswitches k_mode = {
     .hw_rng_support       = 1,
     .mem_readout_unit     = 1,
     .liballoc_debug       = 0,
-    .fpu_allowed          = 0
+    .fpu_allowed          = 0,
+    .timestamp            = 1
 
 };
 

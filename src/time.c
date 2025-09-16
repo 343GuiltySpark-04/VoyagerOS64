@@ -1,4 +1,3 @@
-#include "include/time.h"
 #include "include/apic/lapic.h"
 #include "include/idt.h"
 #include "include/io.h"
@@ -11,6 +10,7 @@
 #include "include/pic.h"
 #include "include/printf.h"
 #include "include/sched.h"
+#include "include/time.h"
 #include <stdint.h>
 
 #define CHANNEL_ZERO 0x40
@@ -28,6 +28,8 @@ uint8_t second, minute, hour, day, month, year;
 uint64_t system_timer_ms = 0;
 
 uint64_t system_timer_fractions = 0;
+
+static volatile uint64_t pit_ticks = 0;
 
 bool timer_fired;
 
@@ -173,6 +175,25 @@ void pit_set_frequency(uint64_t frequency)
 }
 
 /**
+ * The function `pit_sleep` uses the Programmable Interval Timer to pause
+ * execution for a specified number of milliseconds.
+ *
+ * @param ms The `ms` parameter in the `pit_sleep` function represents the
+ * number of milliseconds for which the function should pause or sleep before
+ * returning. The function calculates a target time based on the current value
+ * of `pit_ticks` (presumably a global variable representing some kind of system
+ * tick count) and then
+ */
+void pit_sleep(uint64_t ms)
+{
+    uint64_t target = pit_ticks + ms;
+    while (pit_ticks < target)
+    {
+        asm volatile("hlt"); // yield until next IRQ
+    }
+}
+
+/**
  * @brief This is the clock handler for the system
  */
 void sys_clock_handler()
@@ -214,6 +235,7 @@ void sys_clock_handler()
     // schedule();
     system_timer_fractions++;
     system_timer_ms++;
+    pit_ticks++;
 }
 
 /**

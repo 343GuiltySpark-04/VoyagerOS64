@@ -102,5 +102,6 @@ void     pit_set_reload_value(uint16_t new_count);
 void     pit_set_frequency(uint64_t frequency);
 void     sys_clock_handler_alt();
 void     time_init(void);
+void     pit_sleep(uint64_t ms);
 
 #endif
