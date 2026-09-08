@@ -348,60 +348,66 @@ static void map_hhdm(struct page_table *pml4)
 /* ------------------------------------------------------------------ */
 /* VA walker + probes                                                 */
 /* ------------------------------------------------------------------ */
-static uint64_t
-walk_va_to_pa(uint64_t va, struct page_table *pml4_root, int *level_out)
+static bool walk_va_to_pa(uint64_t           va,
+                          struct page_table *pml4_root,
+                          uint64_t          *pa_out,
+                          int               *level_out)
 {
     uint64_t idx[4];
     vaddr_indices(va, idx);
 
     uint64_t pml4e = pml4_root->e[idx[0]];
     if (!(pml4e & PTE_P))
-        return 0;
+        return false;
 
     struct page_table *pdpt =
         (struct page_table *) phys_to_virt(pml4e & ADDR_MASK);
     uint64_t pdpte = pdpt->e[idx[1]];
     if (!(pdpte & PTE_P))
-        return 0;
+        return false;
 
     if (pdpte & PTE_PS)
     { /* 1GiB leaf */
         if (level_out)
             *level_out = 3;
-        uint64_t base = pdpte & ADDR_MASK_1G;
-        return base | (va & (PAGE_1G_SIZE - 1));
+        if (pa_out)
+            *pa_out = (pdpte & ADDR_MASK_1G) | (va & (PAGE_1G_SIZE - 1));
+        return true;
     }
 
     struct page_table *pd =
         (struct page_table *) phys_to_virt(pdpte & ADDR_MASK);
     uint64_t pde = pd->e[idx[2]];
     if (!(pde & PTE_P))
-        return 0;
+        return false;
 
     if (pde & PTE_PS)
     { /* 2MiB leaf */
         if (level_out)
             *level_out = 2;
-        uint64_t base = pde & ADDR_MASK_2M;
-        return base | (va & (PAGE_2M_SIZE - 1));
+        if (pa_out)
+            *pa_out = (pde & ADDR_MASK_2M) | (va & (PAGE_2M_SIZE - 1));
+        return true;
     }
 
     struct page_table *pt = (struct page_table *) phys_to_virt(pde & ADDR_MASK);
     uint64_t           pte = pt->e[idx[3]];
     if (!(pte & PTE_P))
-        return 0;
+        return false;
 
     if (level_out)
         *level_out = 1;
-    uint64_t base = pte & ADDR_MASK;
-    return base | (va & (PAGE_SIZE - 1));
+    if (pa_out)
+        *pa_out = (pte & ADDR_MASK) | (va & (PAGE_SIZE - 1));
+    return true;
 }
 
 static void probe_va(const char *label, uint64_t va, struct page_table *tbl)
 {
-    int      lvl;
-    uint64_t pa = walk_va_to_pa(va, tbl, &lvl);
-    if (pa == 0)
+    int      lvl = 0;
+    uint64_t pa  = 0;
+    bool present = walk_va_to_pa(va, tbl, &pa, &lvl);
+    if (!present)
     {
         printf("  probe %-12s: VA=0x%llx MISSING\n",
                label,
@@ -534,8 +540,9 @@ static void pre_switch_audit_and_patch(struct page_table *new_pml4,
     }
     else
     {
-        int lvl_dummy;
-        rsp_phys = walk_va_to_pa(rsp_va, new_pml4, &lvl_dummy);
+        int lvl_dummy = 0;
+        if (!walk_va_to_pa(rsp_va, new_pml4, &rsp_phys, &lvl_dummy))
+            panic("paging_bootstrap: stack VA missing before CR3 switch");
     }
 
     /* Force coverage for known-critical pages */
@@ -563,8 +570,9 @@ static void pre_switch_audit_and_patch(struct page_table *new_pml4,
     debug_dump_hhdm0_path(new_pml4);
 
     /* If anything is still missing, bail loudly. */
-    int lvl;
-    if (walk_va_to_pa(g_hhdm + 0, new_pml4, &lvl) == 0)
+    int      lvl      = 0;
+    uint64_t low_phys = 0;
+    if (!walk_va_to_pa(g_hhdm + 0, new_pml4, &low_phys, &lvl))
         panic("HHDM+0 still missing after patching; refusing to switch CR3");
 }
 
@@ -641,10 +649,11 @@ static void dump_va_path(uint64_t va, struct page_table *pml4)
 static void
 probe_hhdm_phys(const char *label, uint64_t phys, struct page_table *pml4)
 {
-    uint64_t va  = g_hhdm + phys;
-    int      lvl = 0;
-    uint64_t pa  = walk_va_to_pa(va, pml4, &lvl);
-    if (pa == 0)
+    uint64_t va      = g_hhdm + phys;
+    int      lvl     = 0;
+    uint64_t pa      = 0;
+    bool     present = walk_va_to_pa(va, pml4, &pa, &lvl);
+    if (!present)
     {
         printf("HHDM %s: phys=0x%llx VA=0x%llx  MISSING\n",
                label,
@@ -678,10 +687,10 @@ static void scan_hhdm_range(uint64_t           phys_start,
 
     for (uint64_t pa = phys_start; pa < end; pa += stride)
     {
-        int      lvl   = 0;
-        uint64_t va    = g_hhdm + pa;
-        uint64_t t     = walk_va_to_pa(va, pml4, &lvl);
-        int      state = (t != 0);
+        int      lvl = 0;
+        uint64_t va  = g_hhdm + pa;
+        uint64_t translated = 0;
+        int state = walk_va_to_pa(va, pml4, &translated, &lvl) ? 1 : 0;
 
         if (prev_state == -1)
         {
@@ -803,7 +812,8 @@ void paging_bootstrap(void)
                     /*2MiB*/ g_pml4_virt);
 
     /* 3) If “low+0 MISSING,” drill down to see which level is absent */
-    if (walk_va_to_pa(g_hhdm + 0, g_pml4_virt, NULL) == 0)
+    uint64_t low_phys = 0;
+    if (!walk_va_to_pa(g_hhdm + 0, g_pml4_virt, &low_phys, NULL))
     {
         hhdm_dump_path_for_phys(0, g_pml4_virt);
     }
