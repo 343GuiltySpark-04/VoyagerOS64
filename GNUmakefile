@@ -113,7 +113,7 @@ clean:
 
 iso:
 	sh buildlimine.sh
-	mkdir -v iso_root
+	mkdir -pv iso_root
 	cp -v warp.bin limine.cfg limine/limine.sys \
       limine/limine-cd.bin limine/limine-cd-efi.bin iso_root/
 	xorriso -as mkisofs -b limine-cd.bin \
