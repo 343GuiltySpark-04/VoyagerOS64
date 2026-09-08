@@ -13,7 +13,7 @@
 #include <stdint.h>
 
 /* ------------------------------------------------------------------ */
-/* Limine requests (DEFINED ONCE in your limine_requests.c)           */
+/* Limine requests (DEFINED ONCE in limine_requests.c)                */
 /* ------------------------------------------------------------------ */
 extern volatile struct limine_memmap_request         memmap_req;
 extern volatile struct limine_hhdm_request           hhdm_request;
@@ -30,9 +30,8 @@ extern void     panic(const char *fmt, ...);
 extern uint64_t readCR3(void);
 extern void     writeCR3(uint64_t arg);
 extern uint64_t readRSP(void);
-extern void     breakpoint(void);
 
-// TODO: Add in some globals.c
+/* Retained for existing debug/PMM plumbing. */
 uint64_t g_alloc_bm_phys_base  = 0;
 uint64_t g_alloc_bm_bytes      = 0;
 uint64_t g_usable_bm_phys_base = 0;
@@ -43,41 +42,37 @@ uint64_t framebuffer_bytes     = 0;
 /* ------------------------------------------------------------------ */
 /* x86_64 paging bits / helpers                                       */
 /* ------------------------------------------------------------------ */
-#define PTE_P (1ull << 0)   /* Present */
-#define PTE_W (1ull << 1)   /* Writable */
-#define PTE_U (1ull << 2)   /* User (unused here) */
-#define PTE_PWT (1ull << 3) /* (unused here) */
-#define PTE_PCD (1ull << 4) /* (unused here) */
-#define PTE_PS (1ull << 7)  /* Page Size (PDPT=1GiB, PD=2MiB) */
-#define PTE_NX (1ull << 63) /* No-Execute */
+#define PTE_P (1ull << 0)
+#define PTE_W (1ull << 1)
+#define PTE_U (1ull << 2)
+#define PTE_PS (1ull << 7)
+#define PTE_NX (1ull << 63)
 
 #define PAGE_SIZE 4096ull
 #define PAGE_2M_SIZE (2ull * 1024 * 1024)
 #define PAGE_1G_SIZE (1ull << 30)
-#define ENTRIES_PER_PT 512ull
 
 #define ADDR_MASK 0x000FFFFFFFFFF000ull
 #define ADDR_MASK_2M 0x000FFFFFFFFFE000ull
 #define ADDR_MASK_1G 0x000FFFFFC0000000ull
 
-#define ALIGN_UP(x, a) (((x) + ((a) -1)) & ~((a) -1))
-#define ALIGN_DOWN(x, a) ((x) & ~((a) -1))
+#define ALIGN_UP(x, a) (((x) + ((a) - 1)) & ~((a) - 1))
+#define ALIGN_DOWN(x, a) ((x) & ~((a) - 1))
 
 struct __attribute__((aligned(0x1000))) page_table
 {
     uint64_t e[512];
 };
 
-/* Globals */
 static uint64_t           g_pml4_phys = 0;
 static struct page_table *g_pml4_virt = 0;
 static uint64_t           g_hhdm      = 0;
 
-/* Accessors */
 uint64_t paging_pml4_phys(void)
 {
     return g_pml4_phys;
 }
+
 void *paging_pml4_virt(void)
 {
     return (void *) g_pml4_virt;
@@ -86,25 +81,36 @@ void *paging_pml4_virt(void)
 uint64_t get_total_usable_mem_bytes(void)
 {
     if (!memmap_req.response || memmap_req.response->entry_count == 0)
-    {
         return 0;
-    }
 
     uint64_t total = 0;
     for (size_t i = 0; i < memmap_req.response->entry_count; i++)
     {
         struct limine_memmap_entry *e = memmap_req.response->entries[i];
-
         if (e->type == LIMINE_MEMMAP_USABLE)
-        {
-            /* Add length in bytes (as spec defines) */
             total += e->length;
-        }
     }
     return total;
 }
 
-/* Tiny memset */
+static uint64_t get_max_phys(void)
+{
+    uint64_t max_phys = 0;
+
+    if (!memmap_req.response)
+        return 0;
+
+    for (size_t i = 0; i < memmap_req.response->entry_count; i++)
+    {
+        struct limine_memmap_entry *e = memmap_req.response->entries[i];
+        uint64_t end = e->base + e->length;
+        if (end > max_phys)
+            max_phys = end;
+    }
+
+    return max_phys;
+}
+
 static inline void memzero(void *p, size_t n)
 {
     volatile uint8_t *d = (volatile uint8_t *) p;
@@ -112,19 +118,17 @@ static inline void memzero(void *p, size_t n)
         d[i] = 0;
 }
 
-/* phys->virt via HHDM */
 static inline void *phys_to_virt(uint64_t phys)
 {
-    return (void *) (phys + g_hhdm);
+    return (void *) (uintptr_t) (phys + g_hhdm);
 }
 
-/* VA indices */
 static inline void vaddr_indices(uint64_t v, uint64_t idx[4])
 {
-    idx[0] = (v >> 39) & 0x1FF; /* PML4 */
-    idx[1] = (v >> 30) & 0x1FF; /* PDPT */
-    idx[2] = (v >> 21) & 0x1FF; /* PD   */
-    idx[3] = (v >> 12) & 0x1FF; /* PT   */
+    idx[0] = (v >> 39) & 0x1FF;
+    idx[1] = (v >> 30) & 0x1FF;
+    idx[2] = (v >> 21) & 0x1FF;
+    idx[3] = (v >> 12) & 0x1FF;
 }
 
 static inline uint64_t
@@ -134,36 +138,50 @@ virt_to_phys_kernel(uint64_t vaddr, uint64_t kphys_base, uint64_t kvirt_base)
 }
 
 /* ------------------------------------------------------------------ */
-/* Table alloc + next-level creation                                  */
+/* Table allocation                                                   */
 /* ------------------------------------------------------------------ */
 static struct page_table *alloc_table(uint64_t *out_phys)
 {
     uint64_t phys = early_alloc_page();
+
     if (g_hhdm == 0)
         panic("paging_bootstrap: HHDM required for table zeroing");
+
     struct page_table *pt = (struct page_table *) phys_to_virt(phys);
     memzero(pt, sizeof(*pt));
+
     if (out_phys)
         *out_phys = phys;
+
     return pt;
 }
 
+/* This helper is ONLY valid for non-leaf entries. A present PS entry is a
+ * huge-page leaf, not another page-table pointer. Treating it as a child
+ * table is memory corruption, so fail loudly if a caller ever tries. */
 static struct page_table *
 get_or_make_next(struct page_table *cur, uint64_t idx, uint64_t *phys_out)
 {
     uint64_t e = cur->e[idx];
+
     if (e & PTE_P)
     {
+        if (e & PTE_PS)
+            panic("paging_bootstrap: attempted descent through huge-page leaf");
+
         uint64_t child_phys = e & ADDR_MASK;
         if (phys_out)
             *phys_out = child_phys;
         return (struct page_table *) phys_to_virt(child_phys);
     }
-    uint64_t           child_phys = 0;
-    struct page_table *child      = alloc_table(&child_phys);
-    cur->e[idx]                   = (child_phys & ADDR_MASK) | PTE_P | PTE_W;
+
+    uint64_t child_phys = 0;
+    struct page_table *child = alloc_table(&child_phys);
+    cur->e[idx] = (child_phys & ADDR_MASK) | PTE_P | PTE_W;
+
     if (phys_out)
         *phys_out = child_phys;
+
     return child;
 }
 
@@ -172,10 +190,9 @@ static struct page_table *get_or_make_pd(struct page_table *pml4,
                                          uint64_t           pdpti,
                                          uint64_t          *pd_phys_out)
 {
-    uint64_t           junk;
+    uint64_t junk;
     struct page_table *pdpt = get_or_make_next(pml4, pml4i, &junk);
-    struct page_table *pd   = get_or_make_next(pdpt, pdpti, pd_phys_out);
-    return pd;
+    return get_or_make_next(pdpt, pdpti, pd_phys_out);
 }
 
 /* ------------------------------------------------------------------ */
@@ -185,35 +202,38 @@ static void
 map_4k(struct page_table *pml4, uint64_t va, uint64_t pa, uint64_t flags)
 {
     uint64_t idx[4];
+    uint64_t junk;
     vaddr_indices(va, idx);
-    uint64_t           junk;
+
     struct page_table *pdpt = get_or_make_next(pml4, idx[0], &junk);
     struct page_table *pd   = get_or_make_next(pdpt, idx[1], &junk);
     struct page_table *pt   = get_or_make_next(pd, idx[2], &junk);
-    pt->e[idx[3]]           = (pa & ADDR_MASK) | (flags & ~ADDR_MASK);
+
+    pt->e[idx[3]] = (pa & ADDR_MASK) | (flags & ~ADDR_MASK) | PTE_P;
 }
 
 static void
 map_2m(struct page_table *pml4, uint64_t va, uint64_t pa, uint64_t flags)
 {
     uint64_t idx[4];
+    uint64_t pd_phys;
     vaddr_indices(va, idx);
-    uint64_t           pd_phys;
+
     struct page_table *pd = get_or_make_pd(pml4, idx[0], idx[1], &pd_phys);
     pd->e[idx[2]] =
         (pa & ADDR_MASK_2M) | (flags & ~ADDR_MASK) | PTE_P | PTE_W | PTE_PS;
 }
 
-/* Single 1GiB leaf (PDPT-level) */
 static void
 map_1g(struct page_table *pml4, uint64_t va, uint64_t pa, uint64_t flags)
 {
     uint64_t idx[4];
+    uint64_t junk;
     vaddr_indices(va, idx);
-    uint64_t           junk;
+
     struct page_table *pdpt = get_or_make_next(pml4, idx[0], &junk);
-    uint64_t           base = pa & ADDR_MASK_1G;
-    pdpt->e[idx[1]] = base | (flags & ~ADDR_MASK) | PTE_P | PTE_W | PTE_PS;
+    pdpt->e[idx[1]] =
+        (pa & ADDR_MASK_1G) | (flags & ~ADDR_MASK) | PTE_P | PTE_W | PTE_PS;
 }
 
 static void map_range_4k(struct page_table *pml4,
@@ -223,6 +243,7 @@ static void map_range_4k(struct page_table *pml4,
                          uint64_t           flags)
 {
     uint64_t end = va + len;
+
     for (; va < end; va += PAGE_SIZE, pa += PAGE_SIZE)
         map_4k(pml4, va, pa, flags);
 }
@@ -237,7 +258,7 @@ static void map_range_huge_first(struct page_table *pml4,
 
     while (pa < end && (((pa | va) & (PAGE_2M_SIZE - 1)) != 0))
     {
-        map_4k(pml4, va, pa, base_flags | PTE_P | PTE_W | PTE_NX);
+        map_4k(pml4, va, pa, base_flags | PTE_W | PTE_NX);
         pa += PAGE_SIZE;
         va += PAGE_SIZE;
     }
@@ -251,7 +272,7 @@ static void map_range_huge_first(struct page_table *pml4,
 
     while (pa < end)
     {
-        map_4k(pml4, va, pa, base_flags | PTE_P | PTE_W | PTE_NX);
+        map_4k(pml4, va, pa, base_flags | PTE_W | PTE_NX);
         pa += PAGE_SIZE;
         va += PAGE_SIZE;
     }
@@ -262,8 +283,8 @@ static void map_range_huge_first(struct page_table *pml4,
 /* ------------------------------------------------------------------ */
 static void map_identity_minimal(struct page_table *pml4)
 {
-    for (uint64_t p = 0; p < 0x200000; p += PAGE_SIZE)
-        map_4k(pml4, p, p, PTE_P | PTE_W | PTE_NX);
+    for (uint64_t p = 0; p < PAGE_2M_SIZE; p += PAGE_SIZE)
+        map_4k(pml4, p, p, PTE_W | PTE_NX);
 }
 
 static void map_kernel_higher_half(struct page_table *pml4)
@@ -286,35 +307,39 @@ static void map_kernel_higher_half(struct page_table *pml4)
                      t0,
                      virt_to_phys_kernel(t0, kphys_base, kvirt_base),
                      t1 - t0,
-                     PTE_P /* RX */);
+                     0); /* RX */
 
     if (r1 > r0)
         map_range_4k(pml4,
                      r0,
                      virt_to_phys_kernel(r0, kphys_base, kvirt_base),
                      r1 - r0,
-                     PTE_P | PTE_NX /* R */);
+                     PTE_NX); /* R */
 
     if (d1 > d0)
         map_range_4k(pml4,
                      d0,
                      virt_to_phys_kernel(d0, kphys_base, kvirt_base),
                      d1 - d0,
-                     PTE_P | PTE_W | PTE_NX /* RW */);
+                     PTE_W | PTE_NX); /* RW */
 }
 
 static void map_hhdm(struct page_table *pml4)
 {
     if (!g_hhdm)
-        return;
+        panic("paging_bootstrap: HHDM offset missing");
+
     if (!memmap_req.response || memmap_req.response->entry_count == 0)
         panic("paging_bootstrap: memmap missing");
 
-    /* Selective: map interesting regions efficiently */
+    /* Build Voyager-owned HHDM mappings. Do not shallow-clone Limine's
+     * upper-half tables: sharing lower-level paging structures means any
+     * retrofit edit can mutate the currently active Limine address space. */
     for (size_t i = 0; i < memmap_req.response->entry_count; i++)
     {
-        struct limine_memmap_entry *e       = memmap_req.response->entries[i];
-        bool                        include = false;
+        struct limine_memmap_entry *e = memmap_req.response->entries[i];
+        bool include = false;
+
         switch (e->type)
         {
             case LIMINE_MEMMAP_USABLE:
@@ -328,25 +353,32 @@ static void map_hhdm(struct page_table *pml4)
             default:
                 break;
         }
+
         if (!include)
             continue;
 
         uint64_t base = ALIGN_DOWN(e->base, PAGE_SIZE);
         uint64_t end  = ALIGN_UP(e->base + e->length, PAGE_SIZE);
+
         if (end <= base)
             continue;
 
-        uint64_t len = end - base;
-        uint64_t va  = g_hhdm + base;
-        map_range_huge_first(pml4, va, base, len, 0);
+        map_range_huge_first(pml4,
+                             g_hhdm + base,
+                             base,
+                             end - base,
+                             0);
     }
 
-    /* Minimal unconditional low-phys guard (can bump if desired). */
-    map_range_huge_first(pml4, g_hhdm + 0, 0, 0x200000 /* 2 MiB */, 0);
+    /* Always keep the first 2 MiB addressable through HHDM. This is written
+     * last deliberately: it may replace fragmented low-page mappings with
+     * one equivalent 2 MiB leaf, but nothing later is allowed to descend
+     * through that leaf. */
+    map_2m(pml4, g_hhdm, 0, PTE_NX);
 }
 
 /* ------------------------------------------------------------------ */
-/* VA walker + probes                                                 */
+/* VA walker + diagnostics                                            */
 /* ------------------------------------------------------------------ */
 static bool walk_va_to_pa(uint64_t           va,
                           struct page_table *pml4_root,
@@ -367,7 +399,7 @@ static bool walk_va_to_pa(uint64_t           va,
         return false;
 
     if (pdpte & PTE_PS)
-    { /* 1GiB leaf */
+    {
         if (level_out)
             *level_out = 3;
         if (pa_out)
@@ -382,7 +414,7 @@ static bool walk_va_to_pa(uint64_t           va,
         return false;
 
     if (pde & PTE_PS)
-    { /* 2MiB leaf */
+    {
         if (level_out)
             *level_out = 2;
         if (pa_out)
@@ -390,8 +422,9 @@ static bool walk_va_to_pa(uint64_t           va,
         return true;
     }
 
-    struct page_table *pt = (struct page_table *) phys_to_virt(pde & ADDR_MASK);
-    uint64_t           pte = pt->e[idx[3]];
+    struct page_table *pt =
+        (struct page_table *) phys_to_virt(pde & ADDR_MASK);
+    uint64_t pte = pt->e[idx[3]];
     if (!(pte & PTE_P))
         return false;
 
@@ -399,127 +432,123 @@ static bool walk_va_to_pa(uint64_t           va,
         *level_out = 1;
     if (pa_out)
         *pa_out = (pte & ADDR_MASK) | (va & (PAGE_SIZE - 1));
+
     return true;
 }
 
 static void probe_va(const char *label, uint64_t va, struct page_table *tbl)
 {
-    int      lvl = 0;
-    uint64_t pa  = 0;
-    bool present = walk_va_to_pa(va, tbl, &pa, &lvl);
-    if (!present)
+    int lvl = 0;
+    uint64_t pa = 0;
+
+    if (!walk_va_to_pa(va, tbl, &pa, &lvl))
     {
         printf("  probe %-12s: VA=0x%llx MISSING\n",
                label,
                (unsigned long long) va);
+        return;
     }
-    else
+
+    printf("  probe %-12s: VA=0x%llx -> PA=0x%llx (lvl %d)\n",
+           label,
+           (unsigned long long) va,
+           (unsigned long long) pa,
+           lvl);
+}
+
+static void probe_hhdm_phys(const char *label,
+                            uint64_t    phys,
+                            struct page_table *pml4)
+{
+    uint64_t va = g_hhdm + phys;
+    uint64_t pa = 0;
+    int lvl = 0;
+
+    if (!walk_va_to_pa(va, pml4, &pa, &lvl))
     {
-        printf("  probe %-12s: VA=0x%llx -> PA=0x%llx (lvl %d)\n",
+        printf("HHDM %s: phys=0x%llx VA=0x%llx MISSING\n",
                label,
-               (unsigned long long) va,
-               (unsigned long long) pa,
-               lvl);
+               (unsigned long long) phys,
+               (unsigned long long) va);
+        return;
     }
+
+    printf("HHDM %s: phys=0x%llx VA=0x%llx -> PA=0x%llx (lvl %d)\n",
+           label,
+           (unsigned long long) phys,
+           (unsigned long long) va,
+           (unsigned long long) pa,
+           lvl);
 }
 
-/* Debug path for HHDM+0 */
-static void debug_dump_hhdm0_path(struct page_table *pml4)
+static void scan_hhdm_range(uint64_t           phys_start,
+                            uint64_t           length,
+                            uint64_t           stride,
+                            struct page_table *pml4)
 {
-    uint64_t va = g_hhdm + 0;
-    uint64_t idx[4];
-    vaddr_indices(va, idx);
+    if (stride == 0)
+        stride = PAGE_2M_SIZE;
 
-    uint64_t pml4e = pml4->e[idx[0]];
-    printf("HHDM+0 path:\n");
-    printf("  PML4[%llu] = 0x%llx %s\n",
-           (unsigned long long) idx[0],
-           (unsigned long long) pml4e,
-           (pml4e & PTE_P) ? "P" : "NP");
-    if (!(pml4e & PTE_P))
-        return;
+    uint64_t end = phys_start + length;
+    int prev_state = -1;
+    uint64_t run_start = phys_start;
 
-    struct page_table *pdpt =
-        (struct page_table *) phys_to_virt(pml4e & ADDR_MASK);
-    uint64_t pdpte = pdpt->e[idx[1]];
-    printf("  PDPT[%llu] = 0x%llx %s%s\n",
-           (unsigned long long) idx[1],
-           (unsigned long long) pdpte,
-           (pdpte & PTE_P) ? "P" : "NP",
-           (pdpte & PTE_PS) ? " PS(1G)" : "");
-    if (!(pdpte & PTE_P) || (pdpte & PTE_PS))
-        return;
-
-    struct page_table *pd =
-        (struct page_table *) phys_to_virt(pdpte & ADDR_MASK);
-    uint64_t pde = pd->e[idx[2]];
-    printf("  PD[%llu]   = 0x%llx %s%s\n",
-           (unsigned long long) idx[2],
-           (unsigned long long) pde,
-           (pde & PTE_P) ? "P" : "NP",
-           (pde & PTE_PS) ? " PS(2M)" : "");
-    if (!(pde & PTE_P) || (pde & PTE_PS))
-        return;
-
-    struct page_table *pt = (struct page_table *) phys_to_virt(pde & ADDR_MASK);
-    uint64_t           pte = pt->e[idx[3]];
-    printf("  PT[%llu]   = 0x%llx %s\n",
-           (unsigned long long) idx[3],
-           (unsigned long long) pte,
-           (pte & PTE_P) ? "P" : "NP");
-}
-
-/* ------------------------------------------------------------------ */
-/* Upper-half cloning + coverage enforcement                          */
-/* ------------------------------------------------------------------ */
-static void clone_upper_half_from_current(struct page_table *new_pml4)
-{
-    uint64_t           old_cr3_phys = readCR3();
-    struct page_table *old_pml4 =
-        (struct page_table *) phys_to_virt(old_cr3_phys);
-    for (size_t i = 256; i < 512; i++)
+    for (uint64_t phys = phys_start; phys < end; phys += stride)
     {
-        uint64_t e = old_pml4->e[i];
-        if (e & PTE_P)
-            new_pml4->e[i] = e;
+        bool present = walk_va_to_pa(g_hhdm + phys, pml4, NULL, NULL);
+        int state = present ? 1 : 0;
+
+        if (prev_state == -1)
+        {
+            prev_state = state;
+            run_start = phys;
+        }
+        else if (state != prev_state)
+        {
+            printf("HHDM scan: [%#llx .. %#llx) %s\n",
+                   (unsigned long long) run_start,
+                   (unsigned long long) phys,
+                   prev_state ? "PRESENT" : "MISSING");
+            prev_state = state;
+            run_start = phys;
+        }
     }
+
+    printf("HHDM scan: [%#llx .. %#llx) %s\n",
+           (unsigned long long) run_start,
+           (unsigned long long) end,
+           prev_state > 0 ? "PRESENT" : "MISSING");
 }
 
-/* Coarse-first coverage of phys ranges into HHDM */
+/* ------------------------------------------------------------------ */
+/* Safe coverage enforcement                                          */
+/* ------------------------------------------------------------------ */
+static void ensure_hhdm_cover_phys_page(struct page_table *pml4,
+                                        uint64_t           phys_page)
+{
+    uint64_t page = ALIGN_DOWN(phys_page, PAGE_SIZE);
+    uint64_t va   = g_hhdm + page;
+
+    /* A huge-page mapping is already sufficient coverage. Never replace or
+     * descend through it just to obtain a 4 KiB mapping. */
+    if (walk_va_to_pa(va, pml4, NULL, NULL))
+        return;
+
+    map_4k(pml4, va, page, PTE_W | PTE_NX);
+}
+
 static void ensure_hhdm_cover_phys_range(struct page_table *pml4,
                                          uint64_t           phys,
                                          uint64_t           len)
 {
     if (len == 0)
         return;
-    uint64_t pa  = ALIGN_DOWN(phys, PAGE_SIZE);
-    uint64_t end = ALIGN_UP(phys + len, PAGE_SIZE);
 
-    while (pa < end)
-    {
-        uint64_t va = g_hhdm + pa;
+    uint64_t page = ALIGN_DOWN(phys, PAGE_SIZE);
+    uint64_t end  = ALIGN_UP(phys + len, PAGE_SIZE);
 
-        if (((pa | va) & (PAGE_1G_SIZE - 1)) == 0 && (end - pa) >= PAGE_1G_SIZE)
-        {
-            map_1g(pml4, va, pa, PTE_NX);
-            pa += PAGE_1G_SIZE;
-            continue;
-        }
-        if (((pa | va) & (PAGE_2M_SIZE - 1)) == 0 && (end - pa) >= PAGE_2M_SIZE)
-        {
-            map_2m(pml4, va, pa, PTE_NX);
-            pa += PAGE_2M_SIZE;
-            continue;
-        }
-        map_4k(pml4, va, pa, PTE_P | PTE_W | PTE_NX);
-        pa += PAGE_SIZE;
-    }
-}
-
-static void ensure_hhdm_cover_phys_page(struct page_table *pml4,
-                                        uint64_t           phys_page)
-{
-    ensure_hhdm_cover_phys_range(pml4, phys_page, PAGE_SIZE);
+    for (; page < end; page += PAGE_SIZE)
+        ensure_hhdm_cover_phys_page(pml4, page);
 }
 
 /* ------------------------------------------------------------------ */
@@ -528,232 +557,77 @@ static void ensure_hhdm_cover_phys_page(struct page_table *pml4,
 static void pre_switch_audit_and_patch(struct page_table *new_pml4,
                                        uint64_t           new_pml4_phys)
 {
-    /* Discover must-have phys */
-    uint64_t old_cr3 = readCR3();
+    uint64_t old_cr3 = readCR3() & ADDR_MASK;
     uint64_t rsp_va  = readRSP();
-
     uint64_t rsp_phys = 0;
-    /* If stack is in HHDM, phys = VA - HHDM; otherwise walk. */
-    if ((rsp_va & 0xFFFF800000000000ull) == g_hhdm)
+    uint64_t max_phys = get_max_phys();
+
+    if (rsp_va >= g_hhdm && rsp_va < g_hhdm + max_phys)
     {
         rsp_phys = rsp_va - g_hhdm;
     }
-    else
+    else if (!walk_va_to_pa(rsp_va, new_pml4, &rsp_phys, NULL))
     {
-        int lvl_dummy = 0;
-        if (!walk_va_to_pa(rsp_va, new_pml4, &rsp_phys, &lvl_dummy))
-            panic("paging_bootstrap: stack VA missing before CR3 switch");
+        panic("paging_bootstrap: stack VA missing before CR3 switch");
     }
 
-    /* Force coverage for known-critical pages */
-    ensure_hhdm_cover_phys_range(new_pml4, 0, 0x200000); /* 2 MiB low guard */
-    ensure_hhdm_cover_phys_page(new_pml4, rsp_phys & ~(PAGE_SIZE - 1));
-    ensure_hhdm_cover_phys_page(new_pml4, old_cr3 & ~(PAGE_SIZE - 1));
-    ensure_hhdm_cover_phys_page(new_pml4, new_pml4_phys & ~(PAGE_SIZE - 1));
+    /* These calls are deliberately idempotent. Existing 2 MiB/1 GiB HHDM
+     * leaves count as valid coverage and are left untouched. */
+    ensure_hhdm_cover_phys_range(new_pml4, 0, PAGE_2M_SIZE);
+    ensure_hhdm_cover_phys_page(new_pml4, rsp_phys);
+    ensure_hhdm_cover_phys_page(new_pml4, old_cr3);
+    ensure_hhdm_cover_phys_page(new_pml4, new_pml4_phys);
 
-    /* If you have bitmap bases exposed, uncomment these externs + calls. */
-    /* extern uint64_t g_alloc_bm_phys_base, g_usable_bm_phys_base;
-       extern uint64_t g_alloc_bm_bytes,     g_usable_bm_bytes;
-       ensure_hhdm_cover_phys_range(new_pml4, g_alloc_bm_phys_base,
-       g_alloc_bm_bytes); ensure_hhdm_cover_phys_range(new_pml4,
-       g_usable_bm_phys_base, g_usable_bm_bytes);
-    */
-
-    /* Re-probe must-haves */
     printf("Pre-switch validation:\n");
     probe_va("stack", rsp_va, new_pml4);
-    probe_va(
-        "rip", (uint64_t) (uintptr_t) &pre_switch_audit_and_patch, new_pml4);
-    probe_va("HHDM+0", g_hhdm + 0, new_pml4);
-    probe_va("HHDM+oldCR3", g_hhdm + (old_cr3), new_pml4);
-    probe_va("HHDM+newCR3", g_hhdm + (new_pml4_phys), new_pml4);
-    debug_dump_hhdm0_path(new_pml4);
+    probe_va("rip",
+             (uint64_t) (uintptr_t) &pre_switch_audit_and_patch,
+             new_pml4);
+    probe_va("HHDM+0", g_hhdm, new_pml4);
+    probe_va("HHDM+oldCR3", g_hhdm + old_cr3, new_pml4);
+    probe_va("HHDM+newCR3", g_hhdm + new_pml4_phys, new_pml4);
 
-    /* If anything is still missing, bail loudly. */
-    int      lvl      = 0;
-    uint64_t low_phys = 0;
-    if (!walk_va_to_pa(g_hhdm + 0, new_pml4, &low_phys, &lvl))
-        panic("HHDM+0 still missing after patching; refusing to switch CR3");
+    if (!walk_va_to_pa(rsp_va, new_pml4, NULL, NULL))
+        panic("paging_bootstrap: stack missing after patching");
+
+    if (!walk_va_to_pa((uint64_t) (uintptr_t) &pre_switch_audit_and_patch,
+                       new_pml4,
+                       NULL,
+                       NULL))
+        panic("paging_bootstrap: kernel RIP missing after patching");
+
+    if (!walk_va_to_pa(g_hhdm, new_pml4, NULL, NULL))
+        panic("paging_bootstrap: HHDM+0 missing after patching");
+
+    if (!walk_va_to_pa(g_hhdm + old_cr3, new_pml4, NULL, NULL))
+        panic("paging_bootstrap: old CR3 page missing from HHDM");
+
+    if (!walk_va_to_pa(g_hhdm + new_pml4_phys, new_pml4, NULL, NULL))
+        panic("paging_bootstrap: new CR3 page missing from HHDM");
 }
 
-static void install_new_cr3(uint64_t new_pml4_phys, struct page_table *new_pml4)
+static void install_new_cr3(uint64_t new_pml4_phys,
+                            struct page_table *new_pml4)
 {
-    /* Final validation & gap patching */
     pre_switch_audit_and_patch(new_pml4, new_pml4_phys);
 
-    /* Switch */
     uint64_t old_cr3 = readCR3();
     printf("Installing CR3... old=0x%llx new=0x%llx\n",
            (unsigned long long) old_cr3,
            (unsigned long long) new_pml4_phys);
+
     writeCR3(new_pml4_phys);
 
-    /* Verify */
     uint64_t cr3_after = readCR3();
-    printf("CR3 after install: 0x%llx\n", (unsigned long long) cr3_after);
+    printf("CR3 after install: 0x%llx\n",
+           (unsigned long long) cr3_after);
 
-    /* Touch stack and .text to confirm liveness */
     asm volatile("push %%rax; pop %%rax" ::: "rax", "memory");
-    volatile uint8_t *p = (volatile uint8_t *) &install_new_cr3;
-    (void) *p;
+    volatile uint8_t *text_probe =
+        (volatile uint8_t *) (uintptr_t) &install_new_cr3;
+    (void) *text_probe;
 
     printf("CR3 install validation complete.\n");
-}
-
-/* Pretty-print a single VA page walk (PML4→PDPT→PD→PT). */
-static void dump_va_path(uint64_t va, struct page_table *pml4)
-{
-    uint64_t idx[4];
-    vaddr_indices(va, idx);
-
-    uint64_t pml4e = pml4->e[idx[0]];
-    printf("VA 0x%llx path:\n", (unsigned long long) va);
-    printf("  PML4[%3llu] = 0x%016llx  %s\n",
-           (unsigned long long) idx[0],
-           (unsigned long long) pml4e,
-           (pml4e & PTE_P) ? "P" : "NP");
-    if (!(pml4e & PTE_P))
-        return;
-
-    struct page_table *pdpt =
-        (struct page_table *) phys_to_virt(pml4e & ADDR_MASK);
-    uint64_t pdpte = pdpt->e[idx[1]];
-    printf("  PDPT[%3llu] = 0x%016llx  %s%s\n",
-           (unsigned long long) idx[1],
-           (unsigned long long) pdpte,
-           (pdpte & PTE_P) ? "P" : "NP",
-           (pdpte & PTE_PS) ? " PS(1G)" : "");
-    if (!(pdpte & PTE_P) || (pdpte & PTE_PS))
-        return;
-
-    struct page_table *pd =
-        (struct page_table *) phys_to_virt(pdpte & ADDR_MASK);
-    uint64_t pde = pd->e[idx[2]];
-    printf("  PD  [%3llu] = 0x%016llx  %s%s\n",
-           (unsigned long long) idx[2],
-           (unsigned long long) pde,
-           (pde & PTE_P) ? "P" : "NP",
-           (pde & PTE_PS) ? " PS(2M)" : "");
-    if (!(pde & PTE_P) || (pde & PTE_PS))
-        return;
-
-    struct page_table *pt = (struct page_table *) phys_to_virt(pde & ADDR_MASK);
-    uint64_t           pte = pt->e[idx[3]];
-    printf("  PT  [%3llu] = 0x%016llx  %s\n",
-           (unsigned long long) idx[3],
-           (unsigned long long) pte,
-           (pte & PTE_P) ? "P" : "NP");
-}
-
-/* Translate a single HHDM VA (for phys) and print result succinctly. */
-static void
-probe_hhdm_phys(const char *label, uint64_t phys, struct page_table *pml4)
-{
-    uint64_t va      = g_hhdm + phys;
-    int      lvl     = 0;
-    uint64_t pa      = 0;
-    bool     present = walk_va_to_pa(va, pml4, &pa, &lvl);
-    if (!present)
-    {
-        printf("HHDM %s: phys=0x%llx VA=0x%llx  MISSING\n",
-               label,
-               (unsigned long long) phys,
-               (unsigned long long) va);
-    }
-    else
-    {
-        printf("HHDM %s: phys=0x%llx VA=0x%llx -> PA=0x%llx (lvl %d)\n",
-               label,
-               (unsigned long long) phys,
-               (unsigned long long) va,
-               (unsigned long long) pa,
-               lvl);
-    }
-}
-
-/* Scan a physical range through HHDM at a stride; coalesce present/missing
- * runs. */
-static void scan_hhdm_range(uint64_t           phys_start,
-                            uint64_t           length,
-                            uint64_t           stride,
-                            struct page_table *pml4)
-{
-    if (stride == 0)
-        stride = 0x200000; /* default to 2MiB steps */
-    uint64_t end = phys_start + length;
-
-    int      prev_state = -1; /* -1 unset, 0 missing, 1 present */
-    uint64_t run_start  = phys_start;
-
-    for (uint64_t pa = phys_start; pa < end; pa += stride)
-    {
-        int      lvl = 0;
-        uint64_t va  = g_hhdm + pa;
-        uint64_t translated = 0;
-        int state = walk_va_to_pa(va, pml4, &translated, &lvl) ? 1 : 0;
-
-        if (prev_state == -1)
-        {
-            prev_state = state;
-            run_start  = pa;
-        }
-        else if (state != prev_state)
-        {
-            printf("HHDM scan: [%#llx .. %#llx)  %s\n",
-                   (unsigned long long) run_start,
-                   (unsigned long long) pa,
-                   prev_state ? "PRESENT" : "MISSING");
-            prev_state = state;
-            run_start  = pa;
-        }
-    }
-    /* flush tail */
-    printf("HHDM scan: [%#llx .. %#llx)  %s\n",
-           (unsigned long long) run_start,
-           (unsigned long long) end,
-           prev_state > 0 ? "PRESENT" : "MISSING");
-}
-
-/* Quick “known targets” sweep: low phys, page tables, bitmaps, framebuffer. */
-static void hhdm_target_ranging(struct page_table *pml4,
-                                uint64_t           new_pml4_phys,
-                                uint64_t           fb_phys,
-                                uint64_t           fb_bytes,
-                                uint64_t           bm0_phys,
-                                uint64_t           bm0_bytes,
-                                uint64_t           bm1_phys,
-                                uint64_t           bm1_bytes)
-{
-    uint64_t old_cr3 = readCR3();
-
-    /* Must-haves */
-    probe_hhdm_phys("low+0", 0, pml4);
-    probe_hhdm_phys("old CR3 page", old_cr3, pml4);
-    probe_hhdm_phys("new CR3 page", new_pml4_phys, pml4);
-
-    /* Optional targets (only if nonzero); handy for your setup */
-    if (bm0_phys && bm0_bytes)
-    {
-        probe_hhdm_phys("alloc_bm", bm0_phys, pml4);
-        probe_hhdm_phys("alloc_bm+end-1", bm0_phys + bm0_bytes - 1, pml4);
-    }
-    if (bm1_phys && bm1_bytes)
-    {
-        probe_hhdm_phys("usable_bm", bm1_phys, pml4);
-        probe_hhdm_phys("usable_bm+end-1", bm1_phys + bm1_bytes - 1, pml4);
-    }
-    if (fb_phys && fb_bytes)
-    {
-        probe_hhdm_phys("framebuffer", fb_phys, pml4);
-        probe_hhdm_phys("fb+end-1", fb_phys + fb_bytes - 1, pml4);
-    }
-}
-
-/* If something's missing, explode the exact path for one representative VA. */
-static void hhdm_dump_path_for_phys(uint64_t phys, struct page_table *pml4)
-{
-    uint64_t va = g_hhdm + phys;
-    dump_va_path(va, pml4);
 }
 
 /* ------------------------------------------------------------------ */
@@ -761,66 +635,44 @@ static void hhdm_dump_path_for_phys(uint64_t phys, struct page_table *pml4)
 /* ------------------------------------------------------------------ */
 void paging_bootstrap(void)
 {
-    /* HHDM offset */
-    if (hhdm_request.response)
-        g_hhdm = hhdm_request.response->offset;
-    if (g_hhdm == 0)
-        panic("paging_bootstrap: HHDM missing");
+    if (!hhdm_request.response)
+        panic("paging_bootstrap: HHDM response missing");
 
-    /* Build new PML4 */
+    g_hhdm = hhdm_request.response->offset;
+    if (g_hhdm == 0)
+        panic("paging_bootstrap: HHDM offset is zero");
+
+    /* New root and every lower-level table are Voyager-owned. We use the
+     * currently active Limine HHDM only to access/zero these physical pages
+     * while constructing the replacement address space. */
     g_pml4_virt = alloc_table(&g_pml4_phys);
 
     map_identity_minimal(g_pml4_virt);
-
-    /* Clone upper-half so existing HHDM/FB/stack/etc survive, then assert our
-     * kernel flags */
-    clone_upper_half_from_current(g_pml4_virt);
     map_kernel_higher_half(g_pml4_virt);
     map_hhdm(g_pml4_virt);
 
-    /* Preflight logs */
-    printf("INFO: CR3 to install: 0x%llx\n", (unsigned long long) g_pml4_phys);
-    printf("INFO: RSP: 0x%llx\n", (unsigned long long) readRSP());
+    printf("INFO: CR3 to install: 0x%llx\n",
+           (unsigned long long) g_pml4_phys);
+    printf("INFO: RSP: 0x%llx\n",
+           (unsigned long long) readRSP());
 
-    printf("%s", "Memory Total: ");
-    printf("%i", bytes_to_mib(get_total_usable_mem_bytes()));
-    printf("%s\n", "MiB");
+    printf("Memory Total: %iMiB\n",
+           bytes_to_mib(get_total_usable_mem_bytes()));
 
-    /* Known sizes if you have them; zero if not */
-    extern uint64_t g_alloc_bm_phys_base, g_alloc_bm_bytes;
-    extern uint64_t g_usable_bm_phys_base, g_usable_bm_bytes;
-    extern uint64_t framebuffer_phys,
-        framebuffer_bytes; /* if you expose them */
+    printf(">>> Probing HHDM <<<\n");
+    printf("--------------------------------\n");
 
-    printf("%s\n", ">>> Probing HHDM <<<");
-    printf("%s\n", "--------------------------------");
+    probe_hhdm_phys("low+0", 0, g_pml4_virt);
+    probe_hhdm_phys("old CR3 page", readCR3() & ADDR_MASK, g_pml4_virt);
+    probe_hhdm_phys("new CR3 page", g_pml4_phys, g_pml4_virt);
 
-    /* 1) Quick must-have probes + edges of important blocks */
-    hhdm_target_ranging(g_pml4_virt,
-                        g_pml4_phys,
-                        framebuffer_phys,
-                        framebuffer_bytes,
-                        g_alloc_bm_phys_base,
-                        g_alloc_bm_bytes,
-                        g_usable_bm_phys_base,
-                        g_usable_bm_bytes);
+    scan_hhdm_range(0,
+                    16ull * 1024 * 1024,
+                    PAGE_2M_SIZE,
+                    g_pml4_virt);
 
-    /* 2) Coarse scan over the first 16 MiB of phys (find holes fast) */
-    scan_hhdm_range(/*phys_start*/ 0,
-                    /*length*/ 16ull * 1024 * 1024,
-                    /*stride*/ 0x200000,
-                    /*2MiB*/ g_pml4_virt);
+    printf("--------------------------------\n");
+    printf(">>> HHDM Probe Done <<<\n");
 
-    /* 3) If “low+0 MISSING,” drill down to see which level is absent */
-    uint64_t low_phys = 0;
-    if (!walk_va_to_pa(g_hhdm + 0, g_pml4_virt, &low_phys, NULL))
-    {
-        hhdm_dump_path_for_phys(0, g_pml4_virt);
-    }
-
-    printf("%s\n", "--------------------------------");
-    printf("%s\n", ">>> HHDM Probe Done <<<");
-
-    /* Validate + install */
     install_new_cr3(g_pml4_phys, g_pml4_virt);
 }
