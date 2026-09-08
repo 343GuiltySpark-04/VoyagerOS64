@@ -1,6 +1,6 @@
 #include "include/paging/paging.h"
 #include "include/KernelUtils.h"
-#include "include/paging/frameallocator.h"
+#include "include/paging/frame_supplier.h"
 #include "include/printf.h"
 #include "include/string.h"
 
