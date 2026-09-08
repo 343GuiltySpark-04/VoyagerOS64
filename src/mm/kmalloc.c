@@ -8,7 +8,7 @@
 #include "../include/mm/kmalloc.h"
 #include "../include/KernelUtils.h" // for k_mode.addr_debug? optional
 #include "../include/lock.h"
-#include "../include/paging/neo_framealloc.h" // frame_alloc, frame_free
+#include "../include/paging/neo_framealloc.h" // frame_alloc
 #include "../include/paging/paging.h" // PagingMapMemory, PagingUnmapMemory, PagingPhysicalMemory
 #include "../include/printf.h"
 #include <stdbool.h>
@@ -16,7 +16,6 @@
 
 extern void     panic(const char *fmt, ...);
 extern uint64_t ReadCR3(void);
-extern uint64_t TranslateToHighHalfMemoryAddress(uint64_t physicalAddress);
 
 #ifndef PAGING_FLAG_PRESENT
 #define PAGING_FLAG_PRESENT (1ull << 0)
@@ -62,10 +61,18 @@ typedef struct block_footer
         (h)->size_and_flags = ((sz) | ((h)->size_and_flags & ALLOC_FLAG)); \
     } while (0)
 
-#define HDR_SIZE ((size_t) sizeof(block_t))
+/* Pad the header so payloads are 16-byte aligned. Keep every block size a
+ * multiple of 16 so split blocks preserve that alignment. */
+#define HDR_SIZE ALIGN_UP((size_t) sizeof(block_t), ALIGNMENT)
 #define FTR_SIZE ((size_t) sizeof(footer_t))
 #define OVERHEAD (HDR_SIZE + FTR_SIZE)
 #define USABLE(h) (BLK_SIZE(h) - OVERHEAD)
+
+static inline size_t total_size_for_payload(size_t payload)
+{
+    size_t aligned_payload = ALIGN_UP(payload, ALIGNMENT);
+    return ALIGN_UP(aligned_payload + OVERHEAD, ALIGNMENT);
+}
 
 static inline footer_t *FOOTER_OF(block_t *h)
 {
@@ -88,10 +95,12 @@ static spinlock_t g_heap_lock = SPINLOCK_INIT;
 static block_t   *g_free_list =
     NULL; // circular or linear; we’ll keep it linear head
 
-static inline struct PageTable *current_pml4(void)
+/* The legacy paging API expects a PHYSICAL PML4 address in its PageTable *
+ * parameter and performs the HHDM translation internally. */
+static inline struct PageTable *current_pml4_phys(void)
 {
-    uint64_t cr3 = ReadCR3() & ~0xfffull; // phys
-    return (struct PageTable *) TranslateToHighHalfMemoryAddress(cr3);
+    uint64_t cr3 = ReadCR3() & ~0xfffull;
+    return (struct PageTable *) (uintptr_t) cr3;
 }
 
 /* Free list ops */
@@ -123,7 +132,7 @@ static void heap_map_more(size_t bytes)
     if (end > HEAP_LIMIT)
         panic("kmalloc: VA heap exhausted");
 
-    struct PageTable *p4 = current_pml4();
+    struct PageTable *p4 = current_pml4_phys();
     for (uint64_t va = start; va < end; va += PAGE_SIZE)
     {
         uint64_t phys = frame_alloc();
@@ -150,10 +159,10 @@ static void heap_map_more(size_t bytes)
 /* First-fit search */
 static block_t *fl_find_fit(size_t need_payload)
 {
-    size_t need_total = ALIGN_UP(need_payload, ALIGNMENT) + OVERHEAD;
+    size_t need_total = total_size_for_payload(need_payload);
     for (block_t *it = g_free_list; it; it = it->next_free)
     {
-        if (USABLE(it) >= need_payload && BLK_SIZE(it) >= need_total)
+        if (BLK_SIZE(it) >= need_total)
             return it;
     }
     return NULL;
@@ -162,12 +171,12 @@ static block_t *fl_find_fit(size_t need_payload)
 /* Split free block if large enough; return allocated header */
 static block_t *allocate_from_block(block_t *h, size_t need_payload)
 {
-    size_t need_total = ALIGN_UP(need_payload, ALIGNMENT) + OVERHEAD;
+    size_t need_total = total_size_for_payload(need_payload);
     size_t old_sz     = BLK_SIZE(h);
 
     fl_remove(h);
 
-    if (old_sz >= need_total + OVERHEAD + MIN_SPLIT_SIZE)
+    if (old_sz >= need_total + total_size_for_payload(MIN_SPLIT_SIZE))
     {
         /* Split: front part becomes allocated, tail becomes a free block */
         size_t alloc_sz = need_total;
@@ -199,12 +208,10 @@ static block_t *allocate_from_block(block_t *h, size_t need_payload)
 /* Coalesce with neighbors if they are free */
 static block_t *coalesce(block_t *h)
 {
-    /* Try next */
+    /* Try next. g_heap_curr is the first currently-unmapped heap address. */
     block_t *n = NEXT_BLOCK(h);
-    if ((uint8_t *) n < (uint8_t *) HEAP_LIMIT)
+    if ((uintptr_t) n < (uintptr_t) g_heap_curr)
     {
-        // Safe to read footer/header only if within mapped region; we assume
-        // contiguous arena growth
         if (!IS_ALLOC(n))
         {
             /* merge with next */
@@ -215,7 +222,7 @@ static block_t *coalesce(block_t *h)
         }
     }
     /* Try prev: guard against base */
-    if ((uint8_t *) h > (uint8_t *) HEAP_BASE)
+    if ((uintptr_t) h > (uintptr_t) HEAP_BASE)
     {
         footer_t *pf  = (footer_t *) ((uint8_t *) h - FTR_SIZE);
         size_t    psz = pf->size_and_flags & ~ALLOC_FLAG;
@@ -253,7 +260,7 @@ void *kmalloc(size_t size)
     if (!h)
     {
         /* Map more and retry once */
-        size_t grow = (size + OVERHEAD);
+        size_t grow = total_size_for_payload(size);
         if (grow < (128 * PAGE_SIZE))
             grow = 128 * PAGE_SIZE; // amortize mapping
         heap_map_more(grow);
@@ -314,9 +321,9 @@ void *krealloc(void *ptr, size_t newsize)
         return ptr;
     }
 
-    /* Try to grow into next block if it is free and enough */
+    /* Try to grow into next block if it is mapped, free and large enough. */
     block_t *n = NEXT_BLOCK(h);
-    if ((uint8_t *) n < (uint8_t *) HEAP_LIMIT && !IS_ALLOC(n))
+    if ((uintptr_t) n < (uintptr_t) g_heap_curr && !IS_ALLOC(n))
     {
         size_t combined = cur + OVERHEAD + USABLE(n);
         if (combined >= newsize)
