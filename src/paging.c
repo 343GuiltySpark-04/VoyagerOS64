@@ -210,12 +210,10 @@ void PagingMapMemory(struct PageTable *p4,
     struct PageTable *p4Virtual =
         (struct PageTable *) TranslateToHighHalfMemoryAddress((uint64_t) p4);
 
-    
     struct PageTable *pdp =
         GetOrAllocEntry(p4Virtual, offset.p4Offset, higherPermissions);
     struct PageTable *pd =
         GetOrAllocEntry(pdp, offset.pdpOffset, higherPermissions);
-        printf_("%s\n", "Here!");
     struct PageTable *pt =
         GetOrAllocEntry(pd, offset.pdOffset, higherPermissions);
 
