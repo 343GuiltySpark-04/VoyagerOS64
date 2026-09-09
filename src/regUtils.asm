@@ -95,29 +95,9 @@ readCR3:
     mov rax, cr3
     ret
 
-; Temporary Stage-2 diagnostic handoff.
-; Raw COM1 markers deliberately avoid printf/terminal/data dependencies:
-;   A = entered writeCR3 before switching
-;   B = fetched/executed immediately after mov cr3
-;   C = successfully read the return address from the current stack
-; If all three appear, the new tables can execute this text and read RSP.
 writeCR3:
-    mov dx, 0x3f8
-    mov al, 'A'
-    out dx, al
-
     mov cr3, rdi
-
-    mov al, 'B'
-    out dx, al
-
-    ; Preserve the return address in a caller-saved scratch register. Do NOT
-    ; store it in RAX and then write AL: AL is the low byte of RAX and would
-    ; corrupt the return address before the jump.
-    pop r11
-    mov al, 'C'
-    out dx, al
-    jmp r11
+    ret
 
 readCR2:
     mov rax,cr2
