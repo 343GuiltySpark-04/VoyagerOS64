@@ -39,5 +39,6 @@ void switch_to(process_t *next);
 process_t *create_process(void (*entry)(void));
 void       schedule(void);
 void       init_scheduler(void);
+void       scheduler_start(void);
 
 #endif
