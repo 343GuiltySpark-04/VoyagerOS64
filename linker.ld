@@ -65,13 +65,22 @@ SECTIONS
         *(.gnu.linkonce.d.*)
         *(.got .got.* .got.plt)
     } :data
-    __data_end = .;
+
+    /* Limine request objects are writable because the bootloader fills their
+       response pointers. Keep them inside the writable kernel image so the
+       replacement page tables continue to map them after the CR3 switch. */
+    .requests : ALIGN(8)
+    {
+        KEEP(*(.requests))
+    } :data
 
     /* -------- DYNAMIC (for PIE) -------- */
     .dynamic : ALIGN(0x10)
     {
         *(.dynamic)
     } :data :dynamic
+
+    __data_end = .;
 
     /* -------- BSS -------- */
     . = ALIGN(0x1000);
@@ -93,14 +102,6 @@ SECTIONS
     rodata_end_addr   = __rodata_end;
     data_start_addr   = __data_start;
     data_end_addr     = __data_end;
-
-        /* -------- LIMINE REQUESTS -------- */
-    . = ALIGN(8);
-    .requests : ALIGN(8)
-    {
-        KEEP(*(.requests))
-    }
-
 
     /DISCARD/ :
     {
