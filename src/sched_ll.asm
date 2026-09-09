@@ -12,6 +12,10 @@ section .text
 ; only callee-saved registers need to survive. IRQ/preemptive switching must use
 ; an interrupt-frame-aware path and must not call this routine directly.
 switch_to:
+    ; Keep current and RSP coherent with respect to ordinary maskable IRQs while
+    ; the ownership of the active stack changes.
+    cli
+
     mov rax, [rel current]
     test rax, rax
     jz .load_new
@@ -36,4 +40,9 @@ switch_to:
     pop r12
     pop rbx
     pop rbp
+
+    ; STI's interrupt shadow suppresses maskable IRQ delivery until after the
+    ; following RET, so the resumed task begins with interrupts enabled without
+    ; exposing the half-switched state above.
+    sti
     ret
