@@ -8,6 +8,7 @@
 #include "include/KernelUtils.h"
 #include "include/acpi/acpi.h"
 #include "include/apic/lapic.h"
+#include "include/consts.h"
 #include "include/cpuUtils.h"
 #include "include/drivers/keyboard/keyboard.h"
 #include "include/early_alloc.h"
@@ -394,7 +395,8 @@ void _start(void)
 
     print_stack_size();
 
-    printf_("%s\n", "VoyagerOS64 v0.0.4");
+    printf_("%s", "VoyagerOS64 ");
+    printf_("%s\n", KERNEL_VERSION);
 
     init_done = 1;
 
