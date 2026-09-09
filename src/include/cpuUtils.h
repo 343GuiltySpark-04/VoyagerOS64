@@ -39,20 +39,37 @@
 #define CPUID_VENDOR_HYPERV "Microsoft Hv"
 #define CPUID_VENDOR_PARALLELS " prl hyperv "
 #define CPUID_VENDOR_PARALLELS_ALT \
-    " lrpepyh vr " // Sometimes Parallels incorrectly encodes "prl hyperv" as
-                   // "lrpepyh vr" due to an endianness mismatch.
+    " lrpepyh vr "
 #define CPUID_VENDOR_BHYVE "bhyve bhyve "
 #define CPUID_VENDOR_QNX " QNXQVMBSQG "
 
-extern bool has_ACPI;
-
-uint64_t rand_asm();
-
+extern bool   has_ACPI;
 extern size_t xsave_bank;
 
-void alloc_xsave();
+uint64_t rand_asm(void);
+int      get_model(void);
+void     cpuid_readout(void);
+void     alloc_xsave(void);
+void     fpu_init(void);
 
-int  get_model(void);
-void cpuid_readout();
+void check_avx(void);
+void check_oxsave(void);
+void check_fxsr(void);
+void check_htt(void);
+void check_sep(void);
+void check_sse(void);
+void check_xsave(void);
+void check_pcid(void);
+void check_pae(void);
+void check_mce(void);
+void check_apic(void);
+void check_mca(void);
+void check_acpi(void);
+void check_ds(void);
+void check_tm(void);
+void check_rdseed(void);
+void check_rdrand(void);
+void check_fpu(void);
+void check_tsc(void);
 
 #endif

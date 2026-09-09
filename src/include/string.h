@@ -18,7 +18,7 @@ extern "C"
     int      str2int(char str[]);
     uint64_t str2int2(char *str);
     char    *strncpy(char *dest, const char *src, size_t n);
-    char     int_to_str(int value, char *buffer);
+    char    *int_to_str(int value, char *buffer);
     void     u64_to_str(uint64_t val, char *buf);
 
 #ifdef __cplusplus

@@ -29,13 +29,13 @@ enum GDTAccessFlag
     (ReadWrite | Execute | Segments | GDTAccessDPL(3) | Present)
 #define GDTAccessUserData (ReadWrite | Segments | GDTAccessDPL(3) | Present)
 
-typedef struct PACKED GDT_Desc
+struct PACKED GDT_Desc
 {
     uint16_t size;
     uint64_t offset;
 };
 
-typedef struct PACKED GDT_Entry
+struct PACKED GDT_Entry
 {
     uint16_t limit_low;
     uint16_t base_low;
@@ -45,7 +45,7 @@ typedef struct PACKED GDT_Entry
     uint8_t  base_high;
 };
 
-typedef struct PACKED GDT_Entry_16
+struct PACKED GDT_Entry_16
 {
     uint16_t limit_low;
     uint16_t base_low;
@@ -55,7 +55,7 @@ typedef struct PACKED GDT_Entry_16
     uint8_t  base_high;
 };
 
-typedef struct PACKED GDT_Entry_32
+struct PACKED GDT_Entry_32
 {
     uint16_t limit_low;
     uint16_t base_low;
@@ -65,7 +65,7 @@ typedef struct PACKED GDT_Entry_32
     uint8_t  base_high;
 };
 
-typedef struct PACKED TSS_Entry
+struct PACKED TSS_Entry
 {
     uint16_t length;
     uint16_t base_low;
@@ -94,8 +94,6 @@ struct PACKED ALIGN_4K GDT
 
 extern uint64_t rsp0;
 
-void LoadGDT_Stage1();
-
+void LoadGDT_Stage1(void);
 void gdt_load_tss(struct TSS *tss);
-
 void gdt_reload(void);

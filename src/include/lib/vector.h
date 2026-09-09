@@ -1,7 +1,7 @@
 #ifndef _VECTOR_H
 #define _VECTOR_H
 
-#include "../liballoc.h"
+#include "../mm/kmalloc.h"
 #include "../string.h"
 #include <stddef.h>
 #include <stdint.h>
@@ -35,7 +35,7 @@
             {                                                              \
                 VECTOR_ENSURE_LENGTH_vec->capacity *= 2;                   \
             }                                                              \
-            VECTOR_ENSURE_LENGTH_vec->data = realloc(                      \
+            VECTOR_ENSURE_LENGTH_vec->data = krealloc(                     \
                 VECTOR_ENSURE_LENGTH_vec->data,                            \
                 VECTOR_ENSURE_LENGTH_vec->capacity *                       \
                     sizeof(*VECTOR_ENSURE_LENGTH_vec->data)); /* NOLINT */ \
