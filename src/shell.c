@@ -1,5 +1,6 @@
 #include "include/drivers/keyboard/keyboard.h"
 #include "include/mm/kmalloc.h"
+#include "include/mm/memtest.h"
 #include "include/printf.h"
 #include "include/sched.h"
 #include "include/shell.h"
@@ -127,6 +128,12 @@ void cmd_parser(const char *str)
     if (shell_streq(str, "time"))
     {
         print_sys_time();
+        return;
+    }
+
+    if (shell_streq(str, "memtest"))
+    {
+        memtest_run();
         return;
     }
 
