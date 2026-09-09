@@ -1,6 +1,8 @@
 #include "include/KernelUtils.h"
 #include "include/kernel.h"
+#include "include/paging/paging_bootstrap.h"
 #include "include/printf.h"
+#include "include/registers.h"
 #include "include/serial.h"
 #include "include/terminal/term.h"
 #include <stdint.h>
@@ -86,6 +88,15 @@ static void buffer_or_flush(char c)
     }
 }
 
+static inline bool voyager_page_tables_active(void)
+{
+    uint64_t voyager_cr3 = paging_pml4_phys();
+    if (voyager_cr3 == 0)
+        return false;
+
+    return (readCR3() & ~0xfffull) == (voyager_cr3 & ~0xfffull);
+}
+
 /* ------------------------------------------------------------------ */
 /* putchar                                                            */
 /* ------------------------------------------------------------------ */
@@ -116,8 +127,15 @@ void _putchar(char character)
     }
     else if (bootspace == 2)
     {
-        early_term.response->write(
-            early_term.response->terminals[0], &character, sizeof(char));
+        /* Limine's terminal write callback belongs to the bootloader's
+         * execution environment. Once Voyager installs its own CR3, do not
+         * execute that callback; the replacement HHDM is deliberately NX.
+         * Stay on COM1 until Voyager's framebuffer terminal is initialized. */
+        if (!voyager_page_tables_active())
+        {
+            early_term.response->write(
+                early_term.response->terminals[0], &character, sizeof(char));
+        }
 
         if (k_mode.timestamp == 0)
             serial_debug(character);
@@ -126,8 +144,19 @@ void _putchar(char character)
     }
     else if (bootspace == 3)
     {
-        early_term.response->write(
-            early_term.response->terminals[0], &character, sizeof(char));
+        if (!voyager_page_tables_active())
+        {
+            early_term.response->write(
+                early_term.response->terminals[0], &character, sizeof(char));
+        }
+        else if (k_mode.timestamp == 0)
+        {
+            serial_debug(character);
+        }
+        else
+        {
+            buffer_or_flush(character);
+        }
     }
     else
     {
