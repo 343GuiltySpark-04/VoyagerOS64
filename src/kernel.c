@@ -308,7 +308,11 @@ void _start(void)
 
     bootspace = 1;
     if (k_mode.addr_debug == 1)
-        print_frame_bitmap();
+    {
+        printf_("Neo PMM frames: total=%llu free=%llu\n",
+                (unsigned long long) frame_total_count(),
+                (unsigned long long) frame_free_count());
+    }
     bootspace = 0;
 
     init_scheduler();

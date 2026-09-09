@@ -66,16 +66,18 @@ endif
 override NASMFLAGS += \
     -f elf64
  
-# Stage-2 keeps the old implementations in-tree for history/reference, but they
-# are no longer linked into the active kernel. This prevents stale allocators
-# and the abandoned tube I/O layer from silently becoming live dependencies.
+# Stage-2 keeps old implementations in-tree for history/reference, but they are
+# no longer linked into the active kernel. This prevents stale allocators and
+# the abandoned tube I/O layer from silently becoming live dependencies.
 override LEGACY_CFILES := \
     src/heap.c \
     src/bucket.c \
     src/pebble.c \
+    src/frameallocator.c \
     src/vmm.c \
     src/streams.c \
     src/liballoc.c \
+    src/memUtils.c \
     src/mm/liballoc_glue.c
 
 override LEGACY_CCFILES := \

@@ -3,13 +3,13 @@
 #include "include/string.h"
 
 /**
- * @brief Print a string to the serial port.
+ * @brief Print a timestamped string to the serial port.
  * @param str String to print.
  */
 void serial_print(const char *str)
 {
     char timestamp_buf[32];
-    int_to_str((int) get_ts(), timestamp_buf);
+    u64_to_str(get_ts(), timestamp_buf);
 
     serial_debug('[');
     for (char *p = timestamp_buf; *p; p++)
@@ -21,9 +21,6 @@ void serial_print(const char *str)
         serial_debug(*p);
 }
 
-/**
- * @brief Print a timestamped string followed by a newline.
- */
 void serial_print_with_ts(const char *msg)
 {
     char ts[32];
@@ -41,13 +38,13 @@ void serial_print_with_ts(const char *msg)
 }
 
 /**
- * @brief Print a string ending with a newline to the serial port.
+ * @brief Print a timestamped string followed by a newline.
  * @param str String to print.
  */
 void serial_print_line(const char *str)
 {
     char timestamp_buf[32];
-    int_to_str((int) get_ts(), timestamp_buf);
+    u64_to_str(get_ts(), timestamp_buf);
 
     serial_debug('[');
     for (char *p = timestamp_buf; *p; p++)

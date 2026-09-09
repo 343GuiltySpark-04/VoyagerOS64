@@ -1,70 +1,36 @@
 #pragma once
-#include "global_defs.h"
-#include "limine.h"
-#include <stdint.h>
-
 #ifndef _KERNEL_UTILS_H
 #define _KERNEL_UTILS_H
 
-extern const struct kswitches k_mode;
+#include "global_defs.h"
+#include <stdint.h>
 
-extern struct PageTable *page_table;
-
-extern uint32_t total_pages;
-
-// struct contains kernel behavior setting switches. their values are set in
-// KernelUtils.c
 struct PACKED kswitches
 {
-    // how many frames back to trace (used as default a differant value can be
-    // set in the args)
     uint8_t stack_trace_size;
-
-    // a value of 1 or 0 or 2, 1 enables 0 disables 2 sets to dump.
     uint8_t stack_trace_on_fault;
-
-    // a value of 1 or 0, 1 enables 0 disables.
     uint8_t acpi_support;
-
-    // a value of 1 or 0, 1 enables 0 disables.
     uint8_t sched_debug;
-
-    // a value of 1 or 0, 1 enables 0 disables. I suggest running with 256mb of
-    // ram to avoid a log from hell.
     uint8_t addr_debug;
-
     uint8_t hw_rng_support;
-
-    // 0 gb, 1 mb, 2 kb, 3 b
     uint8_t mem_readout_unit;
-
     uint8_t liballoc_debug;
-
     uint8_t fpu_allowed;
-
     uint8_t timestamp;
 };
 
-void print_memmap();
+extern const struct kswitches k_mode;
 
-uint64_t get_memory_size();
+void print_memmap(void);
+uint64_t get_memory_size(void);
+uint64_t get_memory_size_gib(void);
+uint64_t bytes_to_mib(uint64_t bytes);
+uint64_t bytes_to_gib(uint64_t bytes);
 
-void init_memory();
-
-void print_memory();
-
-extern int temp;
-
-extern void restore_floats();
-
-extern void save_floats();
-
+struct term_context;
 extern struct term_context *term_context;
 
-uint64_t bytes_to_mib(uint64_t bytes);
-
-uint64_t get_memory_size_gib();
-
-uint64_t bytes_to_gib(uint64_t bytes);
+extern void restore_floats(void);
+extern void save_floats(void);
 
 #endif
