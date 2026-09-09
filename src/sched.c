@@ -31,7 +31,7 @@ void init_scheduler(void)
     run_queue_head = NULL;
     run_queue_tail = NULL;
     next_pid = 1;
-    allow_sched = true;
+    allow_sched = false;
 }
 
 process_t *create_process(void (*entry)(void))
@@ -111,7 +111,7 @@ void schedule(void)
     if (!next)
         return;
 
-    /* A single runnable task has nowhere to yield to. */
+    /* A single runnable task has nowhere to yield to after first dispatch. */
     if (current && next == current)
         return;
 
@@ -120,4 +120,17 @@ void schedule(void)
 
     next->state = PROC_RUNNING;
     switch_to(next);
+}
+
+void scheduler_start(void)
+{
+    if (!run_queue_head)
+        panic("scheduler: cannot start with an empty run queue");
+    if (current)
+        panic("scheduler: start requested while a task is already current");
+
+    allow_sched = true;
+    schedule();
+
+    panic("scheduler: initial dispatch returned unexpectedly");
 }
