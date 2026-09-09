@@ -74,3 +74,4 @@ html/*
 *.img
 quick_calc
 .vscode/settings.json
+build_output.txt
