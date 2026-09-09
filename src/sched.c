@@ -9,6 +9,9 @@
 #define STACK_SIZE (16u * 1024u)
 #define STACK_ALIGN 16u
 
+/* This remains false for the cooperative 0.0.5 bring-up. The PIT handler uses
+ * it as the gate for IRQ-time preemption, which is deliberately parked until
+ * context switching is moved onto a proper interrupt-frame design. */
 bool allow_sched = false;
 process_t *current = NULL;
 
@@ -104,7 +107,7 @@ process_t *create_process(void (*entry)(void))
 
 void schedule(void)
 {
-    if (!allow_sched || !run_queue_head)
+    if (!run_queue_head)
         return;
 
     process_t *next = current ? current->next : run_queue_head;
@@ -129,7 +132,9 @@ void scheduler_start(void)
     if (current)
         panic("scheduler: start requested while a task is already current");
 
-    allow_sched = true;
+    /* IRQ-time preemption intentionally remains disabled. Tasks yield by
+     * calling schedule() from ordinary C context. */
+    allow_sched = false;
     schedule();
 
     panic("scheduler: initial dispatch returned unexpectedly");
