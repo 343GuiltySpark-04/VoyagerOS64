@@ -13,11 +13,7 @@ define DEFAULT_VAR =
 endef
  
 # It is highly recommended to use a custom built cross toolchain to build a kernel.
-# We are only using "cc" as a placeholder here. It may work by using
-# the host system's toolchain, but this is not guaranteed.
 export CC=$(HOME)/opt/cross/bin/x86_64-elf-gcc
- 
-# Same thing for "ld" (the linker).
 export LD=$(HOME)/opt/cross/bin/x86_64-elf-ld
  
 # User controllable CFLAGS.
@@ -34,13 +30,13 @@ LDFLAGS ?=
  
 # Internal C flags that should not be changed by the user.
 override CFLAGS +=       \
-    -std=gnu11             \
-    -ffreestanding       \
+    -std=gnu11          \
+    -ffreestanding      \
     -fno-stack-protector \
-    -fno-stack-check     \
-    -fno-lto             \
-    -fno-pie             \
-    -fno-pic             \
+    -fno-stack-check    \
+    -fno-lto            \
+    -fno-pie            \
+    -fno-pic            \
     -m64                 \
     -march=x86-64        \
     -mabi=sysv           \
@@ -58,6 +54,7 @@ override LDFLAGS +=         \
     -static                 \
     -m elf_x86_64           \
     -z max-page-size=0x1000 \
+    -z noexecstack          \
     -T linker.ld
  
 # Check if the linker supports -no-pie and enable it if it does.
@@ -69,9 +66,28 @@ endif
 override NASMFLAGS += \
     -f elf64
  
-# Use find to glob all *.c, *.S, and *.asm files in the directory and extract the object names.
-override CFILES := $(shell find src -type f -name '*.c')
-override CCFILES := $(shell find src -type f -name '*.cpp')
+# Stage-2 keeps the old implementations in-tree for history/reference, but they
+# are no longer linked into the active kernel. This prevents stale allocators
+# and the abandoned tube I/O layer from silently becoming live dependencies.
+override LEGACY_CFILES := \
+    src/heap.c \
+    src/bucket.c \
+    src/pebble.c \
+    src/vmm.c \
+    src/streams.c \
+    src/liballoc.c \
+    src/mm/liballoc_glue.c
+
+override LEGACY_CCFILES := \
+    src/alloc.cpp \
+    src/lock.cpp \
+    src/lock_atm_c.cpp
+
+# Use find for source discovery, then explicitly prune retired implementations.
+override ALL_CFILES := $(shell find src -type f -name '*.c')
+override ALL_CCFILES := $(shell find src -type f -name '*.cpp')
+override CFILES := $(filter-out $(LEGACY_CFILES),$(ALL_CFILES))
+override CCFILES := $(filter-out $(LEGACY_CCFILES),$(ALL_CCFILES))
 override ASFILES := $(shell find src -type f -name '*.S')
 override NASMFILES := $(shell find src -type f -name '*.asm')
 override OBJ := $(CFILES:.c=.o) $(ASFILES:.S=.o) $(NASMFILES:.asm=.o) $(CCFILES:.cpp=.o)
@@ -93,7 +109,7 @@ $(KERNEL): $(OBJ)
 	$(CC) $(CPPFLAGS) $(CFLAGS) -c $< -o $@
 
 %.o: %.cpp
-	gcc $(CPPFLAGS) $(CFLAGS) -c $< -o $@
+	gcc $(CPPFLAGS) $(filter-out -std=gnu11,$(CFLAGS)) -std=gnu++17 -c $< -o $@
  
 # Compilation rules for *.S files.
 %.o: %.S
