@@ -38,7 +38,6 @@
 #include "include/terminal/framebuffer.h"
 #include "include/terminal/term.h"
 #include "include/time.h"
-#include "include/vgafont.h"
 #include <stddef.h>
 #include <stdint.h>
 
@@ -174,11 +173,19 @@ static void memory_bringup(void)
     g_boot_phys_page = supply_from_frame;
 }
 
+static void scheduler_heartbeat(const char *message)
+{
+    while (*message)
+        serial_debug(*message++);
+
+    serial_debug('\n');
+}
+
 void proc_a(void)
 {
     while (1)
     {
-        printf_("%s\n", "I'm a thread");
+        scheduler_heartbeat("I'm a thread");
         for (volatile int i = 0; i < 1000000; i++)
             ; // simple delay
         schedule();
@@ -189,7 +196,7 @@ void proc_b(void)
 {
     while (1)
     {
-        printf_("%s\n", "I'm a catgirl");
+        scheduler_heartbeat("I'm a catgirl");
         for (volatile int i = 0; i < 1000000; i++)
             ; // simple delay
         schedule();
@@ -283,7 +290,7 @@ void _start(void)
 
     asm volatile("int $49");
 
-    //print_memmap();
+    // print_memmap();
 
     memory_bringup();
 
@@ -330,40 +337,48 @@ void _start(void)
         acpi_init();
     }
 
-    keyboard_init();
-
     printf_("%s\n", "Handing Control to Standalone Terminal...");
 
-    bootspace = 3;
-
-    for (uint64_t i = 0; i < 500; i++)
-    {
-        printf_("%s\n", "");
-    }
-
+    /* Once Voyager owns CR3, Limine's terminal callback is no longer safe to
+     * execute. Stay on serial while fbterm takes ownership of the framebuffer,
+     * then let fbterm clear the old bootloader pixels itself. */
     bootspace = 1;
+
+    if (fbr_req.response == NULL || fbr_req.response->framebuffer_count < 1)
+        panic("Framebuffer terminal requested without a framebuffer");
 
     term_context = fbterm_init(kmalloc,
                                fbr_req.response->framebuffers[0]->address,
                                fbr_req.response->framebuffers[0]->width,
                                fbr_req.response->framebuffers[0]->height,
-
                                fbr_req.response->framebuffers[0]->pitch,
                                NULL,
                                NULL,
                                NULL,
                                &term_bg,
                                &term_fg,
-                               &vgafont,
-                               8,
-                               16,
-                               1,
-
+                               NULL,
+                               0,
+                               0,
+                               0,
                                1,
                                1,
                                1);
 
+    if (!term_context)
+        panic("Framebuffer terminal initialization failed");
+
+    if (term_context->clear)
+        term_context->clear(term_context, true);
+
+    if (term_context->full_refresh)
+        term_context->full_refresh(term_context);
+
     bootspace = 0;
+
+    /* Match the stable 0.0.4 ordering: keyboard input comes online only after
+     * the standalone terminal exists. */
+    keyboard_init();
 
     // VMM_table_clone();
 
@@ -380,8 +395,6 @@ void _start(void)
     print_stack_size();
 
     printf_("%s\n", "VoyagerOS64 v0.0.4");
-
-    printf_("%s\n", ":> ");
 
     init_done = 1;
 
@@ -405,6 +418,8 @@ void _start(void)
     create_process(proc_a);
 
     create_process(proc_b);
+
+    create_process(vsh_loop);
 
     printf_("%s\n", "Scheduler cooperative round-robin online.");
     scheduler_start();
