@@ -3,7 +3,6 @@
 #include "../include/cpuUtils.h"
 #include "../include/global_defs.h"
 #include "../include/limine.h"
-#include "../include/paging/frameallocator.h"
 #include "../include/paging/paging.h"
 #include "../include/panic.h"
 #include "../include/printf.h"
