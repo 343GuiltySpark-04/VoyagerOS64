@@ -126,14 +126,14 @@ extern void dyn_isr_handler(uint64_t isr);
 
 void irq_handler(isr_xframe_t *frame);
 /**
- * @brief The handler for IRQs.
+ * @brief The handler for IRQs and software vectors that share the IRQ stub.
  * @param * frame
  */
 void irq_handler(isr_xframe_t *frame)
 {
     uint64_t vector = frame->base_frame.vector;
 
-    if (vector < 48)
+    if (vector >= 32 && vector < 48)
     {
         switch (vector)
         {
@@ -144,8 +144,13 @@ void irq_handler(isr_xframe_t *frame)
                 keyboard_handler();
                 break;
         }
+
+        /* Only hardware PIC IRQ vectors 32..47 require an EOI. */
+        pic_send_eoi(vector - 32);
+        return;
     }
-    else
+
+    if (vector >= 48)
     {
         printf_("IRQ Handoff to Dynamic Handler Using Vector: %i With Handler "
                 "Located At Address: 0x%llx\n",
@@ -157,11 +162,10 @@ void irq_handler(isr_xframe_t *frame)
             panic("Kernel Panic: Invalid/NULL Dynamic ISR Vector! Not my "
                   "fault... ok it's my fault.");
         }
-        else
-        {
-            dyn_isr_handler(isr_delta[vector]);
-        }
+
+        dyn_isr_handler(isr_delta[vector]);
+        return;
     }
 
-    pic_send_eoi(vector - 32);
+    panic("irq_handler: non-IRQ vector %i reached IRQ path", vector);
 }
