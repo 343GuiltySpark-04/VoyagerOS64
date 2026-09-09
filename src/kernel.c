@@ -181,6 +181,7 @@ void proc_a(void)
         printf_("%s\n", "I'm a thread");
         for (volatile int i = 0; i < 1000000; i++)
             ; // simple delay
+        schedule();
     }
 }
 
@@ -191,6 +192,7 @@ void proc_b(void)
         printf_("%s\n", "I'm a catgirl");
         for (volatile int i = 0; i < 1000000; i++)
             ; // simple delay
+        schedule();
     }
 }
 
@@ -398,20 +400,14 @@ void _start(void)
 
     // halt();
 
-    uint64_t loopcount = 0;
-    // Just chill until needed
-
-    // pic_mask_irq(0);
-
     init_scheduler();
 
     create_process(proc_a);
 
     create_process(proc_b);
 
-    // pic_unmask_irq(0);
+    printf_("%s\n", "Scheduler cooperative round-robin online.");
+    scheduler_start();
 
-    while (1)
-    {
-    }
+    panic("scheduler returned control to kernel bootstrap");
 }
