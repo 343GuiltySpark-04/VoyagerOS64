@@ -339,9 +339,6 @@ void _start(void)
         printf_("%s\n", "");
     }
 
-    early_term.response->write(
-        early_term.response->terminals[0], NULL, LIMINE_TERMINAL_FULL_REFRESH);
-
     bootspace = 1;
 
     term_context = fbterm_init(kmalloc,
