@@ -268,7 +268,10 @@ void _start(void)
 
     gdt_reload();
 
-    asm volatile("sti");
+    /* Keep external IRQs quiescent while the ISR self-tests and memory
+     * subsystem replace the active page tables. Software INT instructions
+     * still execute with IF clear, so the vector tests remain useful. */
+    asm volatile("cli");
 
     idt_reg_test();
 
@@ -284,7 +287,10 @@ void _start(void)
 
     kmalloc_init();
 
+    /* PIT was brought online before the memory retrofit. Keep it masked until
+     * the rest of the interrupt/scheduler work is deliberately restored. */
     pic_mask_irq(0);
+    asm volatile("sti");
 
     if (Kaddress_req.response == NULL)
     {
