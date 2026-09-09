@@ -6,15 +6,8 @@
 #include <stddef.h>
 #include <stdint.h>
 
-extern void halt();
+extern void halt(void);
 
-// Read From IOAPIC
-/**
- * @brief Read a value from the IO APIC.
- * @param * io_apic
- * @param reg Register to read from the IO APIC
- * @return Value read from the IO API
- */
 static uint32_t io_apic_read(struct madt_io_apic *io_apic, uint32_t reg)
 {
     uint64_t base = (uint64_t) io_apic->address + HIGHER_HALF_MEMORY_OFFSET;
@@ -22,38 +15,19 @@ static uint32_t io_apic_read(struct madt_io_apic *io_apic, uint32_t reg)
     return *(volatile uint32_t *) (base + 16);
 }
 
-// Write to IOAPIC
-/**
- * @brief Write a 32 - bit register on the IO - APIC.
- * @param * io_apic
- * @param reg Register to write to ( big endian )
- * @param value Value to write to ( little endian
- */
 static void
 io_apic_write(struct madt_io_apic *io_apic, uint32_t reg, uint32_t value)
 {
     uint64_t base = (uint64_t) io_apic->address + HIGHER_HALF_MEMORY_OFFSET;
-    *(volatile uint32_t *) base        = reg;
+    *(volatile uint32_t *) base = reg;
     *(volatile uint32_t *) (base + 16) = value;
 }
 
-// Get number of GSI's
-/**
- * @brief Get GSI count of I / O APIC
- * @param * io_apic
- * @return Number of GSIs in
- */
 static size_t io_apic_gsi_count(struct madt_io_apic *io_apic)
 {
     return (io_apic_read(io_apic, 1) & 0xff0000) >> 16;
 }
 
-// create MADT
-/**
- * @brief Find the IO APIC that corresponds to GSI
- * @param gsi GSI to look up.
- * @return I / O APIC
- */
 static struct madt_io_apic *io_apic_from_gsi(uint32_t gsi)
 {
     for (size_t i = 0; i < madt_io_apics.length; i++)
@@ -67,21 +41,12 @@ static struct madt_io_apic *io_apic_from_gsi(uint32_t gsi)
     }
 
     printf_("%s\n", "!!!!!!!!!!!!!!!!!!KERNEL PANIC!!!!!!!!!!!!!!!");
-    printf_("%s\n", " Cannot determine IO APIC from GSI %lu", gsi);
+    printf_("Cannot determine IO APIC from GSI %lu\n", gsi);
     printf_("%s\n", "!!!!!!!!!!!!!!!!!!KERNEL PANIC!!!!!!!!!!!!!!!");
-
     halt();
+    return NULL;
 }
 
-// Setup IRQ redirects
-/**
- * @brief Set GSI redirect for interrupt
- * @param lapic_id LAPIC ID to redirect to
- * @param vector Interrupt vector to redirect to
- * @param irq Interrupt source to redirect to
- * @param status True if status should be set
- * @return The IO - APIC
- */
 void io_apic_set_irq_redirect(uint32_t lapic_id,
                               uint8_t  vector,
                               uint8_t  irq,
@@ -91,9 +56,7 @@ void io_apic_set_irq_redirect(uint32_t lapic_id,
     {
         struct madt_iso *iso = VECTOR_ITEM(&madt_isos, i);
         if (iso->irq_source != irq)
-        {
             continue;
-        }
 
         io_apic_set_gsi_redirect(
             lapic_id, vector, iso->gsi, iso->flags, status);
@@ -103,14 +66,6 @@ void io_apic_set_irq_redirect(uint32_t lapic_id,
     io_apic_set_gsi_redirect(lapic_id, vector, irq, 0, status);
 }
 
-/**
- * @brief Set IO - APIC GSI redirect
- * @param lapic_id
- * @param vector Vector to redirect to ( 0.. 63 )
- * @param gsi GSI to redirect to ( 0.. 63 )
- * @param flags Bitmask of flags to redirect
- * @param status Status to redirect to ( true = redirect
- */
 void io_apic_set_gsi_redirect(
     uint32_t lapic_id, uint8_t vector, uint8_t gsi, uint16_t flags, bool status)
 {
@@ -118,19 +73,13 @@ void io_apic_set_gsi_redirect(
 
     uint64_t redirect = vector;
     if ((flags & (1 << 1)) != 0)
-    {
         redirect |= (1 << 13);
-    }
 
     if ((flags & (1 << 3)) != 0)
-    {
         redirect |= (1 << 15);
-    }
 
     if (!status)
-    {
         redirect |= (1 << 16);
-    }
 
     redirect |= (uint64_t) lapic_id << 56;
 

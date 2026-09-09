@@ -5,116 +5,45 @@
 #include "include/tss.h"
 #include <stdint.h>
 
-extern void breakpoint();
-extern void serial_debug(int);
-extern void halt();
-
 uint8_t TssStack[0x100000];
 uint8_t ist1Stack[0x100000];
 uint8_t ist2Stack[0x100000];
 
 uint64_t rsp0;
-
 struct TSS tss = {0};
 
 ALIGN_4K struct GDT gdt = {
-    {.limit_low   = 0,
-     .base_low    = 0,
-     .base_middle = 0,
-     .access_flag = 0x00,
-     .limit_flags = 0x00,
-     .base_high   = 0}, // null
-
-    {
-        .limit_low   = 0xffff,
-        .base_low    = 0,
-        .base_middle = 0,
-        .access_flag = GDTAccess16Code,
-        .limit_flags = 0b00000000,
-        .base_high   = 0 // kernel 16 bit code segment
-
-    },
-
-    {
-
-        .limit_low   = 0xffff,
-        .base_low    = 0,
-        .base_middle = 0,
-        .access_flag = GDTAccess16Data,
-        .limit_flags = 0b00000000,
-        .base_high   = 0 // kernel 16 bit data segment
-
-    },
-
-    {
-
-        .limit_low   = 0xffff,
-        .base_low    = 0,
-        .base_middle = 0,
-        .access_flag = GDTAccess32Code,
-        .limit_flags = 0b11001111,
-        .base_high   = 0 // kernel 32 bit code segment
-
-    },
-
-    {
-
-        .limit_low   = 0xffff,
-        .base_low    = 0,
-        .base_middle = 0,
-        .access_flag = GDTAccess32Data,
-        .limit_flags = 0b11001111,
-        .base_high   = 0 // kernel 32 bit data segment
-
-    },
-
-    {.limit_low   = 0,
-     .base_low    = 0,
-     .base_middle = 0,
-     .access_flag = GDTAccessKernelCode,
-     .limit_flags = 0xA0,
-     .base_high   = 0}, // kernel 64 bit code segment
-    {.limit_low   = 0,
-     .base_low    = 0,
-     .base_middle = 0,
-     .access_flag = GDTAccessKernelData,
-     .limit_flags = 0x80,
-     .base_high   = 0}, // kernel 64 bit data segment
-    {.limit_low   = 0,
-     .base_low    = 0,
-     .base_middle = 0,
-     .access_flag = 0x00,
-     .limit_flags = 0x00,
-     .base_high   = 0}, // user null
-    {.limit_low   = 0,
-     .base_low    = 0,
-     .base_middle = 0,
-     .access_flag = GDTAccessUserData,
-     .limit_flags = 0x80,
-     .base_high   = 0}, // user data segment
-    {.limit_low   = 0,
-     .base_low    = 0,
-     .base_middle = 0,
-     .access_flag = GDTAccessUserCode,
-     .limit_flags = 0xA0,
-     .base_high   = 0}, // user code segment
-    {
-        .length = 104,
-        .flags  = 0b10001001,
-    }, // TSS
+    {.limit_low = 0, .base_low = 0, .base_middle = 0, .access_flag = 0x00,
+     .limit_flags = 0x00, .base_high = 0},
+    {.limit_low = 0xffff, .base_low = 0, .base_middle = 0,
+     .access_flag = GDTAccess16Code, .limit_flags = 0b00000000, .base_high = 0},
+    {.limit_low = 0xffff, .base_low = 0, .base_middle = 0,
+     .access_flag = GDTAccess16Data, .limit_flags = 0b00000000, .base_high = 0},
+    {.limit_low = 0xffff, .base_low = 0, .base_middle = 0,
+     .access_flag = GDTAccess32Code, .limit_flags = 0b11001111, .base_high = 0},
+    {.limit_low = 0xffff, .base_low = 0, .base_middle = 0,
+     .access_flag = GDTAccess32Data, .limit_flags = 0b11001111, .base_high = 0},
+    {.limit_low = 0, .base_low = 0, .base_middle = 0,
+     .access_flag = GDTAccessKernelCode, .limit_flags = 0xA0, .base_high = 0},
+    {.limit_low = 0, .base_low = 0, .base_middle = 0,
+     .access_flag = GDTAccessKernelData, .limit_flags = 0x80, .base_high = 0},
+    {.limit_low = 0, .base_low = 0, .base_middle = 0,
+     .access_flag = 0x00, .limit_flags = 0x00, .base_high = 0},
+    {.limit_low = 0, .base_low = 0, .base_middle = 0,
+     .access_flag = GDTAccessUserData, .limit_flags = 0x80, .base_high = 0},
+    {.limit_low = 0, .base_low = 0, .base_middle = 0,
+     .access_flag = GDTAccessUserCode, .limit_flags = 0xA0, .base_high = 0},
+    {.length = 104, .flags = 0b10001001},
 };
 
 struct GDT_Desc desc = {
+    .size = sizeof(gdt) - 1,
+    .offset = (uint64_t) &gdt
+};
 
-    .size = sizeof(gdt) - 1, .offset = (uint64_t) &gdt};
-
-/**
- * @brief Reload GDT.
- */
 void gdt_reload(void)
 {
     static spinlock_t lock = SPINLOCK_INIT;
-
     spinlock_test_and_acq(&lock);
 
     asm volatile("lgdt %0\n\t"
@@ -136,16 +65,10 @@ void gdt_reload(void)
     spinlock_release(&lock);
 }
 
-/**
- * @brief Loads TSS into GDT.
- * @param * tss
- */
 void gdt_load_tss(struct TSS *tss)
 {
     uintptr_t addr = (uintptr_t) tss;
-
     static spinlock_t lock = SPINLOCK_INIT;
-
     spinlock_test_and_acq(&lock);
 
     gdt.tss = (struct TSS_Entry){
@@ -158,14 +81,10 @@ void gdt_load_tss(struct TSS *tss)
     };
 
     asm volatile("ltr %0" : : "rm"((uint16_t) 0x58) : "memory");
-
     spinlock_release(&lock);
 }
 
-/**
- * @brief Inital GDT load
- */
-void LoadGDT_Stage1()
+void LoadGDT_Stage1(void)
 {
     uint64_t address = (uint64_t) &tss;
 
@@ -182,45 +101,31 @@ void LoadGDT_Stage1()
     printf_("%s\n", "|              GDT INFO            |");
     printf_("%s\n", "------------------------------------");
     printf_("%s\n", "GDT Offsets as follows: ");
-    printf_("%s", "GDT NULL Segment: ");
-    printf_("0x%llx\n", (uint64_t) &gdt.null - (uint64_t) &gdt);
-    printf_("%s", "GDT 16 Bit Code Segment: ");
-    printf_("0x%llx\n", (uint64_t) &gdt.seg_16_code - (uint64_t) &gdt);
-    printf_("%s", "GDT 16 Bit Data Segment: ");
-    printf_("0x%llx\n", (uint64_t) &gdt.seg_16_data - (uint64_t) &gdt);
-    printf_("%s", "GDT 32 Bit Code Segment: ");
-    printf_("0x%llx\n", (uint64_t) &gdt.seg_32_code - (uint64_t) &gdt);
-    printf_("%s", "GDT 32 Bit Data Segment: ");
-    printf_("0x%llx\n", (uint64_t) &gdt.seg_32_data - (uint64_t) &gdt);
-    printf_("%s", "GDT Kernel Code Segment: ");
-    printf_("0x%llx\n", (uint64_t) &gdt.kernelCS - (uint64_t) &gdt);
-    printf_("%s", "GDT Kernel Data Segment: ");
-    printf_("0x%llx\n", (uint64_t) &gdt.kernelData - (uint64_t) &gdt);
-    printf_("%s", "GDT User NULL Segment: ");
-    printf_("0x%llx\n", (uint64_t) &gdt.userNull - (uint64_t) &gdt);
-    printf_("%s", "GDT User Code Segment: ");
-    printf_("0x%llx\n", (uint64_t) &gdt.userCode - (uint64_t) &gdt);
-    printf_("%s", "GDT User Data Segment: ");
-    printf_("0x%llx\n", (uint64_t) &gdt.userData - (uint64_t) &gdt);
-    printf_("%s", "GDT TSS Segment: ");
-    printf_("0x%llx\n", (uint64_t) &gdt.tss - (uint64_t) &gdt);
+    printf_("GDT NULL Segment: 0x%llx\n", (uint64_t) &gdt.null - (uint64_t) &gdt);
+    printf_("GDT 16 Bit Code Segment: 0x%llx\n", (uint64_t) &gdt.seg_16_code - (uint64_t) &gdt);
+    printf_("GDT 16 Bit Data Segment: 0x%llx\n", (uint64_t) &gdt.seg_16_data - (uint64_t) &gdt);
+    printf_("GDT 32 Bit Code Segment: 0x%llx\n", (uint64_t) &gdt.seg_32_code - (uint64_t) &gdt);
+    printf_("GDT 32 Bit Data Segment: 0x%llx\n", (uint64_t) &gdt.seg_32_data - (uint64_t) &gdt);
+    printf_("GDT Kernel Code Segment: 0x%llx\n", (uint64_t) &gdt.kernelCS - (uint64_t) &gdt);
+    printf_("GDT Kernel Data Segment: 0x%llx\n", (uint64_t) &gdt.kernelData - (uint64_t) &gdt);
+    printf_("GDT User NULL Segment: 0x%llx\n", (uint64_t) &gdt.userNull - (uint64_t) &gdt);
+    printf_("GDT User Code Segment: 0x%llx\n", (uint64_t) &gdt.userCode - (uint64_t) &gdt);
+    printf_("GDT User Data Segment: 0x%llx\n", (uint64_t) &gdt.userData - (uint64_t) &gdt);
+    printf_("GDT TSS Segment: 0x%llx\n", (uint64_t) &gdt.tss - (uint64_t) &gdt);
     printf_("%s\n", "------------------------------------");
-    printf_("%s\n", "|     	   GDTR DATA		       |");
+    printf_("%s\n", "|     \t   GDTR DATA\t\t       |");
     printf_("%s\n", "------------------------------------");
-    printf_("%s", "GDTR Size: ");
-    printf_("0x%llx\n", (uint16_t) &desc.size);
-    printf_("%s", "GDTR Offset: ");
-    printf_("0x%llx\n", (uint64_t) &desc.offset);
+    printf_("GDTR Size: 0x%llx\n", (uint64_t) desc.size);
+    printf_("GDTR Offset: 0x%llx\n", desc.offset);
     printf_("%s\n", "------------------------------------");
+
     tss.rsp0 = (uint64_t) TssStack + sizeof(TssStack);
     tss.ist1 = (uint64_t) ist1Stack + sizeof(ist1Stack);
-
     rsp0 = tss.rsp0;
 
     printf_("0x%llx\n", tss.rsp0);
 
     __asm__ volatile("lgdt %0" : : "m"(desc));
-
     __asm__ volatile("push $0x28\n"
                      "lea 1f(%%rip), %%rax\n"
                      "push %%rax\n"

@@ -23,7 +23,6 @@ static const char *exception_messages[] = {"Division By Zero",
                                            "Out of Bounds",
                                            "Invalid Opcode",
                                            "No Coprocessor",
-
                                            "Double Fault",
                                            "Coprocessor Segment Overrun",
                                            "Bad TSS",
@@ -32,7 +31,6 @@ static const char *exception_messages[] = {"Division By Zero",
                                            "General Protection Fault",
                                            "Page Fault",
                                            "Unknown Interrupt",
-
                                            "Coprocessor Fault",
                                            "Alignment Check",
                                            "Machine Check",
@@ -41,7 +39,6 @@ static const char *exception_messages[] = {"Division By Zero",
                                            "Reserved",
                                            "Reserved",
                                            "Reserved",
-
                                            "Reserved",
                                            "Reserved",
                                            "Reserved",
@@ -51,34 +48,10 @@ static const char *exception_messages[] = {"Division By Zero",
                                            "Reserved",
                                            "Reserved"};
 
-static const char *irq_messages[] =
-
-    {"System Timer",
-     "Keyboard",
-     "Slave PIC Link",
-     "Serial Port 1",
-     "Serial Port 2",
-     "Reserved/Sound Card",
-     "Floppy Disk Controller",
-     "Parallel Port",
-     "Real Time Clock",
-     "Master PIC Link",
-     "Reserved",
-     "Reserved",
-     "PS/2 Mouse",
-     "Math Co-Processor",
-     "Hard Disk Drive",
-     "Reserved"
-
-};
-
-void isr_exception_handler(isr_xframe_t *frame, uint64_t rsi);
-/**
- * @brief This is the ISR handler.
- * @param * frame
- */
 void isr_exception_handler(isr_xframe_t *frame, uint64_t rsi)
 {
+    (void) rsi;
+
     printf_("%s\n", "!!!!!!!!!!!!!!!!!!!!KERNEL PANIC!!!!!!!!!!!!!!!!!!!!!");
 
     kerror_mode = 1;
@@ -121,14 +94,8 @@ void isr_exception_handler(isr_xframe_t *frame, uint64_t rsi)
     __asm__ volatile("cli; hlt");
 }
 
-extern void halt();
 extern void dyn_isr_handler(uint64_t isr);
 
-void irq_handler(isr_xframe_t *frame);
-/**
- * @brief The handler for IRQs and software vectors that share the IRQ stub.
- * @param * frame
- */
 void irq_handler(isr_xframe_t *frame)
 {
     uint64_t vector = frame->base_frame.vector;
@@ -145,7 +112,6 @@ void irq_handler(isr_xframe_t *frame)
                 break;
         }
 
-        /* Only hardware PIC IRQ vectors 32..47 require an EOI. */
         pic_send_eoi(vector - 32);
         return;
     }
@@ -163,7 +129,7 @@ void irq_handler(isr_xframe_t *frame)
                   "fault... ok it's my fault.");
         }
 
-        dyn_isr_handler(isr_delta[vector]);
+        dyn_isr_handler((uint64_t) (uintptr_t) isr_delta[vector]);
         return;
     }
 
