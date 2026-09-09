@@ -1,12 +1,14 @@
-#include "include/shell.h"
 #include "include/drivers/keyboard/keyboard.h"
 #include "include/mm/kmalloc.h"
 #include "include/printf.h"
 #include "include/sched.h"
+#include "include/shell.h"
 #include "include/time.h"
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
+
+extern void halt(void);
 
 static bool shell_streq(const char *a, const char *b)
 {
@@ -55,8 +57,8 @@ void vsh_loop(void)
 char *vsh_readline(void)
 {
     size_t bufsize = VSH_CMD_BUFFER_SIZE;
-    size_t pos = 0;
-    char *buffer = kmalloc(bufsize);
+    size_t pos     = 0;
+    char  *buffer  = kmalloc(bufsize);
 
     if (!buffer)
     {
@@ -94,7 +96,7 @@ char *vsh_readline(void)
         if (pos + 1 >= bufsize)
         {
             size_t newsize = bufsize + VSH_CMD_BUFFER_SIZE;
-            char *grown = krealloc(buffer, newsize);
+            char  *grown   = krealloc(buffer, newsize);
             if (!grown)
             {
                 printf_("%s\n", "vsh: Command Buffer Allocation Error!");
@@ -102,7 +104,7 @@ char *vsh_readline(void)
                 return NULL;
             }
 
-            buffer = grown;
+            buffer  = grown;
             bufsize = newsize;
         }
 
@@ -125,7 +127,15 @@ void cmd_parser(const char *str)
     if (shell_streq(str, "time"))
     {
         print_sys_time();
+        return;
     }
+
+    if (shell_streq(str, "halt") || shell_streq(str, "Halt"))
+    {
+        printf_("%s", "Halting System...");
+        halt();
+    }
+
     else
     {
         printf_("%s\n", "unknown command");
