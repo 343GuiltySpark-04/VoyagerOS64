@@ -111,12 +111,13 @@ writeCR3:
     mov al, 'B'
     out dx, al
 
-    ; Do ret explicitly so we can distinguish a bad stack mapping from a bad
-    ; instruction fetch after the CR3 write.
-    pop rax
+    ; Preserve the return address in a caller-saved scratch register. Do NOT
+    ; store it in RAX and then write AL: AL is the low byte of RAX and would
+    ; corrupt the return address before the jump.
+    pop r11
     mov al, 'C'
     out dx, al
-    jmp rax
+    jmp r11
 
 readCR2:
     mov rax,cr2
@@ -131,7 +132,7 @@ readCR4:
     ret
 
 writeCR4:
-    mov cr4, rdi
+    mov cr4,rdi
     ret
 
 readRIP:
