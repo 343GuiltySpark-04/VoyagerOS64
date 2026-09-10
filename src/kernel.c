@@ -49,20 +49,20 @@ uint32_t term_fg = 0x0055ff55;
 uint32_t term_bg = 0x00000000;
 
 extern volatile struct limine_kernel_address_request Kaddress_req;
-extern volatile struct limine_terminal_request early_term;
-extern volatile struct limine_framebuffer_request fbr_req;
+extern volatile struct limine_terminal_request       early_term;
+extern volatile struct limine_framebuffer_request    fbr_req;
 
-extern void breakpoint(void);
-extern void stop_interrupts(void);
-extern void start_interrupts(void);
-extern void halt(void);
-extern void task_switch_int(void);
+extern void     breakpoint(void);
+extern void     stop_interrupts(void);
+extern void     start_interrupts(void);
+extern void     halt(void);
+extern void     task_switch_int(void);
 extern uint64_t walk_stack(uint64_t *array, uint64_t max);
 
-uint32_t bootspace = 2;
-uint8_t kerror_mode = 0;
+uint32_t             bootspace   = 2;
+uint8_t              kerror_mode = 0;
 struct term_context *term_context;
-uint8_t init_done = 0;
+uint8_t              init_done = 0;
 
 static uint64_t supply_from_early(void)
 {
@@ -74,7 +74,7 @@ static uint64_t supply_from_frame(void)
     return frame_alloc();
 }
 
-extern volatile struct limine_hhdm_request hhdm_request;
+extern volatile struct limine_hhdm_request   hhdm_request;
 extern volatile struct limine_memmap_request memmap_req;
 
 static void limine_debug(void)
@@ -182,12 +182,13 @@ void _start(void)
 
     printf_("%s", "Early Terminal Using Framebuffer At Physical Address: ");
     printf_("0x%llx\n",
-            TranslateToPhysicalMemoryAddress((uint64_t) (uintptr_t)
-                early_term.response->terminals[0]->framebuffer));
+            TranslateToPhysicalMemoryAddress(
+                (uint64_t) (uintptr_t) early_term.response->terminals[0]
+                    ->framebuffer));
     printf_("%s", "And At Virtual Address: ");
-    printf_("0x%llx\n",
-            (uint64_t) (uintptr_t)
-                early_term.response->terminals[0]->framebuffer);
+    printf_(
+        "0x%llx\n",
+        (uint64_t) (uintptr_t) early_term.response->terminals[0]->framebuffer);
 
     print_stack_size();
     print_date();
@@ -316,8 +317,8 @@ void _start(void)
     bootspace = 0;
 
     init_scheduler();
-    create_process(proc_a);
-    create_process(proc_b);
+    // create_process(proc_a);
+    //  create_process(proc_b);
     create_process(vsh_loop);
 
     printf_("%s\n", "Scheduler cooperative round-robin online.");

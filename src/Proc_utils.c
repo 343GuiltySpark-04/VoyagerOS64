@@ -12,11 +12,11 @@ uint8_t soak_counter = 0;
 
 void soak(void)
 {
-    soak_counter++;
+    int id = current->pid;
 
     for (;;)
     {
-        printf_("%s\n", "Soaker " + soak_counter, " Alive");
+        printf_("Soaker PID %i Alive\n", id);
         schedule();
     }
 }
