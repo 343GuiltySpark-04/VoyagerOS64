@@ -126,6 +126,8 @@ $(KERNEL): $(OBJ)
 clean:
 	rm -rvf $(KERNEL) $(OBJ) $(HEADER_DEPS)
 	rm -rvf ./iso_root
+	rm -rf ./latex
+	rm -rf ./html
 	rm -rfv *.iso
 	rm -rfv *.log
 
