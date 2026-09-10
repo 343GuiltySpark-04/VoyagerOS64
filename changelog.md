@@ -128,7 +128,7 @@ Before tagging, the 0.0.5 branch passed:
 
 ### Planned process and scheduler work
 
-- Add clean task return/exit semantics instead of panicking when a task returns.
+- ~~Add clean task return/exit semantics instead of panicking when a task returns.~~ Done.
 - Remove dead tasks from the cooperative run queue and reclaim scheduler-owned task resources.
 - Add blocked/waiting process states and wait semantics suitable for foreground commands.
 - Add foreground/background job behavior without requiring `fork()`.
