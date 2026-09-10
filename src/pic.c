@@ -1,10 +1,7 @@
 #include "include/pic.h"
 #include "include/io.h"
 
-/**
- * @brief Mask an IRQ in the PIC.
- * @param irq The IRQ number to mask
- */
+/* Public API documentation lives in include/pic.h. */
 void pic_mask_irq(uint8_t irq)
 {
     uint16_t port;
@@ -25,10 +22,6 @@ void pic_mask_irq(uint8_t irq)
     outb(port, masks);
 }
 
-/**
- * @brief Unmask an IRQ in the PIC.
- * @param irq The IRQ number to
- */
 void pic_unmask_irq(uint8_t irq)
 {
     uint16_t port;
@@ -49,10 +42,6 @@ void pic_unmask_irq(uint8_t irq)
     outb(port, masks);
 }
 
-/**
- * @brief Change the I / O addresses of the PIC to offset.
- * @param offset Offset to be remapped
- */
 void pic_remap_offsets(uint8_t offset)
 {
     uint8_t master_mask, slave_mask;
@@ -76,10 +65,6 @@ void pic_remap_offsets(uint8_t offset)
     outb(PIC_SLAVE_DATA, slave_mask);
 }
 
-/**
- * @brief Send End Of Interrupt.
- * @param irq IRQ number to send EOI for
- */
 void pic_send_eoi(uint8_t irq)
 {
     if (irq >= 8)
@@ -87,10 +72,6 @@ void pic_send_eoi(uint8_t irq)
     outb(PIC_MASTER_COMMAND, PIC_EOI);
 }
 
-/**
- * @brief Enable PIC interrupts. This is called by the interrupt handler to turn
- * on all IRQs
- */
 void pic_enable()
 {
     pic_remap_offsets(0x20);
