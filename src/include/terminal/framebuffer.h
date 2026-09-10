@@ -1,3 +1,8 @@
+/**
+ * @file framebuffer.h
+ * @brief Framebuffer-backed implementation of the Voyager terminal interface.
+ * @ingroup terminal
+ */
 #ifndef _TERM_FRAMEBUFFER_H
 #define _TERM_FRAMEBUFFER_H
 
@@ -7,8 +12,10 @@
 
 #include "term.h"
 
+/** Number of glyph slots expected by the framebuffer terminal font table. */
 #define FBTERM_FONT_GLYPHS 256
 
+/** @brief One rendered terminal cell and its foreground/background colours. */
 struct fbterm_char
 {
     uint32_t c;
@@ -16,12 +23,21 @@ struct fbterm_char
     uint32_t bg;
 };
 
+/** @brief Deferred framebuffer-cell update used by the renderer queue. */
 struct fbterm_queue_item
 {
     size_t             x, y;
     struct fbterm_char c;
 };
 
+/**
+ * @brief Framebuffer terminal backend state.
+ *
+ * The generic term_context is embedded first so callers can use the returned
+ * object through the backend-independent terminal API. The remaining fields
+ * hold font geometry, framebuffer/canvas storage, cell state, queued updates,
+ * colours, and cursor state.
+ */
 struct fbterm_context
 {
     struct term_context term;
@@ -80,6 +96,31 @@ struct fbterm_context
     size_t old_cursor_y;
 };
 
+/**
+ * @brief Initialize a framebuffer terminal and return its generic context.
+ * @param _malloc Allocation function used for terminal-owned dynamic storage.
+ * @param framebuffer Kernel-accessible framebuffer base.
+ * @param width Framebuffer width in pixels.
+ * @param height Framebuffer height in pixels.
+ * @param pitch Framebuffer pitch in bytes.
+ * @param canvas Optional backing canvas supplied by the caller.
+ * @param ansi_colours Optional normal ANSI palette.
+ * @param ansi_bright_colours Optional bright ANSI palette.
+ * @param default_bg Pointer to the default background colour.
+ * @param default_fg Pointer to the default foreground colour.
+ * @param font Optional caller-supplied font data.
+ * @param font_width Caller-supplied font width when applicable.
+ * @param font_height Caller-supplied font height when applicable.
+ * @param font_spacing Horizontal font spacing.
+ * @param font_scale_x Horizontal scale factor.
+ * @param font_scale_y Vertical scale factor.
+ * @param margin Terminal margin in pixels/cells as interpreted by the backend.
+ * @return Initialized backend-independent terminal context, or NULL on failure.
+ *
+ * VoyagerOS64 initializes this only after its own page tables and heap are live;
+ * the resulting context replaces Limine terminal callbacks for normal kernel
+ * console output.
+ */
 struct term_context *fbterm_init(void *(*_malloc)(size_t),
                                  uint32_t *framebuffer,
                                  size_t    width,
