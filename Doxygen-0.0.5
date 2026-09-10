@@ -1,10 +1,43 @@
 # VoyagerOS64 0.0.5 Doxygen release overlay.
 #
 # The long-lived Doxygen file predates the 0.0.5 stabilization branch and still
-# carries historical WIP metadata. Include it as the base configuration and
-# override only release-specific metadata here.
+# carries historical WIP metadata. Include it as the base configuration, then
+# narrow the release documentation to the active 0.0.5 source set.
 
 @INCLUDE = Doxygen
 
 PROJECT_NUMBER = 0.0.5
 PROJECT_BRIEF = "VoyagerOS64 0.0.5 kernel architecture and API reference"
+
+# ./src already contains ./src/include recursively. Listing both caused Doxygen
+# to parse every header twice and report duplicate @param documentation.
+INPUT = ./src
+
+# Match GNUmakefile's retired implementation set and also hide the corresponding
+# archaeological headers from the release API reference. Historical context is
+# retained on the main page under the Retired / Historical Code group.
+EXCLUDE = \
+    ./src/heap.c \
+    ./src/bucket.c \
+    ./src/pebble.c \
+    ./src/frameallocator.c \
+    ./src/vmm.c \
+    ./src/streams.c \
+    ./src/liballoc.c \
+    ./src/memUtils.c \
+    ./src/mm/liballoc_glue.c \
+    ./src/alloc.cpp \
+    ./src/lock.cpp \
+    ./src/lock_atm_c.cpp \
+    ./src/include/heap.h \
+    ./src/include/bitmap.h \
+    ./src/include/pebble.h \
+    ./src/include/liballoc.h \
+    ./src/include/lock.hpp \
+    ./src/include/memUtils.h \
+    ./src/include/paging/frameallocator.h \
+    ./src/include/paging/vmm.h
+
+# printf_ legitimately has a large caller graph in the kernel. The inherited
+# default of 50 nodes is too small for the current source tree.
+DOT_GRAPH_MAX_NODES = 100
