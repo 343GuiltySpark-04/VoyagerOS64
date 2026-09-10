@@ -106,11 +106,22 @@ Those belong to later development rather than being quietly half-enabled in the 
 
 The source tree is documented with Doxygen-style comments. The documentation is organized around boot, memory, paging, interrupts, scheduling, drivers, shell services, diagnostics, and retired/historical subsystems.
 
-Generate the 0.0.5 reference documentation with:
+Generate the 0.0.5 HTML and LaTeX reference trees with:
 
 ```sh
 doxygen Doxygen-0.0.5
 ```
+
+The generated HTML reference is written to `html/`. The 0.0.5 documentation configuration applies the repository-owned low-glare Voyager dark theme in `docs/theme/voyager-dark.css`.
+
+Build the dark PDF reference manual with:
+
+```sh
+cd latex
+make
+```
+
+The final manual is `latex/refman.pdf`. Its dark page, text, link, and syntax palette is supplied by `docs/theme/voyager-dark.sty` through Doxygen's `LATEX_EXTRA_STYLESHEET` mechanism. Generated `html/` and `latex/` files should not be edited by hand; change the source comments or theme files and regenerate them instead.
 
 ## License
 
