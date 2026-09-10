@@ -28,12 +28,7 @@ static bool shell_streq(const char *a, const char *b)
     return *a == '\0' && *b == '\0';
 }
 
-/**
- * @brief Main Voyager shell task.
- *
- * The shell runs as a cooperative scheduler task. While waiting for keyboard
- * input it yields so the rest of the run queue can continue to execute.
- */
+/* Public VSH API documentation lives in include/shell.h. */
 void vsh_loop(void)
 {
     for (;;)
@@ -51,11 +46,6 @@ void vsh_loop(void)
     }
 }
 
-/**
- * @brief Read one command line from the keyboard queue.
- * @return Newly allocated NUL-terminated command line, or NULL on allocation
- * failure.
- */
 char *vsh_readline(void)
 {
     size_t bufsize = VSH_CMD_BUFFER_SIZE;
@@ -117,10 +107,6 @@ char *vsh_readline(void)
     }
 }
 
-/**
- * @brief Parse and execute a VSH command.
- * @param str NUL-terminated command string.
- */
 void cmd_parser(const char *str)
 {
     if (!str || str[0] == '\0')
