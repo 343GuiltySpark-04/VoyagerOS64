@@ -1,6 +1,6 @@
+#include "include/cpuUtils.h"
 #include "include/KernelUtils.h"
 #include "include/cpu.h"
-#include "include/cpuUtils.h"
 #include "include/global_defs.h"
 #include "include/mm/kmalloc.h"
 #include "include/panic.h"
@@ -10,36 +10,36 @@
 #include <stdbool.h>
 #include <stddef.h>
 
-extern int cpuid_check_sse(void);
-extern int cpuid_check_xsave(void);
-extern int cpuid_check_pcid(void);
-extern int cpuid_check_pae(void);
-extern int cpuid_check_mce(void);
-extern int cpuid_check_apic(void);
-extern int cpuid_check_mca(void);
-extern int cpuid_check_acpi(void);
-extern int cpuid_check_ds(void);
-extern int cpuid_check_tm(void);
-extern int cpuid_check_sep(void);
-extern int cpuid_check_htt(void);
-extern int cpuid_check_rdseed(void);
-extern int cpuid_check_rdrand(void);
-extern int cpuid_check_fpu(void);
-extern int cpuid_check_oxsave(void);
-extern int cpuid_check_avx(void);
-extern int cpuid_check_fxsr(void);
-extern int cpuid_check_tsc(void);
+extern int      cpuid_check_sse(void);
+extern int      cpuid_check_xsave(void);
+extern int      cpuid_check_pcid(void);
+extern int      cpuid_check_pae(void);
+extern int      cpuid_check_mce(void);
+extern int      cpuid_check_apic(void);
+extern int      cpuid_check_mca(void);
+extern int      cpuid_check_acpi(void);
+extern int      cpuid_check_ds(void);
+extern int      cpuid_check_tm(void);
+extern int      cpuid_check_sep(void);
+extern int      cpuid_check_htt(void);
+extern int      cpuid_check_rdseed(void);
+extern int      cpuid_check_rdrand(void);
+extern int      cpuid_check_fpu(void);
+extern int      cpuid_check_oxsave(void);
+extern int      cpuid_check_avx(void);
+extern int      cpuid_check_fxsr(void);
+extern int      cpuid_check_tsc(void);
 extern uint32_t get_apic_base_address(void);
-extern int test_em(void);
-extern void cfg_XCR0(void);
+extern int      test_em(void);
+extern void     cfg_XCR0(void);
 extern uint64_t rdrand_asm(void);
 extern uint64_t rdseed_asm(void);
 extern uint64_t read_XCR0(void);
 extern uint64_t get_xsave_size(void);
-extern void halt(void);
+extern void     halt(void);
 
 size_t xsave_bank ALIGN_16BIT;
-bool has_ACPI;
+bool              has_ACPI;
 
 uint64_t rand_asm(void)
 {
@@ -203,7 +203,8 @@ void check_sep(void)
         sysenter = false;
         printf_("%s\n", "SEP (SYSENTER/EXIT): No");
         printf_("%s\n",
-                "You Realized How Fucked You Are Without This? Halting Get A Better PC.");
+                "You Realized How Fucked You Are Without This? Halting Get A "
+                "Better PC.");
         halt();
     }
 }
@@ -284,7 +285,7 @@ void check_mca(void)
 void check_acpi(void)
 {
     int found = cpuid_check_acpi();
-    has_ACPI = found == 1;
+    has_ACPI  = found == 1;
     printf_("%s\n", has_ACPI ? "ACPI: Yes" : "ACPI: No");
 }
 

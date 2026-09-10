@@ -88,8 +88,9 @@ void switch_to(process_t *next);
  * @return Pointer to the new process control block.
  *
  * A 16 KiB stack is allocated from kmalloc and initialized with a synthetic
- * context suitable for switch_to(). A task that returns from @p entry is treated
- * as a kernel error in 0.0.5 because task exit/reaping is not implemented yet.
+ * context suitable for switch_to(). A task that returns from @p entry is
+ * treated as a kernel error in 0.0.5 because task exit/reaping is not
+ * implemented yet.
  */
 process_t *create_process(void (*entry)(void));
 
@@ -112,8 +113,8 @@ void init_scheduler(void);
 /**
  * @brief Begin execution of the initialized run queue.
  *
- * The run queue must contain at least one process and @ref current must still be
- * NULL. This function performs the initial dispatch and is not expected to
+ * The run queue must contain at least one process and @ref current must still
+ * be NULL. This function performs the initial dispatch and is not expected to
  * return.
  */
 void scheduler_start(void);

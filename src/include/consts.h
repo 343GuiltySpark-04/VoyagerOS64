@@ -7,7 +7,8 @@
 
 #pragma once
 
-#define KERNEL_VERSION "0.0.5"
+#define KERNEL_VERSION "0.0.6 (DEV)"
+#define VERSION_CODENAME "Nova"
 #define BUILD_GCC "gcc version 13.4.0 (GCC)"
 #define BUILD_TARGET "x86_64-elf"
 #define THREAD_MODEL "Single"

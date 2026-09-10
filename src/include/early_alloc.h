@@ -19,13 +19,14 @@
  * @brief Physical-address type used by the Stage-2 memory stack.
  *
  * A paddr_t is not directly dereferenceable merely because it is represented by
- * an integer. Convert/map it through the HHDM or another explicit mapping before
- * treating it as a pointer.
+ * an integer. Convert/map it through the HHDM or another explicit mapping
+ * before treating it as a pointer.
  */
 typedef uint64_t paddr_t;
 
 /**
- * @brief Select a Limine USABLE memory region and initialize the bump allocator.
+ * @brief Select a Limine USABLE memory region and initialize the bump
+ * allocator.
  *
  * If early_set_region() has already supplied an explicit region, this function
  * preserves that selection rather than choosing another one.

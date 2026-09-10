@@ -84,10 +84,10 @@ void idt_free_vector(uint8_t vector);
  * @param flags Gate attribute byte.
  * @param ist Interrupt Stack Table selector field.
  */
-void idt_set_descriptor(uint8_t vector,
+void idt_set_descriptor(uint8_t   vector,
                         uintptr_t isr,
-                        uint8_t flags,
-                        uint8_t ist);
+                        uint8_t   flags,
+                        uint8_t   ist);
 
 /** @brief Build and install the kernel's initial IDT. */
 void idt_init(void);
@@ -95,5 +95,6 @@ void idt_init(void);
 /** @brief Boot-time self-test for dynamic ISR registration/dispatch. */
 void idt_reg_test(void);
 
-/** @brief Register the software-yield test vector used by current bring-up code. */
+/** @brief Register the software-yield test vector used by current bring-up
+ * code. */
 void yield_register(void);

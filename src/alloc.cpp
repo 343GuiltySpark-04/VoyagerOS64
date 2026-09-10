@@ -1,11 +1,11 @@
-#include <stdint.h>
-#include <stddef.h>
-#include "include/string.h"
+#include "include/KernelUtils.h"
+#include "include/lock.hpp"
 #include "include/paging/frameallocator.h"
 #include "include/paging/paging.h"
-#include "include/lock.hpp"
 #include "include/printf.h"
-#include "include/KernelUtils.h"
+#include "include/string.h"
+#include <stddef.h>
+#include <stdint.h>
 
 AtomicLock liballocLock;
 
@@ -15,7 +15,6 @@ AtomicLock liballocLock;
  */
 extern "C" int liballoc_lock()
 {
-
     liballocLock.Lock();
 
     return 0;
@@ -27,7 +26,6 @@ extern "C" int liballoc_lock()
  */
 extern "C" int liballoc_unlock()
 {
-
     liballocLock.Unlock();
 
     return 0;
@@ -40,16 +38,14 @@ extern "C" int liballoc_unlock()
  */
 extern "C" void *liballoc_alloc(size_t pages)
 {
-
     void *ptr = frame_request_multiple(pages);
 
     if (ptr == NULL)
     {
-
         return NULL;
     }
 
-    void *realPtr = (void *)TranslateToHighHalfMemoryAddress((uint64_t)ptr);
+    void *realPtr = (void *) TranslateToHighHalfMemoryAddress((uint64_t) ptr);
 
     return realPtr;
 }
@@ -62,12 +58,10 @@ extern "C" void *liballoc_alloc(size_t pages)
  */
 extern "C" int liballoc_free(void *ptr, size_t pages)
 {
-
-    void *realPtr = (void *)TranslateToPhysicalMemoryAddress((uint64_t)ptr);
+    void *realPtr = (void *) TranslateToPhysicalMemoryAddress((uint64_t) ptr);
 
     if (k_mode.addr_debug)
     {
-
         printf("%s", "INFO: liballoc_free ptr: ");
         printf("0x%llx\n", ptr);
         printf("%s", "INFO: realptr: ");

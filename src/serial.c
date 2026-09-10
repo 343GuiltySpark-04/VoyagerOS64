@@ -1,5 +1,5 @@
-#include "include/printf.h"
 #include "include/serial.h"
+#include "include/printf.h"
 #include "include/string.h"
 
 /**

@@ -96,7 +96,8 @@ static inline struct timespec timespec_sub(struct timespec a, struct timespec b)
 
 /** Historical millisecond-named timer counter. */
 extern uint64_t system_timer_ms;
-/** Fractional/auxiliary timer accumulator used by the current implementation. */
+/** Fractional/auxiliary timer accumulator used by the current implementation.
+ */
 extern uint64_t system_timer_fractions;
 
 /** RTC calendar fields populated by read_rtc(). */
@@ -141,7 +142,8 @@ void pit_set_reload_value(uint16_t new_count);
 void pit_set_frequency(uint64_t frequency);
 /** @brief Alternate system-clock handler retained by the current timer code. */
 void sys_clock_handler_alt(void);
-/** @brief Initialize RTC/PIT-facing timekeeping state during kernel bring-up. */
+/** @brief Initialize RTC/PIT-facing timekeeping state during kernel bring-up.
+ */
 void time_init(void);
 /** @brief Busy/blocking PIT-based sleep helper used by current kernel code. */
 void pit_sleep(uint64_t ms);

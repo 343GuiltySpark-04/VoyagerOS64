@@ -20,16 +20,16 @@ extern "C"
 #endif
 
     /**
-     * @brief Build VoyagerOS64's initial kernel page-table hierarchy and install
-     *        it in CR3.
+     * @brief Build VoyagerOS64's initial kernel page-table hierarchy and
+     * install it in CR3.
      *
      * Page-table pages are supplied from early_alloc_page() during bootstrap.
      * The resulting mappings preserve the kernel image, active stack, HHDM, and
      * other ranges required for the post-Limine kernel to continue executing.
      *
-     * @warning After the new CR3 is installed, code must not assume Limine-owned
-     * callback code remains mapped or callable. Voyager's framebuffer/serial
-     * facilities own output after the handoff.
+     * @warning After the new CR3 is installed, code must not assume
+     * Limine-owned callback code remains mapped or callable. Voyager's
+     * framebuffer/serial facilities own output after the handoff.
      */
     void paging_bootstrap(void);
 
@@ -41,7 +41,8 @@ extern "C"
 
     /**
      * @brief Return a kernel-accessible virtual pointer to the bootstrap PML4.
-     * @return Virtual address through which the root page table can be accessed.
+     * @return Virtual address through which the root page table can be
+     * accessed.
      */
     void *paging_pml4_virt(void);
 

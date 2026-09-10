@@ -1,6 +1,7 @@
 /**
  * @file KernelUtils.h
- * @brief Kernel feature switches, memory-reporting helpers, and shared utilities.
+ * @brief Kernel feature switches, memory-reporting helpers, and shared
+ * utilities.
  * @ingroup boot
  */
 #pragma once
@@ -36,7 +37,8 @@ extern const struct kswitches k_mode;
 
 /** @brief Print the Limine-provided physical memory map for diagnostics. */
 void print_memmap(void);
-/** @brief Return detected physical memory size in the implementation's base unit. */
+/** @brief Return detected physical memory size in the implementation's base
+ * unit. */
 uint64_t get_memory_size(void);
 /** @brief Return detected memory size expressed in GiB. */
 uint64_t get_memory_size_gib(void);

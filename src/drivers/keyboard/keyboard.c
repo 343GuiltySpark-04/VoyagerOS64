@@ -21,7 +21,7 @@ static volatile uint16_t kbd_tail = 0;
  */
 void kbd_push(char data)
 {
-    uint16_t next = (uint16_t)((kbd_head + 1u) % KBD_STACK_SIZE);
+    uint16_t next = (uint16_t) ((kbd_head + 1u) % KBD_STACK_SIZE);
 
     if (next == kbd_tail)
     {
@@ -32,7 +32,7 @@ void kbd_push(char data)
     }
 
     kbd_stack[kbd_head] = data;
-    kbd_head = next;
+    kbd_head            = next;
 }
 
 /**
@@ -45,7 +45,7 @@ char kbd_pop(void)
         return 0;
 
     char data = kbd_stack[kbd_tail];
-    kbd_tail = (uint16_t)((kbd_tail + 1u) % KBD_STACK_SIZE);
+    kbd_tail  = (uint16_t) ((kbd_tail + 1u) % KBD_STACK_SIZE);
     return data;
 }
 
@@ -78,7 +78,7 @@ void keyboard_handler(void)
     }
 
     char mapped = keyboard_map[keycode];
-    k_char = mapped;
+    k_char      = mapped;
 
     if (mapped != 0)
         kbd_push(mapped);
@@ -101,5 +101,5 @@ char k_getchar(void)
 void keyboard_init(void)
 {
     pic_unmask_irq(1);
-    printf_("%s\n", "Keyboard Init");
+    // printf_("%s\n", "Keyboard Init");
 }

@@ -9,37 +9,74 @@ uint8_t TssStack[0x100000];
 uint8_t ist1Stack[0x100000];
 uint8_t ist2Stack[0x100000];
 
-uint64_t rsp0;
+uint64_t   rsp0;
 struct TSS tss = {0};
 
 ALIGN_4K struct GDT gdt = {
-    {.limit_low = 0, .base_low = 0, .base_middle = 0, .access_flag = 0x00,
-     .limit_flags = 0x00, .base_high = 0},
-    {.limit_low = 0xffff, .base_low = 0, .base_middle = 0,
-     .access_flag = GDTAccess16Code, .limit_flags = 0b00000000, .base_high = 0},
-    {.limit_low = 0xffff, .base_low = 0, .base_middle = 0,
-     .access_flag = GDTAccess16Data, .limit_flags = 0b00000000, .base_high = 0},
-    {.limit_low = 0xffff, .base_low = 0, .base_middle = 0,
-     .access_flag = GDTAccess32Code, .limit_flags = 0b11001111, .base_high = 0},
-    {.limit_low = 0xffff, .base_low = 0, .base_middle = 0,
-     .access_flag = GDTAccess32Data, .limit_flags = 0b11001111, .base_high = 0},
-    {.limit_low = 0, .base_low = 0, .base_middle = 0,
-     .access_flag = GDTAccessKernelCode, .limit_flags = 0xA0, .base_high = 0},
-    {.limit_low = 0, .base_low = 0, .base_middle = 0,
-     .access_flag = GDTAccessKernelData, .limit_flags = 0x80, .base_high = 0},
-    {.limit_low = 0, .base_low = 0, .base_middle = 0,
-     .access_flag = 0x00, .limit_flags = 0x00, .base_high = 0},
-    {.limit_low = 0, .base_low = 0, .base_middle = 0,
-     .access_flag = GDTAccessUserData, .limit_flags = 0x80, .base_high = 0},
-    {.limit_low = 0, .base_low = 0, .base_middle = 0,
-     .access_flag = GDTAccessUserCode, .limit_flags = 0xA0, .base_high = 0},
+    {.limit_low   = 0,
+     .base_low    = 0,
+     .base_middle = 0,
+     .access_flag = 0x00,
+     .limit_flags = 0x00,
+     .base_high   = 0},
+    {.limit_low   = 0xffff,
+     .base_low    = 0,
+     .base_middle = 0,
+     .access_flag = GDTAccess16Code,
+     .limit_flags = 0b00000000,
+     .base_high   = 0},
+    {.limit_low   = 0xffff,
+     .base_low    = 0,
+     .base_middle = 0,
+     .access_flag = GDTAccess16Data,
+     .limit_flags = 0b00000000,
+     .base_high   = 0},
+    {.limit_low   = 0xffff,
+     .base_low    = 0,
+     .base_middle = 0,
+     .access_flag = GDTAccess32Code,
+     .limit_flags = 0b11001111,
+     .base_high   = 0},
+    {.limit_low   = 0xffff,
+     .base_low    = 0,
+     .base_middle = 0,
+     .access_flag = GDTAccess32Data,
+     .limit_flags = 0b11001111,
+     .base_high   = 0},
+    {.limit_low   = 0,
+     .base_low    = 0,
+     .base_middle = 0,
+     .access_flag = GDTAccessKernelCode,
+     .limit_flags = 0xA0,
+     .base_high   = 0},
+    {.limit_low   = 0,
+     .base_low    = 0,
+     .base_middle = 0,
+     .access_flag = GDTAccessKernelData,
+     .limit_flags = 0x80,
+     .base_high   = 0},
+    {.limit_low   = 0,
+     .base_low    = 0,
+     .base_middle = 0,
+     .access_flag = 0x00,
+     .limit_flags = 0x00,
+     .base_high   = 0},
+    {.limit_low   = 0,
+     .base_low    = 0,
+     .base_middle = 0,
+     .access_flag = GDTAccessUserData,
+     .limit_flags = 0x80,
+     .base_high   = 0},
+    {.limit_low   = 0,
+     .base_low    = 0,
+     .base_middle = 0,
+     .access_flag = GDTAccessUserCode,
+     .limit_flags = 0xA0,
+     .base_high   = 0},
     {.length = 104, .flags = 0b10001001},
 };
 
-struct GDT_Desc desc = {
-    .size = sizeof(gdt) - 1,
-    .offset = (uint64_t) &gdt
-};
+struct GDT_Desc desc = {.size = sizeof(gdt) - 1, .offset = (uint64_t) &gdt};
 
 void gdt_reload(void)
 {
@@ -67,7 +104,7 @@ void gdt_reload(void)
 
 void gdt_load_tss(struct TSS *tss)
 {
-    uintptr_t addr = (uintptr_t) tss;
+    uintptr_t         addr = (uintptr_t) tss;
     static spinlock_t lock = SPINLOCK_INIT;
     spinlock_test_and_acq(&lock);
 
@@ -101,16 +138,26 @@ void LoadGDT_Stage1(void)
     printf_("%s\n", "|              GDT INFO            |");
     printf_("%s\n", "------------------------------------");
     printf_("%s\n", "GDT Offsets as follows: ");
-    printf_("GDT NULL Segment: 0x%llx\n", (uint64_t) &gdt.null - (uint64_t) &gdt);
-    printf_("GDT 16 Bit Code Segment: 0x%llx\n", (uint64_t) &gdt.seg_16_code - (uint64_t) &gdt);
-    printf_("GDT 16 Bit Data Segment: 0x%llx\n", (uint64_t) &gdt.seg_16_data - (uint64_t) &gdt);
-    printf_("GDT 32 Bit Code Segment: 0x%llx\n", (uint64_t) &gdt.seg_32_code - (uint64_t) &gdt);
-    printf_("GDT 32 Bit Data Segment: 0x%llx\n", (uint64_t) &gdt.seg_32_data - (uint64_t) &gdt);
-    printf_("GDT Kernel Code Segment: 0x%llx\n", (uint64_t) &gdt.kernelCS - (uint64_t) &gdt);
-    printf_("GDT Kernel Data Segment: 0x%llx\n", (uint64_t) &gdt.kernelData - (uint64_t) &gdt);
-    printf_("GDT User NULL Segment: 0x%llx\n", (uint64_t) &gdt.userNull - (uint64_t) &gdt);
-    printf_("GDT User Code Segment: 0x%llx\n", (uint64_t) &gdt.userCode - (uint64_t) &gdt);
-    printf_("GDT User Data Segment: 0x%llx\n", (uint64_t) &gdt.userData - (uint64_t) &gdt);
+    printf_("GDT NULL Segment: 0x%llx\n",
+            (uint64_t) &gdt.null - (uint64_t) &gdt);
+    printf_("GDT 16 Bit Code Segment: 0x%llx\n",
+            (uint64_t) &gdt.seg_16_code - (uint64_t) &gdt);
+    printf_("GDT 16 Bit Data Segment: 0x%llx\n",
+            (uint64_t) &gdt.seg_16_data - (uint64_t) &gdt);
+    printf_("GDT 32 Bit Code Segment: 0x%llx\n",
+            (uint64_t) &gdt.seg_32_code - (uint64_t) &gdt);
+    printf_("GDT 32 Bit Data Segment: 0x%llx\n",
+            (uint64_t) &gdt.seg_32_data - (uint64_t) &gdt);
+    printf_("GDT Kernel Code Segment: 0x%llx\n",
+            (uint64_t) &gdt.kernelCS - (uint64_t) &gdt);
+    printf_("GDT Kernel Data Segment: 0x%llx\n",
+            (uint64_t) &gdt.kernelData - (uint64_t) &gdt);
+    printf_("GDT User NULL Segment: 0x%llx\n",
+            (uint64_t) &gdt.userNull - (uint64_t) &gdt);
+    printf_("GDT User Code Segment: 0x%llx\n",
+            (uint64_t) &gdt.userCode - (uint64_t) &gdt);
+    printf_("GDT User Data Segment: 0x%llx\n",
+            (uint64_t) &gdt.userData - (uint64_t) &gdt);
     printf_("GDT TSS Segment: 0x%llx\n", (uint64_t) &gdt.tss - (uint64_t) &gdt);
     printf_("%s\n", "------------------------------------");
     printf_("%s\n", "|     \t   GDTR DATA\t\t       |");
@@ -121,7 +168,7 @@ void LoadGDT_Stage1(void)
 
     tss.rsp0 = (uint64_t) TssStack + sizeof(TssStack);
     tss.ist1 = (uint64_t) ist1Stack + sizeof(ist1Stack);
-    rsp0 = tss.rsp0;
+    rsp0     = tss.rsp0;
 
     printf_("0x%llx\n", tss.rsp0);
 

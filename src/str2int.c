@@ -29,7 +29,7 @@ uint64_t str2int2(char *str)
     for (uint64_t i = 0; str[i] != '\0'; ++i)
     {
         uint64_t digit = str[i] - '0';
-        res = res * 10 + digit;
+        res            = res * 10 + digit;
     }
 
     return res;

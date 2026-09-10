@@ -31,8 +31,9 @@ struct sdt
 /**
  * @brief Initialize Voyager's ACPI table-discovery state.
  *
- * Called during kernel bring-up when CPUID/platform probing reports ACPI support.
- * Mandatory-table failures are routed through the kernel panic/error path.
+ * Called during kernel bring-up when CPUID/platform probing reports ACPI
+ * support. Mandatory-table failures are routed through the kernel panic/error
+ * path.
  */
 void acpi_init(void);
 

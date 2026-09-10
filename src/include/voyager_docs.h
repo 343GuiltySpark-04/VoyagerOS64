@@ -65,7 +65,8 @@
  */
 
 /** @defgroup boot Boot and Kernel Bring-up
- *  @brief Entry, bootloader handoff, subsystem ordering, and ownership transfer.
+ *  @brief Entry, bootloader handoff, subsystem ordering, and ownership
+ * transfer.
  */
 
 /** @defgroup memory Memory Management
@@ -88,7 +89,8 @@
  */
 
 /** @defgroup paging Paging and Address Translation
- *  @brief x86-64 page-table construction, mappings, CR3 ownership, and HHDM use.
+ *  @brief x86-64 page-table construction, mappings, CR3 ownership, and HHDM
+ * use.
  */
 
 /** @defgroup interrupts Interrupts and Descriptor Tables
@@ -109,7 +111,8 @@
  */
 
 /** @defgroup terminal Terminal and Console
- *  @brief Boot console, framebuffer terminal, serial diagnostics, and output ownership.
+ *  @brief Boot console, framebuffer terminal, serial diagnostics, and output
+ * ownership.
  */
 
 /** @defgroup shell Voyager Shell (VSH)
@@ -117,7 +120,8 @@
  */
 
 /** @defgroup diagnostics Diagnostics and Qualification
- *  @brief Built-in validation, stress tests, and low-level debug instrumentation.
+ *  @brief Built-in validation, stress tests, and low-level debug
+ * instrumentation.
  */
 
 /** @defgroup time Timekeeping
@@ -125,10 +129,11 @@
  */
 
 /** @defgroup deprecated_code Retired / Historical Code
- *  @brief Preserved experiments that are not linked into the active 0.0.5 kernel.
+ *  @brief Preserved experiments that are not linked into the active 0.0.5
+ * kernel.
  *
  *  The build explicitly retires older allocator/VMM/stream implementations.
- *  When reading the source tree, prefer the active Stage-2 interfaces documented
- *  under @ref memory and @ref paging rather than assuming every historical file
- *  participates in the current runtime.
+ *  When reading the source tree, prefer the active Stage-2 interfaces
+ * documented under @ref memory and @ref paging rather than assuming every
+ * historical file participates in the current runtime.
  */

@@ -4,8 +4,8 @@
 
 int strtok(char *srcstr, char sep, char ***output)
 {
-    int len = strlen(srcstr);
-    int numparts = 0;
+    int    len      = strlen(srcstr);
+    int    numparts = 0;
     char **currentpart;
 
     for (int i = 0; i < len; i++)
@@ -22,7 +22,7 @@ int strtok(char *srcstr, char sep, char ***output)
     if (*output == NULL)
         return 0;
 
-    currentpart = *output;
+    currentpart  = *output;
     *currentpart = srcstr;
 
     for (int i = 0; i < len; i++)

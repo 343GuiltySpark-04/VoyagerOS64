@@ -43,8 +43,7 @@
 #define CPUID_VENDOR_XEN "XenVMMXenVMM"
 #define CPUID_VENDOR_HYPERV "Microsoft Hv"
 #define CPUID_VENDOR_PARALLELS " prl hyperv "
-#define CPUID_VENDOR_PARALLELS_ALT \
-    " lrpepyh vr "
+#define CPUID_VENDOR_PARALLELS_ALT " lrpepyh vr "
 #define CPUID_VENDOR_BHYVE "bhyve bhyve "
 #define CPUID_VENDOR_QNX " QNXQVMBSQG "
 
@@ -53,9 +52,11 @@ extern bool has_ACPI;
 /** Historical XSAVE-state allocation bookkeeping. */
 extern size_t xsave_bank;
 
-/** @brief Obtain a hardware-generated random value through the assembly helper. */
+/** @brief Obtain a hardware-generated random value through the assembly helper.
+ */
 uint64_t rand_asm(void);
-/** @brief Return the detected processor model identifier used by current code. */
+/** @brief Return the detected processor model identifier used by current code.
+ */
 int get_model(void);
 /** @brief Print the verbose boot-time CPUID/capability report. */
 void cpuid_readout(void);
@@ -88,8 +89,9 @@ void check_tsc(void);
 /**
  * @warning The CPUID readout and the scheduler's floating-point context model
  * are separate concerns. VoyagerOS64 0.0.5 does not provide qualified per-task
- * XSAVE/XRSTOR state, and the current feature messages should not be interpreted
- * as proof that floating-point state is safely preserved across task switches.
+ * XSAVE/XRSTOR state, and the current feature messages should not be
+ * interpreted as proof that floating-point state is safely preserved across
+ * task switches.
  */
 
 #endif

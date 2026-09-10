@@ -9,7 +9,7 @@
 
 extern volatile struct limine_stack_size_request stack_req;
 extern uint64_t walk_stack(uint64_t *array, uint64_t max);
-extern void halt(void);
+extern void     halt(void);
 
 void stack_trace_asm(uint64_t max_size, bool stop)
 {

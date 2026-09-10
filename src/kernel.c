@@ -299,10 +299,10 @@ void _start(void)
     pic_unmask_irq(0);
 
     print_load_time();
+    // print_stack_size();
     print_date();
-    print_stack_size();
 
-    printf_("%s", "VoyagerOS64 ");
+    printf_("%s", "Lucy ");
     printf_("%s\n", KERNEL_VERSION);
 
     init_done = 1;
@@ -321,7 +321,7 @@ void _start(void)
     //  create_process(proc_b);
     create_process(vsh_loop);
 
-    printf_("%s\n", "Scheduler cooperative round-robin online.");
+    // printf_("%s\n", "Scheduler cooperative round-robin online.");
     scheduler_start();
 
     panic("scheduler returned control to kernel bootstrap");

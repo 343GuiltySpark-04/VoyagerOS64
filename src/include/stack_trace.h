@@ -20,7 +20,7 @@ extern volatile struct limine_stack_size_request stack_req;
 struct stack_return
 {
     uint64_t *addresses;
-    uint64_t array_size;
+    uint64_t  array_size;
 };
 
 /** @brief Frame-pointer chain node used by the C stack walker. */
@@ -32,7 +32,8 @@ struct stack_frame
 
 /**
  * @brief Assembly-assisted stack trace entry point.
- * @param max_size Maximum number/size of entries requested by the implementation.
+ * @param max_size Maximum number/size of entries requested by the
+ * implementation.
  * @param stop Whether the helper should stop after producing the trace.
  */
 void stack_trace_asm(uint64_t max_size, bool stop);

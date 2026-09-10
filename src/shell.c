@@ -147,6 +147,8 @@ void cmd_parser(const char *str)
     {
         printf_("Kernel Version: ");
         printf_("%s\n", KERNEL_VERSION);
+        printf_("Version Codename: ");
+        printf_("%s\n", VERSION_CODENAME);
         printf_("GNU Version: ");
         printf_("%s\n", BUILD_GCC);
         printf_("Linker Version: ");

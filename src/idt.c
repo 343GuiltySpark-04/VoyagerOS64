@@ -11,12 +11,12 @@
 #include <stdint.h>
 
 static ALIGN_16BIT idt_desc_t idt[IDT_MAX_DESCRIPTORS];
-static idtr_t idtr;
-static bool vectors[IDT_MAX_DESCRIPTORS];
+static idtr_t                 idtr;
+static bool                   vectors[IDT_MAX_DESCRIPTORS];
 
-void *isr_delta[256];
+void           *isr_delta[256];
 extern uint64_t isr_stub_table[];
-extern void halt(void);
+extern void     halt(void);
 
 #define YIELD_VECTOR 0x30
 

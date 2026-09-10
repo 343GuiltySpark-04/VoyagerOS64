@@ -3,10 +3,10 @@
  * Released under MIT License.
  */
 
+#include "../include/paging/paging_bootstrap.h"
 #include "../include/KernelUtils.h"
 #include "../include/early_alloc.h"
 #include "../include/limine.h"
-#include "../include/paging/paging_bootstrap.h"
 #include "../include/printf.h"
 #include <stdbool.h>
 #include <stddef.h>
@@ -56,8 +56,8 @@ uint64_t framebuffer_bytes     = 0;
 #define ADDR_MASK_2M 0x000FFFFFFFFFE000ull
 #define ADDR_MASK_1G 0x000FFFFFC0000000ull
 
-#define ALIGN_UP(x, a) (((x) + ((a) - 1)) & ~((a) - 1))
-#define ALIGN_DOWN(x, a) ((x) & ~((a) - 1))
+#define ALIGN_UP(x, a) (((x) + ((a) -1)) & ~((a) -1))
+#define ALIGN_DOWN(x, a) ((x) & ~((a) -1))
 
 struct __attribute__((aligned(0x1000))) page_table
 {
@@ -102,8 +102,8 @@ static uint64_t get_max_phys(void)
 
     for (size_t i = 0; i < memmap_req.response->entry_count; i++)
     {
-        struct limine_memmap_entry *e = memmap_req.response->entries[i];
-        uint64_t end = e->base + e->length;
+        struct limine_memmap_entry *e   = memmap_req.response->entries[i];
+        uint64_t                    end = e->base + e->length;
         if (end > max_phys)
             max_phys = end;
     }
@@ -175,9 +175,9 @@ get_or_make_next(struct page_table *cur, uint64_t idx, uint64_t *phys_out)
         return (struct page_table *) phys_to_virt(child_phys);
     }
 
-    uint64_t child_phys = 0;
-    struct page_table *child = alloc_table(&child_phys);
-    cur->e[idx] = (child_phys & ADDR_MASK) | PTE_P | PTE_W;
+    uint64_t           child_phys = 0;
+    struct page_table *child      = alloc_table(&child_phys);
+    cur->e[idx]                   = (child_phys & ADDR_MASK) | PTE_P | PTE_W;
 
     if (phys_out)
         *phys_out = child_phys;
@@ -190,7 +190,7 @@ static struct page_table *get_or_make_pd(struct page_table *pml4,
                                          uint64_t           pdpti,
                                          uint64_t          *pd_phys_out)
 {
-    uint64_t junk;
+    uint64_t           junk;
     struct page_table *pdpt = get_or_make_next(pml4, pml4i, &junk);
     return get_or_make_next(pdpt, pdpti, pd_phys_out);
 }
@@ -337,8 +337,8 @@ static void map_hhdm(struct page_table *pml4)
      * retrofit edit can mutate the currently active Limine address space. */
     for (size_t i = 0; i < memmap_req.response->entry_count; i++)
     {
-        struct limine_memmap_entry *e = memmap_req.response->entries[i];
-        bool include = false;
+        struct limine_memmap_entry *e       = memmap_req.response->entries[i];
+        bool                        include = false;
 
         switch (e->type)
         {
@@ -363,11 +363,7 @@ static void map_hhdm(struct page_table *pml4)
         if (end <= base)
             continue;
 
-        map_range_huge_first(pml4,
-                             g_hhdm + base,
-                             base,
-                             end - base,
-                             0);
+        map_range_huge_first(pml4, g_hhdm + base, base, end - base, 0);
     }
 
     /* Always keep the first 2 MiB addressable through HHDM. This is written
@@ -422,9 +418,8 @@ static bool walk_va_to_pa(uint64_t           va,
         return true;
     }
 
-    struct page_table *pt =
-        (struct page_table *) phys_to_virt(pde & ADDR_MASK);
-    uint64_t pte = pt->e[idx[3]];
+    struct page_table *pt = (struct page_table *) phys_to_virt(pde & ADDR_MASK);
+    uint64_t           pte = pt->e[idx[3]];
     if (!(pte & PTE_P))
         return false;
 
@@ -438,8 +433,8 @@ static bool walk_va_to_pa(uint64_t           va,
 
 static void probe_va(const char *label, uint64_t va, struct page_table *tbl)
 {
-    int lvl = 0;
-    uint64_t pa = 0;
+    int      lvl = 0;
+    uint64_t pa  = 0;
 
     if (!walk_va_to_pa(va, tbl, &pa, &lvl))
     {
@@ -456,13 +451,12 @@ static void probe_va(const char *label, uint64_t va, struct page_table *tbl)
            lvl);
 }
 
-static void probe_hhdm_phys(const char *label,
-                            uint64_t    phys,
-                            struct page_table *pml4)
+static void
+probe_hhdm_phys(const char *label, uint64_t phys, struct page_table *pml4)
 {
-    uint64_t va = g_hhdm + phys;
-    uint64_t pa = 0;
-    int lvl = 0;
+    uint64_t va  = g_hhdm + phys;
+    uint64_t pa  = 0;
+    int      lvl = 0;
 
     if (!walk_va_to_pa(va, pml4, &pa, &lvl))
     {
@@ -489,19 +483,19 @@ static void scan_hhdm_range(uint64_t           phys_start,
     if (stride == 0)
         stride = PAGE_2M_SIZE;
 
-    uint64_t end = phys_start + length;
-    int prev_state = -1;
-    uint64_t run_start = phys_start;
+    uint64_t end        = phys_start + length;
+    int      prev_state = -1;
+    uint64_t run_start  = phys_start;
 
     for (uint64_t phys = phys_start; phys < end; phys += stride)
     {
         bool present = walk_va_to_pa(g_hhdm + phys, pml4, NULL, NULL);
-        int state = present ? 1 : 0;
+        int  state   = present ? 1 : 0;
 
         if (prev_state == -1)
         {
             prev_state = state;
-            run_start = phys;
+            run_start  = phys;
         }
         else if (state != prev_state)
         {
@@ -510,7 +504,7 @@ static void scan_hhdm_range(uint64_t           phys_start,
                    (unsigned long long) phys,
                    prev_state ? "PRESENT" : "MISSING");
             prev_state = state;
-            run_start = phys;
+            run_start  = phys;
         }
     }
 
@@ -557,8 +551,8 @@ static void ensure_hhdm_cover_phys_range(struct page_table *pml4,
 static void pre_switch_audit_and_patch(struct page_table *new_pml4,
                                        uint64_t           new_pml4_phys)
 {
-    uint64_t old_cr3 = readCR3() & ADDR_MASK;
-    uint64_t rsp_va  = readRSP();
+    uint64_t old_cr3  = readCR3() & ADDR_MASK;
+    uint64_t rsp_va   = readRSP();
     uint64_t rsp_phys = 0;
     uint64_t max_phys = get_max_phys();
 
@@ -580,9 +574,8 @@ static void pre_switch_audit_and_patch(struct page_table *new_pml4,
 
     printf("Pre-switch validation:\n");
     probe_va("stack", rsp_va, new_pml4);
-    probe_va("rip",
-             (uint64_t) (uintptr_t) &pre_switch_audit_and_patch,
-             new_pml4);
+    probe_va(
+        "rip", (uint64_t) (uintptr_t) &pre_switch_audit_and_patch, new_pml4);
     probe_va("HHDM+0", g_hhdm, new_pml4);
     probe_va("HHDM+oldCR3", g_hhdm + old_cr3, new_pml4);
     probe_va("HHDM+newCR3", g_hhdm + new_pml4_phys, new_pml4);
@@ -606,8 +599,7 @@ static void pre_switch_audit_and_patch(struct page_table *new_pml4,
         panic("paging_bootstrap: new CR3 page missing from HHDM");
 }
 
-static void install_new_cr3(uint64_t new_pml4_phys,
-                            struct page_table *new_pml4)
+static void install_new_cr3(uint64_t new_pml4_phys, struct page_table *new_pml4)
 {
     pre_switch_audit_and_patch(new_pml4, new_pml4_phys);
 
@@ -619,8 +611,7 @@ static void install_new_cr3(uint64_t new_pml4_phys,
     writeCR3(new_pml4_phys);
 
     uint64_t cr3_after = readCR3();
-    printf("CR3 after install: 0x%llx\n",
-           (unsigned long long) cr3_after);
+    printf("CR3 after install: 0x%llx\n", (unsigned long long) cr3_after);
 
     asm volatile("push %%rax; pop %%rax" ::: "rax", "memory");
     volatile uint8_t *text_probe =
@@ -651,13 +642,10 @@ void paging_bootstrap(void)
     map_kernel_higher_half(g_pml4_virt);
     map_hhdm(g_pml4_virt);
 
-    printf("INFO: CR3 to install: 0x%llx\n",
-           (unsigned long long) g_pml4_phys);
-    printf("INFO: RSP: 0x%llx\n",
-           (unsigned long long) readRSP());
+    printf("INFO: CR3 to install: 0x%llx\n", (unsigned long long) g_pml4_phys);
+    printf("INFO: RSP: 0x%llx\n", (unsigned long long) readRSP());
 
-    printf("Memory Total: %iMiB\n",
-           bytes_to_mib(get_total_usable_mem_bytes()));
+    printf("Memory Total: %iMiB\n", bytes_to_mib(get_total_usable_mem_bytes()));
 
     printf(">>> Probing HHDM <<<\n");
     printf("--------------------------------\n");
@@ -666,10 +654,7 @@ void paging_bootstrap(void)
     probe_hhdm_phys("old CR3 page", readCR3() & ADDR_MASK, g_pml4_virt);
     probe_hhdm_phys("new CR3 page", g_pml4_phys, g_pml4_virt);
 
-    scan_hhdm_range(0,
-                    16ull * 1024 * 1024,
-                    PAGE_2M_SIZE,
-                    g_pml4_virt);
+    scan_hhdm_range(0, 16ull * 1024 * 1024, PAGE_2M_SIZE, g_pml4_virt);
 
     printf("--------------------------------\n");
     printf(">>> HHDM Probe Done <<<\n");

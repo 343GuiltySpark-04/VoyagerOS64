@@ -19,7 +19,7 @@ static void
 io_apic_write(struct madt_io_apic *io_apic, uint32_t reg, uint32_t value)
 {
     uint64_t base = (uint64_t) io_apic->address + HIGHER_HALF_MEMORY_OFFSET;
-    *(volatile uint32_t *) base = reg;
+    *(volatile uint32_t *) base        = reg;
     *(volatile uint32_t *) (base + 16) = value;
 }
 

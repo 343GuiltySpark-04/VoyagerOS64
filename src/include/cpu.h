@@ -18,7 +18,8 @@ extern bool sysenter;
 
 struct thread;
 
-/** @brief Saved general-purpose CPU context used by interrupt/APIC groundwork. */
+/** @brief Saved general-purpose CPU context used by interrupt/APIC groundwork.
+ */
 struct cpu_ctx
 {
     uint64_t ds;

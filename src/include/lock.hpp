@@ -5,10 +5,10 @@
 
 class AtomicLock
 {
-private:
+  private:
     volatile uint32_t locked;
 
-public:
+  public:
     AtomicLock();
 
     bool IsLocked() const;
@@ -21,10 +21,10 @@ public:
 
 class ScopedLock
 {
-private:
+  private:
     AtomicLock &lock;
 
-public:
+  public:
     ScopedLock(AtomicLock &value);
     ~ScopedLock();
 };

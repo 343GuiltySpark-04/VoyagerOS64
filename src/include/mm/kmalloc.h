@@ -54,8 +54,8 @@ extern "C"
      * @brief Resize an existing heap allocation while preserving payload data.
      * @param ptr Existing allocation, or NULL to behave like kmalloc().
      * @param newsize New requested payload size in bytes.
-     * @return Resized allocation, which may move, or NULL according to allocator
-     *         semantics.
+     * @return Resized allocation, which may move, or NULL according to
+     * allocator semantics.
      *
      * krealloc(ptr, 0) releases the allocation. Data up to the minimum of the
      * old and new usable sizes is preserved when the allocation moves.

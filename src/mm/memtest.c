@@ -83,11 +83,11 @@ static void clear_slots(void)
     }
 }
 
-static void verify_prefix(const char *phase,
-                          size_t      slot_index,
+static void verify_prefix(const char    *phase,
+                          size_t         slot_index,
                           const uint8_t *ptr,
-                          size_t      size,
-                          uint8_t     tag)
+                          size_t         size,
+                          uint8_t        tag)
 {
     for (size_t i = 0; i < size; i++)
     {
@@ -126,10 +126,10 @@ static void verify_alignment(const char *phase, size_t slot_index, void *ptr)
     if (((uintptr_t) ptr & 0xFu) != 0)
     {
         printf_("%s%s\n", "[MEMTEST] Phase: ", phase);
-        printf_("%s%llu\n", "Unaligned slot: ",
-                (unsigned long long) slot_index);
-        printf_("%s%llx\n", "Pointer: 0x",
-                (unsigned long long) (uintptr_t) ptr);
+        printf_(
+            "%s%llu\n", "Unaligned slot: ", (unsigned long long) slot_index);
+        printf_(
+            "%s%llx\n", "Pointer: 0x", (unsigned long long) (uintptr_t) ptr);
         panic("memtest: kmalloc returned a non-16-byte-aligned pointer");
     }
 }
@@ -166,14 +166,16 @@ static void verify_no_overlap(const char *phase,
     }
 }
 
-static void set_slot(size_t slot_index, uint8_t *ptr, size_t size, uint8_t tag,
+static void set_slot(size_t      slot_index,
+                     uint8_t    *ptr,
+                     size_t      size,
+                     uint8_t     tag,
                      const char *phase)
 {
     if (!ptr)
     {
         printf_("%s%s\n", "[MEMTEST] Allocation failed in phase: ", phase);
-        printf_("%s%llu\n", "Requested bytes: ",
-                (unsigned long long) size);
+        printf_("%s%llu\n", "Requested bytes: ", (unsigned long long) size);
         panic("memtest: unexpected allocation failure");
     }
 
@@ -242,7 +244,7 @@ static void pmm_roundtrip_test(void)
         }
 
         g_pmm_frames[i] = p;
-        uint8_t *page = (uint8_t *) (uintptr_t) (p + hhdm);
+        uint8_t *page   = (uint8_t *) (uintptr_t) (p + hhdm);
 
         for (size_t off = 0; off < MEMTEST_PAGE_SIZE; off++)
             page[off] = page_pattern(i, off);
@@ -266,18 +268,14 @@ static void pmm_roundtrip_test(void)
 
     for (size_t i = 0; i < count; i++)
     {
-        uint8_t *page =
-            (uint8_t *) (uintptr_t) (g_pmm_frames[i] + hhdm);
+        uint8_t *page = (uint8_t *) (uintptr_t) (g_pmm_frames[i] + hhdm);
 
         for (size_t off = 0; off < MEMTEST_PAGE_SIZE; off++)
         {
             uint8_t expected = page_pattern(i, off);
             if (page[off] != expected)
-                memtest_fail("neo-PMM page verify",
-                             i,
-                             off,
-                             expected,
-                             page[off]);
+                memtest_fail(
+                    "neo-PMM page verify", i, off, expected, page[off]);
         }
     }
 
@@ -300,9 +298,8 @@ static void pmm_roundtrip_test(void)
 }
 
 static const size_t g_basic_sizes[] = {
-    1u,    7u,    15u,   16u,   17u,   31u,   32u,
-    33u,   63u,   64u,   65u,   255u,  256u,  257u,
-    1000u, 4095u, 4096u, 4097u, 8192u, 16384u,
+    1u,  7u,   15u,  16u,  17u,   31u,   32u,   33u,   63u,   64u,
+    65u, 255u, 256u, 257u, 1000u, 4095u, 4096u, 4097u, 8192u, 16384u,
 };
 
 static void basic_heap_test(void)
@@ -313,8 +310,8 @@ static void basic_heap_test(void)
     size_t count = sizeof(g_basic_sizes) / sizeof(g_basic_sizes[0]);
     for (size_t i = 0; i < count; i++)
     {
-        size_t size = g_basic_sizes[i];
-        uint8_t tag = (uint8_t) (0x31u + i);
+        size_t  size = g_basic_sizes[i];
+        uint8_t tag  = (uint8_t) (0x31u + i);
         set_slot(0, kmalloc(size), size, tag, "basic allocation");
         verify_slot("basic verify", 0);
         release_slot("basic free", 0);
@@ -328,8 +325,8 @@ static void fragmentation_test(void)
 
     for (size_t i = 0; i < MEMTEST_SLOT_COUNT; i++)
     {
-        size_t size = 24u + ((i * 173u) % 7000u);
-        uint8_t tag = (uint8_t) (0x40u ^ i);
+        size_t  size = 24u + ((i * 173u) % 7000u);
+        uint8_t tag  = (uint8_t) (0x40u ^ i);
         if (tag == 0)
             tag = 0x40u;
         set_slot(i, kmalloc(size), size, tag, "fragmentation initial fill");
@@ -344,8 +341,8 @@ static void fragmentation_test(void)
 
     for (size_t i = 1; i < MEMTEST_SLOT_COUNT; i += 2)
     {
-        size_t size = 73u + ((i * 521u) % 9000u);
-        uint8_t tag = (uint8_t) (0xB3u ^ i);
+        size_t  size = 73u + ((i * 521u) % 9000u);
+        uint8_t tag  = (uint8_t) (0xB3u ^ i);
         if (tag == 0)
             tag = 0xB3u;
         set_slot(i, kmalloc(size), size, tag, "fragmentation hole refill");
@@ -369,7 +366,13 @@ static void realloc_test(void)
     clear_slots();
 
     static const size_t sizes[] = {
-        100u, 200u, 2000u, 4097u, 16384u, 8192u, 128u,
+        100u,
+        200u,
+        2000u,
+        4097u,
+        16384u,
+        8192u,
+        128u,
     };
 
     uint8_t tag = 0x5Au;
@@ -379,9 +382,9 @@ static void realloc_test(void)
     {
         verify_slot("realloc precheck", 0);
 
-        size_t old_size = g_slots[0].size;
-        uint8_t *old_ptr = g_slots[0].ptr;
-        uint8_t *new_ptr = krealloc(old_ptr, sizes[i]);
+        size_t   old_size = g_slots[0].size;
+        uint8_t *old_ptr  = g_slots[0].ptr;
+        uint8_t *new_ptr  = krealloc(old_ptr, sizes[i]);
         if (!new_ptr)
             panic("memtest: krealloc unexpectedly failed");
 
@@ -442,8 +445,8 @@ static void heap_growth_test(void)
 
     for (size_t i = 0; i < MEMTEST_GROWTH_SLOTS; i++)
     {
-        size_t size = MEMTEST_GROWTH_SIZE + ((i & 7u) * 257u);
-        uint8_t tag = (uint8_t) (0x70u + i);
+        size_t  size = MEMTEST_GROWTH_SIZE + ((i & 7u) * 257u);
+        uint8_t tag  = (uint8_t) (0x70u + i);
         set_slot(i, kmalloc(size), size, tag, "heap growth allocation");
 
         if ((i & 7u) == 7u)
@@ -496,8 +499,7 @@ static void random_cycle(uint64_t seed, memtest_stats_t *stats)
 
     for (uint64_t op = 0; op < MEMTEST_RANDOM_OPS; op++)
     {
-        size_t index =
-            (size_t) (xorshift64(&seed) % MEMTEST_SLOT_COUNT);
+        size_t index = (size_t) (xorshift64(&seed) % MEMTEST_SLOT_COUNT);
 
         if (!g_slots[index].ptr)
         {
@@ -507,11 +509,7 @@ static void random_cycle(uint64_t seed, memtest_stats_t *stats)
             if (tag == 0)
                 tag = 0xA5u;
 
-            set_slot(index,
-                     kmalloc(size),
-                     size,
-                     tag,
-                     "random allocation");
+            set_slot(index, kmalloc(size), size, tag, "random allocation");
             stats->allocations++;
             stats_add_live(stats, size);
         }
@@ -530,11 +528,11 @@ static void random_cycle(uint64_t seed, memtest_stats_t *stats)
             {
                 verify_slot("random realloc precheck", index);
 
-                size_t old_size = g_slots[index].size;
-                uint8_t tag     = g_slots[index].tag;
-                uint8_t *old_ptr = g_slots[index].ptr;
-                size_t new_size =
-                    1u + (size_t) (xorshift64(&seed) % MEMTEST_RANDOM_MAX_ALLOC);
+                size_t   old_size = g_slots[index].size;
+                uint8_t  tag      = g_slots[index].tag;
+                uint8_t *old_ptr  = g_slots[index].ptr;
+                size_t   new_size = 1u + (size_t) (xorshift64(&seed) %
+                                                 MEMTEST_RANDOM_MAX_ALLOC);
 
                 uint8_t *new_ptr = krealloc(old_ptr, new_size);
                 if (!new_ptr)
@@ -551,10 +549,8 @@ static void random_cycle(uint64_t seed, memtest_stats_t *stats)
                 g_slots[index].size = new_size;
                 g_slots[index].tag  = tag;
                 verify_alignment("random realloc alignment", index, new_ptr);
-                verify_no_overlap("random realloc overlap",
-                                  index,
-                                  new_ptr,
-                                  new_size);
+                verify_no_overlap(
+                    "random realloc overlap", index, new_ptr, new_size);
                 fill_slot(index);
 
                 stats->reallocations++;
@@ -591,7 +587,8 @@ static void random_cycle(uint64_t seed, memtest_stats_t *stats)
     }
 
     if (stats->live_bytes != 0)
-        panic("memtest: random-cycle live byte accounting did not return to zero");
+        panic("memtest: random-cycle live byte accounting did not return to "
+              "zero");
 }
 
 static void randomized_heap_test(void)
@@ -600,7 +597,7 @@ static void randomized_heap_test(void)
 
     const uint64_t seed = 0x564F59414745524FULL; /* \"VOYAGERO\" */
 
-    memtest_stats_t first = {0};
+    memtest_stats_t first  = {0};
     memtest_stats_t second = {0};
 
     size_t frames_before = frame_free_count();
@@ -610,15 +607,18 @@ static void randomized_heap_test(void)
     random_cycle(seed, &second);
     size_t frames_after_second = frame_free_count();
 
-    printf_("%s%llu\n", "[MEMTEST] Random operations/cycle: ",
+    printf_("%s%llu\n",
+            "[MEMTEST] Random operations/cycle: ",
             (unsigned long long) first.operations);
-    printf_("%s%llu\n", "[MEMTEST] Allocations: ",
+    printf_("%s%llu\n",
+            "[MEMTEST] Allocations: ",
             (unsigned long long) first.allocations);
-    printf_("%s%llu\n", "[MEMTEST] Frees: ",
-            (unsigned long long) first.frees);
-    printf_("%s%llu\n", "[MEMTEST] Reallocations: ",
+    printf_("%s%llu\n", "[MEMTEST] Frees: ", (unsigned long long) first.frees);
+    printf_("%s%llu\n",
+            "[MEMTEST] Reallocations: ",
             (unsigned long long) first.reallocations);
-    printf_("%s%llu\n", "[MEMTEST] Peak live bytes: ",
+    printf_("%s%llu\n",
+            "[MEMTEST] Peak live bytes: ",
             (unsigned long long) first.peak_live_bytes);
     printf_("%s%llu%s%llu%s%llu\n",
             "[MEMTEST] PMM free frames before/after1/after2: ",
@@ -636,10 +636,12 @@ static void randomized_heap_test(void)
 
     if (frames_after_second < frames_after_first)
     {
+        printf_(
+            "%s\n",
+            "[MEMTEST] WARNING: second identical cycle grew the heap again.");
         printf_("%s\n",
-                "[MEMTEST] WARNING: second identical cycle grew the heap again.");
-        printf_("%s\n",
-                "[MEMTEST] Data integrity passed, but inspect fragmentation/reuse.");
+                "[MEMTEST] Data integrity passed, but inspect "
+                "fragmentation/reuse.");
     }
 }
 

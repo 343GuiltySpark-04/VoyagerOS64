@@ -117,9 +117,9 @@ struct fbterm_context
  * @param margin Terminal margin in pixels/cells as interpreted by the backend.
  * @return Initialized backend-independent terminal context, or NULL on failure.
  *
- * VoyagerOS64 initializes this only after its own page tables and heap are live;
- * the resulting context replaces Limine terminal callbacks for normal kernel
- * console output.
+ * VoyagerOS64 initializes this only after its own page tables and heap are
+ * live; the resulting context replaces Limine terminal callbacks for normal
+ * kernel console output.
  */
 struct term_context *fbterm_init(void *(*_malloc)(size_t),
                                  uint32_t *framebuffer,

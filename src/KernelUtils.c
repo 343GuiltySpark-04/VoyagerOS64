@@ -6,18 +6,16 @@
 
 extern volatile struct limine_memmap_request memmap_req;
 
-const struct kswitches k_mode = {
-    .stack_trace_size     = 24,
-    .stack_trace_on_fault = 1,
-    .acpi_support         = 0,
-    .sched_debug          = 0,
-    .addr_debug           = 0,
-    .hw_rng_support       = 1,
-    .mem_readout_unit     = 1,
-    .liballoc_debug       = 0,
-    .fpu_allowed          = 0,
-    .timestamp            = 1
-};
+const struct kswitches k_mode = {.stack_trace_size     = 24,
+                                 .stack_trace_on_fault = 1,
+                                 .acpi_support         = 0,
+                                 .sched_debug          = 0,
+                                 .addr_debug           = 0,
+                                 .hw_rng_support       = 1,
+                                 .mem_readout_unit     = 1,
+                                 .liballoc_debug       = 0,
+                                 .fpu_allowed          = 0,
+                                 .timestamp            = 1};
 
 uint64_t bytes_to_mib(uint64_t bytes)
 {
@@ -63,10 +61,10 @@ void print_memmap(void)
         return;
     }
 
-    size_t size = memmap_req.response->entry_count;
-    size_t num_usable = 0;
-    size_t num_bad = 0;
-    size_t num_reclaim_bl = 0;
+    size_t size             = memmap_req.response->entry_count;
+    size_t num_usable       = 0;
+    size_t num_bad          = 0;
+    size_t num_reclaim_bl   = 0;
     size_t num_reclaim_acpi = 0;
 
     printf_("%s\n", "--------------------------------------");
@@ -105,13 +103,15 @@ void print_memmap(void)
             num_reclaim_acpi++;
     }
 
-    printf_("Number of Usable Entries: %llu\n", (unsigned long long) num_usable);
+    printf_("Number of Usable Entries: %llu\n",
+            (unsigned long long) num_usable);
     printf_("Number of Bad Entries: %llu\n", (unsigned long long) num_bad);
     printf_("Number of Bootloader Reclaimable Entries: %llu\n",
             (unsigned long long) num_reclaim_bl);
     printf_("Number of ACPI Reclaimable Entries: %llu\n",
             (unsigned long long) num_reclaim_acpi);
     printf_("Memory Size: %llu MiB.\n", (unsigned long long) get_memory_size());
-    printf_("Memory Size: %llu GiB.\n", (unsigned long long) get_memory_size_gib());
+    printf_("Memory Size: %llu GiB.\n",
+            (unsigned long long) get_memory_size_gib());
     printf_("%s\n", "--------------------------------------");
 }
