@@ -64,7 +64,6 @@ gcc-9.3.0/*
 *.sym
 iso_root/*
 *.tar*
-release.sh
 release/*
 *.ini
 limine/*
