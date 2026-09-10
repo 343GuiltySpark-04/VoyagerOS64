@@ -1,3 +1,10 @@
+/**
+ * @file heap.h
+ * @brief Retired bitmap heap allocator interface.
+ * @ingroup deprecated_code
+ * @deprecated The active 0.0.5 heap is mm/kmalloc.h. The corresponding legacy
+ *             heap implementation is excluded from the active kernel link.
+ */
 #pragma once
 #include <stdint.h>
 
