@@ -53,15 +53,21 @@ SOURCE_BROWSER = YES
 INLINE_SOURCES = NO
 
 # Generate a browsable reference as well as LaTeX suitable for a PDF build.
+# Both outputs intentionally use the low-glare Voyager dark theme under
+# docs/theme. Generated output remains disposable; edit the theme sources, not
+# html/ or latex/ directly.
 GENERATE_HTML = YES
 HTML_OUTPUT = html
 GENERATE_TREEVIEW = YES
 SEARCHENGINE = YES
+HTML_EXTRA_STYLESHEET = docs/theme/voyager-dark.css
 
 GENERATE_LATEX = YES
 LATEX_OUTPUT = latex
 USE_PDFLATEX = YES
 LATEX_BATCHMODE = YES
+PDF_HYPERLINKS = YES
+LATEX_EXTRA_STYLESHEET = docs/theme/voyager-dark.sty
 
 # Graphviz is already part of the established Voyager documentation workflow.
 HAVE_DOT = YES
