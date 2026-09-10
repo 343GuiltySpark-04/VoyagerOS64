@@ -1,3 +1,5 @@
+#include "include/consts.h"
+#include "include/cpuUtils.h"
 #include "include/drivers/keyboard/keyboard.h"
 #include "include/mm/kmalloc.h"
 #include "include/mm/memtest.h"
@@ -117,6 +119,11 @@ void cmd_parser(const char *str)
         print_sys_time();
         return;
     }
+    else if (shell_streq(str, "time -d"))
+    {
+        print_date();
+        return;
+    }
 
     if (shell_streq(str, "memtest"))
     {
@@ -133,6 +140,31 @@ void cmd_parser(const char *str)
     if (shell_streq(str, "soak"))
     {
         create_process(soak);
+        return;
+    }
+
+    if (shell_streq(str, "uname"))
+    {
+        printf_("Kernel Version: ");
+        printf_("%s\n", KERNEL_VERSION);
+        printf_("GNU Version: ");
+        printf_("%s\n", BUILD_GCC);
+        printf_("Linker Version: ");
+        printf_("%s\n", BUILD_LINKER);
+        printf_("NASM Version: ");
+        printf_("%s\n", BUILD_NASM);
+        printf_("GNU Assembler Version: ");
+        printf_("%s\n", BUILD_GAS);
+        printf_("Binary Target: ");
+        printf_("%s\n", BUILD_TARGET);
+        printf_("Thread Model: ");
+        printf_("%s\n", THREAD_MODEL);
+        return;
+    }
+
+    if (shell_streq(str, "cpuid"))
+    {
+        cpuid_readout();
         return;
     }
 
