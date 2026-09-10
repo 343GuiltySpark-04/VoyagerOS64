@@ -1,21 +1,32 @@
-# VoyagerOS64 0.0.5 Doxygen release overlay.
+# VoyagerOS64 0.0.5 Doxygen release configuration.
 #
-# The long-lived Doxygen file predates the 0.0.5 stabilization branch and still
-# carries historical WIP metadata. Include it as the base configuration, then
-# narrow the release documentation to the active 0.0.5 source set.
+# This file is intentionally standalone. The older repository-wide Doxygen
+# configuration predates the 0.0.5 stabilization work and contains options that
+# are obsolete in Doxygen 1.9.4. Keeping the release configuration independent
+# avoids inheriting those warnings while leaving the historical config intact.
 
-@INCLUDE = Doxygen
-
+DOXYFILE_ENCODING = UTF-8
+PROJECT_NAME = VoyagerOS64
 PROJECT_NUMBER = 0.0.5
 PROJECT_BRIEF = "VoyagerOS64 0.0.5 kernel architecture and API reference"
+OUTPUT_LANGUAGE = English
 
-# ./src already contains ./src/include recursively. Listing both caused Doxygen
-# to parse every header twice and report duplicate @param documentation.
+OPTIMIZE_OUTPUT_FOR_C = YES
+EXTRACT_ALL = YES
+EXTRACT_STATIC = YES
+WARNINGS = YES
+WARN_IF_DOC_ERROR = YES
+WARN_NO_PARAMDOC = NO
+
+# ./src already contains ./src/include recursively. Listing both would parse
+# every header twice and can produce duplicate @param documentation warnings.
 INPUT = ./src
+FILE_PATTERNS = *.c *.h *.md *.cpp *.hpp
+RECURSIVE = YES
 
-# Match GNUmakefile's retired implementation set and also hide the corresponding
-# archaeological headers from the release API reference. Historical context is
-# retained on the main page under the Retired / Historical Code group.
+# Match GNUmakefile's retired implementation set and hide the corresponding
+# archaeological headers from the 0.0.5 release API reference. Historical
+# context remains documented by voyager_docs.h.
 EXCLUDE = \
     ./src/heap.c \
     ./src/bucket.c \
@@ -38,6 +49,27 @@ EXCLUDE = \
     ./src/include/paging/frameallocator.h \
     ./src/include/paging/vmm.h
 
-# printf_ legitimately has a large caller graph in the kernel. The inherited
-# default of 50 nodes is too small for the current source tree.
+SOURCE_BROWSER = YES
+INLINE_SOURCES = NO
+
+# Generate a browsable reference as well as LaTeX suitable for a PDF build.
+GENERATE_HTML = YES
+HTML_OUTPUT = html
+GENERATE_TREEVIEW = YES
+SEARCHENGINE = YES
+
+GENERATE_LATEX = YES
+LATEX_OUTPUT = latex
+USE_PDFLATEX = YES
+LATEX_BATCHMODE = YES
+
+# Graphviz is already part of the established Voyager documentation workflow.
+HAVE_DOT = YES
+DOT_NUM_THREADS = 0
+INCLUDE_GRAPH = YES
+INCLUDED_BY_GRAPH = YES
+CALL_GRAPH = YES
+CALLER_GRAPH = YES
+DIRECTORY_GRAPH = YES
 DOT_GRAPH_MAX_NODES = 100
+GENERATE_LEGEND = YES
