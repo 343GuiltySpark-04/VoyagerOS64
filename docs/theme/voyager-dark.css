@@ -1,0 +1,375 @@
+/* VoyagerOS64 Doxygen dark theme.
+ *
+ * Loaded after Doxygen's generated stylesheet so this file can remain small and
+ * self-contained. The intent is a low-glare technical reference rather than a
+ * wholesale replacement of Doxygen's HTML templates.
+ */
+
+:root {
+    color-scheme: dark;
+    --voyager-bg: #0d1117;
+    --voyager-panel: #161b22;
+    --voyager-panel-2: #1d2633;
+    --voyager-border: #30363d;
+    --voyager-fg: #d8e1ea;
+    --voyager-muted: #8b98a7;
+    --voyager-blue: #58a6ff;
+    --voyager-cyan: #79c0ff;
+    --voyager-green: #7ee787;
+    --voyager-orange: #d29922;
+    --voyager-red: #ff7b72;
+    --voyager-code: #0b1016;
+    --voyager-shadow: rgba(0, 0, 0, 0.35);
+}
+
+html,
+body {
+    background: var(--voyager-bg) !important;
+    color: var(--voyager-fg) !important;
+}
+
+body,
+table,
+div,
+p,
+dl,
+#nav-tree .label,
+#nav-tree a,
+.title,
+#projectname,
+#projectbrief,
+.navpath li.navelem a,
+p.reference,
+p.definition {
+    font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
+        "Segoe UI", sans-serif !important;
+}
+
+code,
+pre,
+div.fragment,
+.memname,
+.memproto,
+.memdoc,
+.ttc,
+.line,
+.lineno {
+    font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace !important;
+}
+
+#top,
+#titlearea,
+#main-nav,
+.tabs,
+.tabs2,
+.tabs3,
+.navpath ul,
+#nav-path,
+#side-nav,
+#nav-tree,
+#nav-tree-contents,
+.ui-resizable-e,
+.header,
+.headertitle {
+    background: var(--voyager-panel) !important;
+    color: var(--voyager-fg) !important;
+    border-color: var(--voyager-border) !important;
+}
+
+#titlearea {
+    border-bottom: 1px solid var(--voyager-border) !important;
+    box-shadow: 0 3px 18px var(--voyager-shadow);
+}
+
+#projectname {
+    color: #f0f6fc !important;
+    font-weight: 650 !important;
+    letter-spacing: 0.015em;
+}
+
+#projectnumber,
+#projectbrief {
+    color: var(--voyager-muted) !important;
+}
+
+.contents,
+.contents .textblock,
+.contents > table,
+.contents > div,
+#doc-content,
+body > div.contents {
+    background: var(--voyager-bg) !important;
+    color: var(--voyager-fg) !important;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+.title,
+.groupheader,
+.memtitle {
+    color: #f0f6fc !important;
+}
+
+h2,
+.groupheader {
+    border-bottom-color: var(--voyager-border) !important;
+}
+
+a,
+a:link,
+a:visited,
+a:hover,
+a:focus,
+.el,
+.elRef {
+    color: var(--voyager-blue) !important;
+}
+
+a:hover,
+a:focus {
+    color: var(--voyager-cyan) !important;
+    text-decoration: underline;
+}
+
+.sm-dox,
+.sm-dox ul,
+.sm-dox a,
+.tabs,
+.tabs2,
+.tabs3,
+.tablist li {
+    background: var(--voyager-panel) !important;
+    color: var(--voyager-fg) !important;
+}
+
+.sm-dox a:hover,
+.sm-dox a:focus,
+.sm-dox a.highlighted,
+.tablist li.current a,
+.tablist li a:hover {
+    background: var(--voyager-panel-2) !important;
+    color: var(--voyager-cyan) !important;
+}
+
+#nav-tree .selected,
+#nav-tree .selected a,
+#nav-tree a:hover {
+    background: var(--voyager-panel-2) !important;
+    color: var(--voyager-cyan) !important;
+    text-shadow: none !important;
+}
+
+#nav-tree .arrow {
+    filter: brightness(1.7) saturate(0.7);
+}
+
+.memitem {
+    border: 1px solid var(--voyager-border) !important;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 5px 16px var(--voyager-shadow);
+    background: var(--voyager-panel) !important;
+}
+
+.memproto,
+.memdoc,
+.memtitle,
+.mlabels,
+table.memname,
+table.memname tr,
+table.memname td {
+    background: var(--voyager-panel) !important;
+    color: var(--voyager-fg) !important;
+    border-color: var(--voyager-border) !important;
+    box-shadow: none !important;
+}
+
+.memtitle,
+.memproto {
+    background: var(--voyager-panel-2) !important;
+}
+
+.mlabel {
+    background: #17375e !important;
+    color: var(--voyager-cyan) !important;
+    border-color: #255c91 !important;
+    text-shadow: none !important;
+}
+
+div.fragment,
+pre.fragment,
+.fragment {
+    background: var(--voyager-code) !important;
+    color: var(--voyager-fg) !important;
+    border: 1px solid var(--voyager-border) !important;
+    border-radius: 7px;
+    box-shadow: inset 0 0 0 1px rgba(255,255,255,0.015);
+}
+
+.fragment .line,
+.fragment .lineno {
+    background: transparent !important;
+}
+
+.fragment .keyword,
+.keyword {
+    color: #ff7ab2 !important;
+}
+
+.fragment .keywordtype,
+.keywordtype {
+    color: #d2a8ff !important;
+}
+
+.fragment .keywordflow,
+.keywordflow {
+    color: #ffa657 !important;
+}
+
+.fragment .comment,
+.comment {
+    color: #8b949e !important;
+}
+
+.fragment .stringliteral,
+.stringliteral,
+.fragment .charliteral,
+.charliteral {
+    color: #a5d6ff !important;
+}
+
+.fragment .preprocessor,
+.preprocessor {
+    color: #7ee787 !important;
+}
+
+table,
+table.directory,
+table.params,
+table.fieldtable,
+table.doxtable,
+table.memberdecls,
+table.mlabels {
+    background: var(--voyager-panel) !important;
+    color: var(--voyager-fg) !important;
+    border-color: var(--voyager-border) !important;
+}
+
+tr.even,
+tr.odd,
+table.directory tr.even,
+table.directory tr.odd,
+table.memberdecls tr,
+table.doxtable tr {
+    background: var(--voyager-panel) !important;
+}
+
+tr:nth-child(even),
+table.doxtable tr:nth-child(even) {
+    background: #131922 !important;
+}
+
+th,
+table.doxtable th,
+.memSeparator {
+    background: var(--voyager-panel-2) !important;
+    color: #f0f6fc !important;
+    border-color: var(--voyager-border) !important;
+}
+
+td,
+th,
+.memSeparator,
+.memItemLeft,
+.memItemRight,
+.memTemplItemLeft,
+.memTemplItemRight,
+.memTemplParams {
+    border-color: var(--voyager-border) !important;
+}
+
+.fieldtable th,
+.params .paramname,
+.paramname {
+    color: var(--voyager-cyan) !important;
+}
+
+.directory .levels,
+.directory .levels span {
+    color: var(--voyager-muted) !important;
+}
+
+.directory .entry,
+.directory .desc {
+    border-color: var(--voyager-border) !important;
+}
+
+blockquote,
+div.note,
+div.warning,
+div.attention,
+div.remark,
+div.todo,
+div.deprecated {
+    background: var(--voyager-panel) !important;
+    color: var(--voyager-fg) !important;
+    border-color: var(--voyager-border) !important;
+}
+
+hr {
+    border-color: var(--voyager-border) !important;
+}
+
+#MSearchBox,
+#MSearchField,
+.SelectItem,
+input,
+select,
+textarea {
+    background: var(--voyager-code) !important;
+    color: var(--voyager-fg) !important;
+    border-color: var(--voyager-border) !important;
+}
+
+#MSearchResultsWindow,
+iframe#MSearchResults,
+.SRPage,
+.SRResult {
+    background: var(--voyager-panel) !important;
+    color: var(--voyager-fg) !important;
+    border-color: var(--voyager-border) !important;
+}
+
+.dyncontent,
+.dotgraph,
+.center,
+img[src*="graph"],
+img[src*="inherit"] {
+    background: #e6edf3;
+    border-radius: 6px;
+    padding: 4px;
+}
+
+::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--voyager-bg);
+}
+
+::-webkit-scrollbar-thumb {
+    background: #394654;
+    border-radius: 8px;
+    border: 2px solid var(--voyager-bg);
+}
+
+::selection {
+    background: #1f6feb;
+    color: #ffffff;
+}
