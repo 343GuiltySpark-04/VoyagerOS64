@@ -1,0 +1,101 @@
+% VoyagerOS64 dark PDF theme for Doxygen-generated LaTeX.
+% Loaded through LATEX_EXTRA_STYLESHEET in Doxygen-0.0.5.
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{voyager-dark}[2026/09/09 VoyagerOS64 low-glare Doxygen PDF theme]
+
+\RequirePackage{xcolor}
+\RequirePackage{colortbl}
+
+% Core palette. Keep contrast high enough for long technical reading while
+% avoiding a pure-black background and pure-white body text.
+\definecolor{VoyagerBg}{HTML}{0D1117}
+\definecolor{VoyagerPanel}{HTML}{161B22}
+\definecolor{VoyagerPanelTwo}{HTML}{1D2633}
+\definecolor{VoyagerBorder}{HTML}{30363D}
+\definecolor{VoyagerFg}{HTML}{D8E1EA}
+\definecolor{VoyagerMuted}{HTML}{8B98A7}
+\definecolor{VoyagerBlue}{HTML}{58A6FF}
+\definecolor{VoyagerCyan}{HTML}{79C0FF}
+\definecolor{VoyagerGreen}{HTML}{7EE787}
+\definecolor{VoyagerOrange}{HTML}{FFA657}
+\definecolor{VoyagerPink}{HTML}{FF7AB2}
+\definecolor{VoyagerPurple}{HTML}{D2A8FF}
+\definecolor{VoyagerRed}{HTML}{FF7B72}
+\definecolor{VoyagerCode}{HTML}{0B1016}
+
+% Doxygen uses several named syntax colors in generated source listings. By
+% redefining them after doxygen.sty is loaded we retain readable syntax on the
+% dark page background.
+\definecolor{comment}{HTML}{8B949E}
+\definecolor{keyword}{HTML}{FF7AB2}
+\definecolor{keywordtype}{HTML}{D2A8FF}
+\definecolor{keywordflow}{HTML}{FFA657}
+\definecolor{preprocessor}{HTML}{7EE787}
+\definecolor{stringliteral}{HTML}{A5D6FF}
+\definecolor{charliteral}{HTML}{A5D6FF}
+
+% Whole-document dark canvas.
+\pagecolor{VoyagerBg}
+\color{VoyagerFg}
+\arrayrulecolor{VoyagerBorder}
+
+% A modern sans-serif body is easier to scan on-screen; monospaced material is
+% still controlled by Doxygen's verbatim/code environments.
+\renewcommand{\familydefault}{\sfdefault}
+
+% Doxygen loads hyperref before the extra stylesheet. Apply the final link
+% palette at begin-document time so generated links never fall back to dark blue.
+\AtBeginDocument{%
+  \pagecolor{VoyagerBg}%
+  \color{VoyagerFg}%
+  \arrayrulecolor{VoyagerBorder}%
+  \hypersetup{%
+    colorlinks=true,%
+    linkcolor=VoyagerBlue,%
+    urlcolor=VoyagerCyan,%
+    citecolor=VoyagerGreen,%
+    filecolor=VoyagerCyan,%
+    menucolor=VoyagerBlue,%
+    pdfborder={0 0 0}%
+  }%
+}
+
+% Keep section hierarchy bright and legible against the dark page.
+\makeatletter
+\renewcommand{\section}{\@startsection{section}{1}{\z@}%
+  {-3.5ex \@plus -1ex \@minus -.2ex}%
+  {2.3ex \@plus .2ex}%
+  {\normalfont\Large\bfseries\color{VoyagerCyan}}}
+\renewcommand{\subsection}{\@startsection{subsection}{2}{\z@}%
+  {-3.25ex\@plus -1ex \@minus -.2ex}%
+  {1.5ex \@plus .2ex}%
+  {\normalfont\large\bfseries\color{VoyagerBlue}}}
+\renewcommand{\subsubsection}{\@startsection{subsubsection}{3}{\z@}%
+  {-3.25ex\@plus -1ex \@minus -.2ex}%
+  {1.5ex \@plus .2ex}%
+  {\normalfont\normalsize\bfseries\color{VoyagerFg}}}
+\makeatother
+
+% Doxygen's code environments normally inherit page color. Give the common
+% verbatim-like blocks a distinct panel by tinting framed boxes and rules where
+% possible without replacing Doxygen's own environment definitions.
+\setlength{\fboxsep}{5pt}
+\setlength{\fboxrule}{0.4pt}
+
+% Header/footer rules otherwise default to black and disappear on a dark page.
+\AtBeginDocument{%
+  \renewcommand{\headrulewidth}{0.4pt}%
+  \renewcommand{\footrulewidth}{0.2pt}%
+}
+
+% Common Doxygen admonition/table color names. These names are intentionally
+% redefined only if the generated style references them; redefining an unused
+% color is harmless.
+\definecolor{tableheadbgcolor}{HTML}{1D2633}
+\definecolor{tableheadfgcolor}{HTML}{F0F6FC}
+\definecolor{headbgcolor}{HTML}{161B22}
+\definecolor{headfgcolor}{HTML}{F0F6FC}
+
+% Avoid bright white boxes around inline color backgrounds when Doxygen emits
+% framed material.
+\fboxrule=0.4pt
