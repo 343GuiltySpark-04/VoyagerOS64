@@ -1,10 +1,12 @@
 #include "include/string.h"
 
 /**
- * @brief Compare two memory blocks.
- * @param void * aptr Pointer to the first memory block.
- * @param size Size of the memory block.
- * @return 1 if a < b 0 if a == b and 1 if a > b
+ * @brief Compare two memory blocks byte by byte.
+ * @param aptr Pointer to the first memory block.
+ * @param bptr Pointer to the second memory block.
+ * @param size Number of bytes to compare.
+ * @return Negative when the first differing byte in @p aptr is smaller, zero
+ *         when all requested bytes are equal, or positive when it is larger.
  */
 int memcmp(const void *aptr, const void *bptr, size_t size)
 {
