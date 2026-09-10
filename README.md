@@ -106,10 +106,10 @@ Those belong to later development rather than being quietly half-enabled in the 
 
 The source tree is documented with Doxygen-style comments. The documentation is organized around boot, memory, paging, interrupts, scheduling, drivers, shell services, diagnostics, and retired/historical subsystems.
 
-Generate the reference documentation with:
+Generate the 0.0.5 reference documentation with:
 
 ```sh
-doxygen Doxygen
+doxygen Doxygen-0.0.5
 ```
 
 ## License
