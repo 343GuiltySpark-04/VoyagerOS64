@@ -32,9 +32,9 @@ void pic_enable(void);
 
 /**
  * @brief Remap PIC IRQ0 to a new IDT vector base.
- * @param irq_offset Vector number corresponding to IRQ0 after remapping.
+ * @param offset Vector number corresponding to IRQ0 after remapping.
  */
-void pic_remap_offsets(uint8_t irq_offset);
+void pic_remap_offsets(uint8_t offset);
 
 /**
  * @brief Mask one legacy PIC IRQ line.
