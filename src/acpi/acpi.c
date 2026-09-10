@@ -44,17 +44,15 @@ static struct rsdp *rsdp = NULL;
 static struct rsdt *rsdt = NULL;
 
 /**
- * @brief Check if we should use XSDT.
- * @return True if XSDT should be used
+ * @brief Check whether the ACPI revision/table pointers select the XSDT path.
+ * @return true when an XSDT is available and should be used.
  */
 static inline bool use_xsdt(void)
 {
     return rsdp->revision >= 2 && rsdp->xsdt_addr != 0;
 }
 
-/**
- * @brief Initialize ACPI subsystem This is called at boot time
- */
+/* Public API documentation lives in include/acpi/acpi.h. */
 void acpi_init(void)
 {
     struct limine_rsdp_response *rsdp_resp = rsdp_req.response;
@@ -98,12 +96,6 @@ void acpi_init(void)
     madt_init();
 }
 
-/**
- * @brief Locates SDT by signature
- * @param char
- * @param index Index of entry to search.
- * @return Pointer to the entry or NULL if not found
- */
 void *acpi_find_sdt(const char signature[static 4], size_t index)
 {
     size_t entry_count =
