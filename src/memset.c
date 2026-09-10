@@ -1,11 +1,11 @@
 #include "include/string.h"
 
 /**
- * @brief Sets memory to a value.
- * @param * bufptr
- * @param value Value to set each byte to.
+ * @brief Fill a memory region with one byte value.
+ * @param bufptr Destination memory region.
+ * @param value Value whose low eight bits are written to each byte.
  * @param size Number of bytes to set.
- * @return A pointer to the buffer (bufptr)
+ * @return @p bufptr.
  */
 void *memset(void *bufptr, int value, size_t size)
 {
