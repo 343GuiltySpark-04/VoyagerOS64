@@ -1,6 +1,6 @@
-#include "include/sched.h"
 #include "include/mm/kmalloc.h"
 #include "include/panic.h"
+#include "include/sched.h"
 #include "include/string.h"
 #include <stdbool.h>
 #include <stddef.h>
@@ -8,6 +8,8 @@
 
 #define STACK_SIZE (16u * 1024u)
 #define STACK_ALIGN 16u
+
+extern void halt();
 
 /* This remains false for the cooperative 0.0.5 bring-up. The PIT handler uses
  * it as the gate for IRQ-time preemption, which is deliberately parked until
@@ -21,11 +23,7 @@ static int        next_pid       = 1;
 
 static void task_returned(void)
 {
-    int pid = current ? current->pid : -1;
-    panic("scheduler: task %i returned unexpectedly", pid);
-
-    for (;;)
-        asm volatile("cli; hlt");
+    process_exit(0);
 }
 
 void init_scheduler(void)
@@ -56,6 +54,9 @@ process_t *create_process(void (*entry)(void))
 
     p->pid   = next_pid++;
     p->state = PROC_READY;
+
+    p->stack_base  = stack;
+    p->exit_status = 0;
 
     /*
      * switch_to() restores this exact layout:
@@ -105,26 +106,86 @@ process_t *create_process(void (*entry)(void))
     return p;
 }
 
+void process_exit(int status)
+{
+    if (!current)
+        panic("scheduler: process_exit called without a current process");
+
+    process_t *exiting = current;
+
+    exiting->exit_status = status;
+    exiting->state       = PROC_EXITED;
+
+    schedule();
+
+    /*
+     * An exited process must never resume. If schedule() returns here,
+     * scheduler invariants have been violated.
+     */
+    panic("scheduler: exited task %i resumed", exiting->pid);
+}
+
+static process_t *find_next_ready(process_t *start)
+{
+    if (!start)
+        return NULL;
+
+    process_t *candidate = start;
+
+    do
+    {
+        if (candidate->state == PROC_READY)
+            return candidate;
+
+        candidate = candidate->next;
+    } while (candidate && candidate != start);
+
+    return NULL;
+}
+
 void schedule(void)
 {
     if (!run_queue_head)
         return;
 
-    process_t *next = current ? current->next : run_queue_head;
+    process_t *previous = current;
+
+    /*
+     * A normal cooperative yield makes the currently running process
+     * runnable again. Do not revive blocked or exited processes.
+     */
+    if (previous && previous->state == PROC_RUNNING)
+        previous->state = PROC_READY;
+
+    process_t *start = previous ? previous->next : run_queue_head;
+    process_t *next  = find_next_ready(start);
+
     if (!next)
-        return;
+    {
+        /*
+         * If the only runnable process was ourselves, continue running it.
+         */
+        if (previous && previous->state == PROC_READY)
+        {
+            previous->state = PROC_RUNNING;
+            return;
+        }
 
-    /* A single runnable task has nowhere to yield to after first dispatch. */
-    if (current && next == current)
-        return;
+        panic("scheduler: no runnable process");
+    }
 
-    if (current)
-        current->state = PROC_READY;
+    /*
+     * Walking the ring may bring us back to ourselves.
+     */
+    if (next == previous)
+    {
+        previous->state = PROC_RUNNING;
+        return;
+    }
 
     next->state = PROC_RUNNING;
     switch_to(next);
 }
-
 void scheduler_start(void)
 {
     if (!run_queue_head)

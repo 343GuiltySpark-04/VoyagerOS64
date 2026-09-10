@@ -142,7 +142,7 @@ void proc_a(void)
     while (1)
     {
         scheduler_heartbeat("I'm a thread");
-        for (volatile int i = 0; i < 1000000; i++)
+        for (volatile int i = 0; i < 100; i++)
             ;
         schedule();
     }
@@ -150,13 +150,18 @@ void proc_a(void)
 
 void proc_b(void)
 {
-    while (1)
+    for (volatile int i = 0; i < 100; i++)
     {
         scheduler_heartbeat("I'm a catgirl");
-        for (volatile int i = 0; i < 1000000; i++)
-            ;
         schedule();
     }
+
+    printf_("Catgirl Nap Time");
+}
+
+static void lifecycle_probe(void)
+{
+    printf_("[sched] lifecycle probe: returning normally\n");
 }
 
 void hello_general_floatius(void)
@@ -318,7 +323,7 @@ void _start(void)
 
     init_scheduler();
     // create_process(proc_a);
-    //  create_process(proc_b);
+    // create_process(proc_b);
     create_process(vsh_loop);
 
     // printf_("%s\n", "Scheduler cooperative round-robin online.");

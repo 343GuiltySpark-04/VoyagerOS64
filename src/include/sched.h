@@ -30,7 +30,9 @@ typedef enum
     /** Currently selected process. */
     PROC_RUNNING,
     /** Not runnable until some future wake-up mechanism makes it ready. */
-    PROC_BLOCKED
+    PROC_BLOCKED,
+
+    PROC_EXITED
 
 } proc_state_t;
 
@@ -58,6 +60,11 @@ typedef struct process
 
     /** Next process in the circular run queue. */
     struct process *next;
+
+    void *stack_base;
+
+    int exit_status;
+
 } process_t;
 
 /**
@@ -118,5 +125,7 @@ void init_scheduler(void);
  * return.
  */
 void scheduler_start(void);
+
+void process_exit(int status);
 
 #endif
