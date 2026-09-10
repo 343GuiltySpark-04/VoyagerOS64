@@ -1,11 +1,11 @@
 #include "include/string.h"
 
 /**
- * @brief Copies size bytes from srcptr to dstptr.
- * @param * restrict dstptr
- * @param void
+ * @brief Copy bytes from a non-overlapping source region to a destination.
+ * @param dstptr Destination memory region.
+ * @param srcptr Source memory region.
  * @param size Number of bytes to copy.
- * @return Pointer to destination buffer (same as dstptr)
+ * @return @p dstptr.
  */
 void *memcpy(void *restrict dstptr, const void *restrict srcptr, size_t size)
 {
