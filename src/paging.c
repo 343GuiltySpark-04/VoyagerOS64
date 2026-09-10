@@ -5,9 +5,9 @@
 #include "include/string.h"
 
 /**
- * @brief Converts a virtual address to a page table offset.
- * @param * virtualAddress
- * @return The page table offset corresponding to the address
+ * @brief Convert a virtual address into four-level page-table indices.
+ * @param virtualAddress Virtual address to decompose.
+ * @return PML4, PDPT, PD, and PT indices for the address.
  */
 struct PageTableOffset VirtualAddressToOffsets(void *virtualAddress)
 {
@@ -25,9 +25,9 @@ struct PageTableOffset VirtualAddressToOffsets(void *virtualAddress)
 }
 
 /**
- * @brief Converts a page table offset to a virtual address.
- * @param offset The offset to convert.
- * @return The virtual address corresponding to the offset
+ * @brief Convert four-level page-table indices back to a virtual address.
+ * @param offset Page-table indices to combine.
+ * @return Virtual address assembled from the supplied indices.
  */
 void *OffsetToVirtualAddress(struct PageTableOffset offset)
 {
@@ -42,8 +42,8 @@ void *OffsetToVirtualAddress(struct PageTableOffset offset)
 }
 
 /**
- * @brief Reads and returns CR3.
- * @return Value of CR3 register
+ * @brief Read the active CR3 value.
+ * @return Current CR3 value.
  */
 uint64_t ReadCR3()
 {
@@ -56,9 +56,8 @@ uint64_t ReadCR3()
 }
 
 /**
- * @brief Write 64 - bit value to CR3
- * @param value Value to write to CR3
- * @return 0 on success non -
+ * @brief Write a 64-bit value to CR3.
+ * @param value Value to load into CR3.
  */
 void WriteCR3(uint64_t value)
 {
@@ -68,11 +67,12 @@ void WriteCR3(uint64_t value)
 }
 
 /**
- * @brief Gets or allocates an entry.
- * @param * table
- * @param offset Offset of the entry to be looked up.
- * @param flags Flags to be set on the entry.
- * @return Pointer to the entry or NULL if not found
+ * @brief Return an intermediate page table, allocating it when absent.
+ * @param table Kernel-accessible page table containing the entry.
+ * @param offset Entry index to inspect.
+ * @param flags Flags to apply when a new intermediate table is created.
+ * @return Kernel-accessible pointer to the next-level table, or NULL when frame
+ *         allocation fails.
  */
 static inline struct PageTable *
 GetOrAllocEntry(struct PageTable *table, uint64_t offset, uint64_t flags)
@@ -98,10 +98,11 @@ GetOrAllocEntry(struct PageTable *table, uint64_t offset, uint64_t flags)
 }
 
 /**
- * @brief Get or nullify an entry.
- * @param * table
- * @param offset The offset in the page table.
- * @return The entry or NULL if not present
+ * @brief Return an intermediate page table only when the entry is present.
+ * @param table Kernel-accessible page table containing the entry.
+ * @param offset Entry index to inspect.
+ * @return Kernel-accessible pointer to the next-level table, or NULL when the
+ *         entry is not present.
  */
 static inline struct PageTable *GetOrNullifyEntry(struct PageTable *table,
                                                   uint64_t          offset)
@@ -118,11 +119,11 @@ static inline struct PageTable *GetOrNullifyEntry(struct PageTable *table,
 }
 
 /**
- * @brief Duplicate a page and all subpages
- * @param * self
- * @param entry Address of the entry to duplicate
- * @param level Level of duplicate ( 0 for first level 1 for second level etc )
- * @return New address of the entry
+ * @brief Recursively duplicate a page-table subtree.
+ * @param self Root page table used when mapping newly allocated pages.
+ * @param entry Source entry to duplicate.
+ * @param level Remaining page-table depth; zero copies the leaf page.
+ * @return Newly allocated physical page address combined with source flags.
  */
 static inline uint64_t
 DuplicateRecursive(struct PageTable *self, uint64_t entry, uint64_t level)
@@ -158,12 +159,7 @@ DuplicateRecursive(struct PageTable *self, uint64_t entry, uint64_t level)
     return newPage | (entry & PAGE_FLAG_MASK);
 }
 
-/**
- * @brief Maps a region of virtual memory to P4.
- * @param * p4
- * @param * virtualMemory
- * @param flags Flags to control mapping
- */
+/* Public mapping API documentation lives in include/paging/paging.h. */
 void PagingIdentityMap(struct PageTable *p4,
                        void             *virtualMemory,
                        uint64_t          flags)
@@ -182,13 +178,6 @@ void PagingIdentityMap(struct PageTable *p4,
     }
 }
 
-/**
- * @brief Maps a virtual address to a physical address.
- * @param * p4
- * @param * virtualMemory
- * @param * physicalMemory
- * @param flags The paging flags that should be set
- */
 void PagingMapMemory(struct PageTable *p4,
                      void             *virtualMemory,
                      void             *physicalMemory,
@@ -221,13 +210,6 @@ void PagingMapMemory(struct PageTable *p4,
         (uint64_t) physicalMemory | flags | PAGING_FLAG_PRESENT;
 }
 
-/**
- * @brief PagingPhysicalMemory is used to determine if a virtual address is
- * paged.
- * @param * p4
- * @param * virtualMemory
- * @return The pointer to the page that was paged
- */
 void *PagingPhysicalMemory(struct PageTable *p4, void *virtualMemory)
 {
     struct PageTableOffset offset = VirtualAddressToOffsets(virtualMemory);
@@ -259,12 +241,6 @@ void *PagingPhysicalMemory(struct PageTable *p4, void *virtualMemory)
     return (void *) (pt->entries[offset.ptOffset] & ~(PAGE_FLAG_MASK));
 }
 
-/**
- * @brief Unmaps a page table that was mapped with PagingMapMemory.
- * @param * p4
- * @param * virtualMemory
- * @return Nothing. Side effects : None
- */
 void PagingUnmapMemory(struct PageTable *p4, void *virtualMemory)
 {
     struct PageTableOffset offset = VirtualAddressToOffsets(virtualMemory);
@@ -295,11 +271,6 @@ void PagingUnmapMemory(struct PageTable *p4, void *virtualMemory)
     pt->entries[offset.ptOffset] = 0;
 }
 
-/**
- * @brief Duplicate page table and all pages present in it
- * @param * p4
- * @param * newTable
- */
 void PagingDuplicate(struct PageTable *p4, struct PageTable *newTable)
 {
     struct PageTable *p4Virtual =
