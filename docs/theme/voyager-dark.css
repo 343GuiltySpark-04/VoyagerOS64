@@ -1,31 +1,63 @@
-/* VoyagerOS64 Doxygen dark theme.
+/* VoyagerOS64 Doxygen dark theme — Lucyna palette.
  *
- * Loaded after Doxygen's generated stylesheet so this file can remain small and
- * self-contained. The intent is a low-glare technical reference rather than a
- * wholesale replacement of Doxygen's HTML templates.
+ * The accent palette is taken directly from the Cyberpunk 2077 UI palette
+ * selected for Voyager's Lucyna visual direction:
+ *   black   #000000
+ *   magenta #C5003C
+ *   crimson #880425
+ *   yellow  #F3E600
+ *   cyan    #55EAD4
+ *
+ * Neutral text/panel shades are derived around those accents for long-form
+ * readability. The repository/project identity remains VoyagerOS64.
  */
 
 :root {
     color-scheme: dark;
-    --voyager-bg: #0d1117;
-    --voyager-panel: #161b22;
-    --voyager-panel-2: #1d2633;
-    --voyager-border: #30363d;
-    --voyager-fg: #d8e1ea;
-    --voyager-muted: #8b98a7;
-    --voyager-blue: #58a6ff;
-    --voyager-cyan: #79c0ff;
-    --voyager-green: #7ee787;
-    --voyager-orange: #d29922;
-    --voyager-red: #ff7b72;
-    --voyager-code: #0b1016;
-    --voyager-shadow: rgba(0, 0, 0, 0.35);
+
+    --lucyna-black: #000000;
+    --lucyna-magenta: #C5003C;
+    --lucyna-crimson: #880425;
+    --lucyna-yellow: #F3E600;
+    --lucyna-cyan: #55EAD4;
+
+    --lucyna-bg: #000000;
+    --lucyna-panel: #0B0B0E;
+    --lucyna-panel-2: #121217;
+    --lucyna-panel-3: #18181F;
+    --lucyna-border: #2A2A32;
+    --lucyna-fg: #D8DEE3;
+    --lucyna-fg-bright: #F2F5F7;
+    --lucyna-muted: #9299A1;
+    --lucyna-code: #08080B;
+    --lucyna-shadow: rgba(0, 0, 0, 0.55);
+
+    /* Doxygen Awesome-compatible variables. These are harmless with stock
+     * Doxygen and keep the palette reusable if the HTML theme evolves later. */
+    --primary-color: var(--lucyna-magenta);
+    --primary-dark-color: var(--lucyna-crimson);
+    --primary-light-color: var(--lucyna-cyan);
+    --page-background-color: var(--lucyna-bg);
+    --page-foreground-color: var(--lucyna-fg);
+    --page-secondary-foreground-color: var(--lucyna-muted);
+    --separator-color: var(--lucyna-border);
+    --side-nav-background: var(--lucyna-panel);
+    --code-background: var(--lucyna-code);
+    --code-foreground: var(--lucyna-fg);
+    --fragment-background: var(--lucyna-code);
+    --fragment-foreground: var(--lucyna-fg);
+    --fragment-keyword: var(--lucyna-magenta);
+    --fragment-keywordtype: var(--lucyna-cyan);
+    --fragment-keywordflow: var(--lucyna-yellow);
+    --fragment-comment: var(--lucyna-muted);
+    --fragment-link: var(--lucyna-cyan);
+    --fragment-preprocessor: var(--lucyna-yellow);
 }
 
 html,
 body {
-    background: var(--voyager-bg) !important;
-    color: var(--voyager-fg) !important;
+    background: var(--lucyna-bg) !important;
+    color: var(--lucyna-fg) !important;
 }
 
 body,
@@ -71,25 +103,28 @@ div.fragment,
 .ui-resizable-e,
 .header,
 .headertitle {
-    background: var(--voyager-panel) !important;
-    color: var(--voyager-fg) !important;
-    border-color: var(--voyager-border) !important;
+    background: var(--lucyna-panel) !important;
+    color: var(--lucyna-fg) !important;
+    border-color: var(--lucyna-border) !important;
 }
 
 #titlearea {
-    border-bottom: 1px solid var(--voyager-border) !important;
-    box-shadow: 0 3px 18px var(--voyager-shadow);
+    border-bottom: 2px solid var(--lucyna-magenta) !important;
+    box-shadow: 0 3px 18px var(--lucyna-shadow);
 }
 
 #projectname {
-    color: #f0f6fc !important;
-    font-weight: 650 !important;
-    letter-spacing: 0.015em;
+    color: var(--lucyna-cyan) !important;
+    font-weight: 700 !important;
+    letter-spacing: 0.035em;
 }
 
-#projectnumber,
+#projectnumber {
+    color: var(--lucyna-yellow) !important;
+}
+
 #projectbrief {
-    color: var(--voyager-muted) !important;
+    color: var(--lucyna-muted) !important;
 }
 
 .contents,
@@ -98,8 +133,8 @@ div.fragment,
 .contents > div,
 #doc-content,
 body > div.contents {
-    background: var(--voyager-bg) !important;
-    color: var(--voyager-fg) !important;
+    background: var(--lucyna-bg) !important;
+    color: var(--lucyna-fg) !important;
 }
 
 h1,
@@ -111,27 +146,25 @@ h6,
 .title,
 .groupheader,
 .memtitle {
-    color: #f0f6fc !important;
+    color: var(--lucyna-cyan) !important;
 }
 
 h2,
 .groupheader {
-    border-bottom-color: var(--voyager-border) !important;
+    border-bottom-color: var(--lucyna-magenta) !important;
 }
 
 a,
 a:link,
 a:visited,
-a:hover,
-a:focus,
 .el,
 .elRef {
-    color: var(--voyager-blue) !important;
+    color: var(--lucyna-magenta) !important;
 }
 
 a:hover,
 a:focus {
-    color: var(--voyager-cyan) !important;
+    color: var(--lucyna-cyan) !important;
     text-decoration: underline;
 }
 
@@ -142,8 +175,8 @@ a:focus {
 .tabs2,
 .tabs3,
 .tablist li {
-    background: var(--voyager-panel) !important;
-    color: var(--voyager-fg) !important;
+    background: var(--lucyna-panel) !important;
+    color: var(--lucyna-fg) !important;
 }
 
 .sm-dox a:hover,
@@ -151,28 +184,34 @@ a:focus {
 .sm-dox a.highlighted,
 .tablist li.current a,
 .tablist li a:hover {
-    background: var(--voyager-panel-2) !important;
-    color: var(--voyager-cyan) !important;
+    background: var(--lucyna-panel-2) !important;
+    color: var(--lucyna-cyan) !important;
+    box-shadow: inset 0 -2px 0 var(--lucyna-magenta);
 }
 
 #nav-tree .selected,
 #nav-tree .selected a,
 #nav-tree a:hover {
-    background: var(--voyager-panel-2) !important;
-    color: var(--voyager-cyan) !important;
+    background: var(--lucyna-panel-2) !important;
+    color: var(--lucyna-cyan) !important;
     text-shadow: none !important;
 }
 
+#nav-tree .selected {
+    border-left: 3px solid var(--lucyna-magenta) !important;
+}
+
 #nav-tree .arrow {
-    filter: brightness(1.7) saturate(0.7);
+    filter: brightness(1.35) saturate(1.2);
 }
 
 .memitem {
-    border: 1px solid var(--voyager-border) !important;
-    border-radius: 8px;
+    border: 1px solid var(--lucyna-border) !important;
+    border-left: 3px solid var(--lucyna-crimson) !important;
+    border-radius: 6px;
     overflow: hidden;
-    box-shadow: 0 5px 16px var(--voyager-shadow);
-    background: var(--voyager-panel) !important;
+    box-shadow: 0 5px 16px var(--lucyna-shadow);
+    background: var(--lucyna-panel) !important;
 }
 
 .memproto,
@@ -182,32 +221,37 @@ a:focus {
 table.memname,
 table.memname tr,
 table.memname td {
-    background: var(--voyager-panel) !important;
-    color: var(--voyager-fg) !important;
-    border-color: var(--voyager-border) !important;
+    background: var(--lucyna-panel) !important;
+    color: var(--lucyna-fg) !important;
+    border-color: var(--lucyna-border) !important;
     box-shadow: none !important;
 }
 
 .memtitle,
 .memproto {
-    background: var(--voyager-panel-2) !important;
+    background: var(--lucyna-panel-2) !important;
+}
+
+.memtitle {
+    color: var(--lucyna-cyan) !important;
 }
 
 .mlabel {
-    background: #17375e !important;
-    color: var(--voyager-cyan) !important;
-    border-color: #255c91 !important;
+    background: var(--lucyna-crimson) !important;
+    color: var(--lucyna-fg-bright) !important;
+    border-color: var(--lucyna-magenta) !important;
     text-shadow: none !important;
 }
 
 div.fragment,
 pre.fragment,
 .fragment {
-    background: var(--voyager-code) !important;
-    color: var(--voyager-fg) !important;
-    border: 1px solid var(--voyager-border) !important;
-    border-radius: 7px;
-    box-shadow: inset 0 0 0 1px rgba(255,255,255,0.015);
+    background: var(--lucyna-code) !important;
+    color: var(--lucyna-fg) !important;
+    border: 1px solid var(--lucyna-border) !important;
+    border-left: 3px solid var(--lucyna-cyan) !important;
+    border-radius: 5px;
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.01);
 }
 
 .fragment .line,
@@ -217,34 +261,34 @@ pre.fragment,
 
 .fragment .keyword,
 .keyword {
-    color: #ff7ab2 !important;
+    color: var(--lucyna-magenta) !important;
 }
 
 .fragment .keywordtype,
 .keywordtype {
-    color: #d2a8ff !important;
+    color: var(--lucyna-cyan) !important;
 }
 
 .fragment .keywordflow,
 .keywordflow {
-    color: #ffa657 !important;
+    color: var(--lucyna-yellow) !important;
 }
 
 .fragment .comment,
 .comment {
-    color: #8b949e !important;
+    color: var(--lucyna-muted) !important;
 }
 
 .fragment .stringliteral,
 .stringliteral,
 .fragment .charliteral,
 .charliteral {
-    color: #a5d6ff !important;
+    color: var(--lucyna-cyan) !important;
 }
 
 .fragment .preprocessor,
 .preprocessor {
-    color: #7ee787 !important;
+    color: var(--lucyna-yellow) !important;
 }
 
 table,
@@ -254,9 +298,9 @@ table.fieldtable,
 table.doxtable,
 table.memberdecls,
 table.mlabels {
-    background: var(--voyager-panel) !important;
-    color: var(--voyager-fg) !important;
-    border-color: var(--voyager-border) !important;
+    background: var(--lucyna-panel) !important;
+    color: var(--lucyna-fg) !important;
+    border-color: var(--lucyna-border) !important;
 }
 
 tr.even,
@@ -265,20 +309,20 @@ table.directory tr.even,
 table.directory tr.odd,
 table.memberdecls tr,
 table.doxtable tr {
-    background: var(--voyager-panel) !important;
+    background: var(--lucyna-panel) !important;
 }
 
 tr:nth-child(even),
 table.doxtable tr:nth-child(even) {
-    background: #131922 !important;
+    background: var(--lucyna-panel-2) !important;
 }
 
 th,
 table.doxtable th,
 .memSeparator {
-    background: var(--voyager-panel-2) !important;
-    color: #f0f6fc !important;
-    border-color: var(--voyager-border) !important;
+    background: var(--lucyna-crimson) !important;
+    color: var(--lucyna-fg-bright) !important;
+    border-color: var(--lucyna-magenta) !important;
 }
 
 td,
@@ -289,23 +333,23 @@ th,
 .memTemplItemLeft,
 .memTemplItemRight,
 .memTemplParams {
-    border-color: var(--voyager-border) !important;
+    border-color: var(--lucyna-border) !important;
 }
 
 .fieldtable th,
 .params .paramname,
 .paramname {
-    color: var(--voyager-cyan) !important;
+    color: var(--lucyna-yellow) !important;
 }
 
 .directory .levels,
 .directory .levels span {
-    color: var(--voyager-muted) !important;
+    color: var(--lucyna-muted) !important;
 }
 
 .directory .entry,
 .directory .desc {
-    border-color: var(--voyager-border) !important;
+    border-color: var(--lucyna-border) !important;
 }
 
 blockquote,
@@ -315,13 +359,29 @@ div.attention,
 div.remark,
 div.todo,
 div.deprecated {
-    background: var(--voyager-panel) !important;
-    color: var(--voyager-fg) !important;
-    border-color: var(--voyager-border) !important;
+    background: var(--lucyna-panel) !important;
+    color: var(--lucyna-fg) !important;
+    border-color: var(--lucyna-border) !important;
+}
+
+blockquote,
+div.note,
+div.remark {
+    border-left: 4px solid var(--lucyna-cyan) !important;
+}
+
+div.warning,
+div.attention,
+div.todo {
+    border-left: 4px solid var(--lucyna-yellow) !important;
+}
+
+div.deprecated {
+    border-left: 4px solid var(--lucyna-magenta) !important;
 }
 
 hr {
-    border-color: var(--voyager-border) !important;
+    border-color: var(--lucyna-border) !important;
 }
 
 #MSearchBox,
@@ -330,26 +390,40 @@ hr {
 input,
 select,
 textarea {
-    background: var(--voyager-code) !important;
-    color: var(--voyager-fg) !important;
-    border-color: var(--voyager-border) !important;
+    background: var(--lucyna-code) !important;
+    color: var(--lucyna-fg) !important;
+    border-color: var(--lucyna-border) !important;
+}
+
+#MSearchBox:focus-within,
+input:focus,
+select:focus,
+textarea:focus {
+    border-color: var(--lucyna-cyan) !important;
+    outline: none !important;
 }
 
 #MSearchResultsWindow,
 iframe#MSearchResults,
 .SRPage,
 .SRResult {
-    background: var(--voyager-panel) !important;
-    color: var(--voyager-fg) !important;
-    border-color: var(--voyager-border) !important;
+    background: var(--lucyna-panel) !important;
+    color: var(--lucyna-fg) !important;
+    border-color: var(--lucyna-border) !important;
 }
 
+/* Graphviz SVGs are requested with transparent canvases by Doxygen-0.0.5.
+ * Keep their surrounding containers dark instead of adding the former light
+ * backing plate. */
 .dyncontent,
 .dotgraph,
 .center,
 img[src*="graph"],
-img[src*="inherit"] {
-    background: #e6edf3;
+img[src*="inherit"],
+object[src*="graph"],
+object[src*="inherit"] {
+    background: var(--lucyna-panel) !important;
+    border: 1px solid var(--lucyna-border);
     border-radius: 6px;
     padding: 4px;
 }
@@ -360,16 +434,20 @@ img[src*="inherit"] {
 }
 
 ::-webkit-scrollbar-track {
-    background: var(--voyager-bg);
+    background: var(--lucyna-bg);
 }
 
 ::-webkit-scrollbar-thumb {
-    background: #394654;
+    background: var(--lucyna-crimson);
     border-radius: 8px;
-    border: 2px solid var(--voyager-bg);
+    border: 2px solid var(--lucyna-bg);
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--lucyna-magenta);
 }
 
 ::selection {
-    background: #1f6feb;
-    color: #ffffff;
+    background: var(--lucyna-magenta);
+    color: var(--lucyna-fg-bright);
 }
