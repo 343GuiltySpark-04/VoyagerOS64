@@ -1,3 +1,8 @@
+/**
+ * @file cpu.h
+ * @brief Low-level CPU context, feature, and register-state helpers.
+ * @ingroup boot
+ */
 #pragma once
 
 #ifndef _CPU_H
@@ -13,6 +18,7 @@ extern bool sysenter;
 
 struct thread;
 
+/** @brief Saved general-purpose CPU context used by interrupt/APIC groundwork. */
 struct cpu_ctx
 {
     uint64_t ds;
@@ -40,6 +46,7 @@ struct cpu_ctx
     uint64_t ss;
 };
 
+/** @brief Per-CPU state reserved for APIC/SMP development. */
 struct cpu_local
 {
     int            cpu_number;
@@ -60,9 +67,13 @@ extern void (*fpu_save)(void *ctx);
 extern void (*fpu_rest)(void *ctx);
 
 /**
- * @brief Save a context into x86.
- * @param * ctx
- * @return 0 on success non - zero on failure
+ * @brief Save enabled extended processor state with XSAVE.
+ * @param ctx Destination buffer satisfying the alignment/size requirements for
+ *            the configured XSAVE state.
+ *
+ * @warning The 0.0.5 scheduler does not yet maintain a validated per-task XSAVE
+ * state area. These helpers are groundwork, not part of qualified context
+ * switching.
  */
 static inline void xsave(void *ctx)
 {
@@ -73,9 +84,8 @@ static inline void xsave(void *ctx)
 }
 
 /**
- * @brief This function is used to reset the 64 - bit context.
- * @param * ctx
- * @return 0 on success non - zero on failure
+ * @brief Restore enabled extended processor state with XRSTOR.
+ * @param ctx Source buffer containing a compatible XSAVE state image.
  */
 static inline void xrstor(void *ctx)
 {
@@ -86,9 +96,8 @@ static inline void xrstor(void *ctx)
 }
 
 /**
- * @brief Save a context to memory.
- * @param * ctx
- * @return 0 on success non - zero
+ * @brief Save legacy x87/SSE state with FXSAVE.
+ * @param ctx Destination buffer suitable for FXSAVE.
  */
 static inline void fxsave(void *ctx)
 {
@@ -96,8 +105,8 @@ static inline void fxsave(void *ctx)
 }
 
 /**
- * @brief Put a 64 - bit value into the FXRSTOR register.
- * @param * ctx
+ * @brief Restore legacy x87/SSE state with FXRSTOR.
+ * @param ctx Source buffer containing a compatible FXSAVE image.
  */
 static inline void fxrstor(void *ctx)
 {
@@ -105,8 +114,8 @@ static inline void fxrstor(void *ctx)
 }
 
 /**
- * @brief Check if we are in interrupt mode.
- * @return true if we are in interrupt
+ * @brief Test the current RFLAGS interrupt-enable bit.
+ * @return true when maskable interrupts are enabled (RFLAGS.IF is set).
  */
 static inline bool interrupt_state(void)
 {
@@ -116,10 +125,10 @@ static inline bool interrupt_state(void)
 }
 
 /**
- * @brief Write a 64 - bit value to MSR.
- * @param msr Address of the MSR to write
- * @param val Value to write to the MSR
- * @return The value written to the
+ * @brief Write a 64-bit value to an MSR.
+ * @param msr Address/index of the MSR to write.
+ * @param val Value to write.
+ * @return The value assembled from the EDX:EAX inputs used by WRMSR.
  */
 static inline uint64_t wrmsr(uint32_t msr, uint64_t val)
 {
@@ -130,8 +139,8 @@ static inline uint64_t wrmsr(uint32_t msr, uint64_t val)
 }
 
 /**
- * @brief Read 64 - bit timer counter
- * @return The value of TSC
+ * @brief Read the processor time-stamp counter.
+ * @return Value assembled by the current RDTSC helper implementation.
  */
 static inline uint64_t rdtsc(void)
 {
@@ -141,8 +150,12 @@ static inline uint64_t rdtsc(void)
 }
 
 /**
- * @brief Get a random number.
- * @return A 64 - bit random number
+ * @brief Execute RDRAND and return the produced 64-bit value.
+ * @return Value written by the RDRAND instruction.
+ *
+ * @note This wrapper does not expose the instruction's carry-flag success
+ * indication. Callers must not infer successful entropy generation solely from
+ * the existence of this helper.
  */
 static inline uint64_t rdrand(void)
 {
@@ -152,8 +165,11 @@ static inline uint64_t rdrand(void)
 }
 
 /**
- * @brief Generate a 64 - bit random number.
- * @return The 64 - bit random number
+ * @brief Execute RDSEED and return the produced 64-bit value.
+ * @return Value written by the RDSEED instruction.
+ *
+ * @note This wrapper does not expose the instruction's carry-flag success
+ * indication.
  */
 static inline uint64_t rdseed(void)
 {
@@ -168,14 +184,15 @@ static inline uint64_t rdseed(void)
 #define CPUID_SEP ((uint32_t) 1 << 11)
 
 /**
- * @brief Run CPUID on a leaf
- * @param leaf The leaf to process.
- * @param subleaf The subleaf to process.
- * @param * eax
- * @param * ebx
- * @param * ecx
- * @param * edx
- * @return True if the leaf is a processor
+ * @brief Execute CPUID for one leaf/subleaf when the leaf is supported.
+ * @param leaf CPUID leaf number.
+ * @param subleaf CPUID subleaf number supplied in ECX.
+ * @param eax Output storage for EAX.
+ * @param ebx Output storage for EBX.
+ * @param ecx Output storage for ECX.
+ * @param edx Output storage for EDX.
+ * @return true when the requested leaf passes the helper's maximum-leaf check;
+ *         false otherwise.
  */
 static inline bool cpuid(uint32_t  leaf,
                          uint32_t  subleaf,
@@ -200,9 +217,8 @@ static inline bool cpuid(uint32_t  leaf,
 }
 
 /**
- * @brief Set GS base address.
- * @param * addr
- * @return 0 on success non - zero on failure
+ * @brief Set IA32_KERNEL_GS_BASE.
+ * @param addr Address to install as the kernel GS base.
  */
 static inline void set_kernel_gs_base(void *addr)
 {
@@ -210,9 +226,8 @@ static inline void set_kernel_gs_base(void *addr)
 }
 
 /**
- * @brief Set GS base address.
- * @param * addr
- * @return 0 on success non - zero on failure
+ * @brief Set IA32_GS_BASE.
+ * @param addr Address to install as the GS base.
  */
 static inline void set_gs_base(void *addr)
 {
@@ -220,9 +235,8 @@ static inline void set_gs_base(void *addr)
 }
 
 /**
- * @brief Set the address of the file system base.
- * @param * addr
- * @return 0 on success non - zero on failure
+ * @brief Set IA32_FS_BASE.
+ * @param addr Address to install as the FS base.
  */
 static inline void set_fs_base(void *addr)
 {
@@ -230,8 +244,8 @@ static inline void set_fs_base(void *addr)
 }
 
 /**
- * @brief Get GS base address.
- * @return The GS base address
+ * @brief Read IA32_KERNEL_GS_BASE.
+ * @return Current kernel GS base address.
  */
 static inline void *get_kernel_gs_base(void)
 {
@@ -239,8 +253,8 @@ static inline void *get_kernel_gs_base(void)
 }
 
 /**
- * @brief Get GS base address.
- * @return The global SDRAM base address
+ * @brief Read IA32_GS_BASE.
+ * @return Current GS base address.
  */
 static inline void *get_gs_base(void)
 {
@@ -248,38 +262,30 @@ static inline void *get_gs_base(void)
 }
 
 /**
- * @brief Get the address of the file system base.
- * @return A pointer to the file system base
+ * @brief Read IA32_FS_BASE.
+ * @return Current FS base address.
  */
 static inline void *get_fs_base(void)
 {
     return (void *) rdmsr(0xc0000100);
 }
 
-/**
- * @brief Enable interrupts. This is a low - level function to enable
- * interrupts.
- * @return Nothing. Side effects : Enables interrupts
- */
+/** @brief Enable maskable interrupts with STI. */
 static inline void enable_interrupts(void)
 {
     asm("sti");
 }
 
-/**
- * @brief Disable interrupts. This is used to turn off interrupt generation on a
- * system that doesn't support them.
- * @return Nothing. Side effects : Enables interrupts
- */
+/** @brief Disable maskable interrupts with CLI. */
 static inline void disable_interrupts(void)
 {
     asm("cli");
 }
 
 /**
- * @brief Toggle interrupts on / off
- * @param state true to enable interrupts false to disable
- * @return the previous state of
+ * @brief Set the maskable-interrupt enable state.
+ * @param state true to enable interrupts; false to disable them.
+ * @return Previous RFLAGS.IF state.
  */
 static inline bool interrupt_toggle(bool state)
 {
@@ -295,6 +301,12 @@ static inline bool interrupt_toggle(bool state)
     return ret;
 }
 
+/**
+ * @brief Return the current CPU-local record when that facility is available.
+ * @return Pointer to CPU-local state, or the implementation's current fallback.
+ *
+ * @note CPU-local/SMP state is not yet a qualified 0.0.5 scheduler facility.
+ */
 struct cpu_local *this_cpu(void);
 
 #endif
