@@ -1,3 +1,10 @@
+/**
+ * @file memUtils.h
+ * @brief Legacy allocator-policy constants retained for historical source compatibility.
+ * @ingroup deprecated_code
+ * @deprecated The active 0.0.5 allocator API is mm/kmalloc.h and the Stage-2
+ *             physical allocator is paging/neo_framealloc.h.
+ */
 #pragma once
 #ifndef MEMUTILS_H
 #define MEMUTILS_H
