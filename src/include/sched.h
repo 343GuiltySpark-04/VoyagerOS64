@@ -38,8 +38,8 @@ typedef enum
  * @brief Minimal 0.0.5 process control block.
  *
  * Processes currently share the kernel address space. Each process owns a
- * separately allocated kernel stack; @ref rsp records the saved cooperative
- * context for switch_to(). The @ref next pointer forms the circular run queue.
+ * separately allocated kernel stack; @c rsp records the saved cooperative
+ * context for switch_to(). The @c next pointer forms the circular run queue.
  *
  * @warning sched_ll.asm depends on the layout of this structure, in particular
  *          `rsp` being at byte offset 8. Keep the assembly and C definition in
