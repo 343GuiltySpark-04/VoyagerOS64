@@ -1,7 +1,24 @@
+/**
+ * @file interrupts.h
+ * @brief Register snapshot passed through Voyager's interrupt-dispatch path.
+ * @ingroup interrupts
+ */
 #pragma once
 #include "global_defs.h"
 #include <stdint.h>
 
+/**
+ * @brief Extended interrupt frame matching the current ISR assembly/C boundary.
+ *
+ * The layout is an ABI between low-level interrupt stubs and C handlers. It
+ * contains captured control registers, selected general-purpose registers, and
+ * the architectural interrupt-return frame. Do not reorder fields without
+ * updating the assembly that constructs/consumes this object.
+ *
+ * @note This interrupt frame is distinct from the cooperative scheduler's
+ * saved context. VoyagerOS64 0.0.5 does not switch tasks by abandoning this
+ * frame inside a hardware IRQ.
+ */
 typedef struct
 {
     struct
