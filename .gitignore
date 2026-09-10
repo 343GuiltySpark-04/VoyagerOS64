@@ -76,3 +76,4 @@ quick_calc
 .vscode/settings.json
 build_output.txt
 doxy_log.txt
+doxy_warn.txt
