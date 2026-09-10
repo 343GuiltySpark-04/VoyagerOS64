@@ -1,25 +1,34 @@
+/**
+ * @file io.h
+ * @brief x86 port-I/O primitives.
+ * @ingroup drivers
+ */
 #pragma once
 #ifndef _IO_H
 #define _IO_H
 
 #include <stdint.h>
 
-/** inb:
- *  Read a byte from an I/O port.
- *
- *  @param port The address of the I/O port
- *  @return The read byte
+/**
+ * @brief Read one byte from an x86 I/O port.
+ * @param port I/O-port address.
+ * @return Byte read from the requested port.
  */
 uint8_t inb(uint16_t port);
 
-/** outb:
- *  Sends the given data to the given I/O port.
- *
- *  @param port The I/O port to send the data to
- *  @param data The data to send to the I/O port
+/**
+ * @brief Write one byte to an x86 I/O port.
+ * @param port I/O-port address.
+ * @param data Byte to write.
  */
 void outb(uint16_t port, uint8_t data);
 
+/**
+ * @brief Perform the traditional short I/O delay used around legacy devices.
+ *
+ * This helper is used by hardware such as the PIC/PIT/PS2 paths where ordered
+ * or slightly delayed port transactions are required by the device interface.
+ */
 void io_wait(void);
 
 #endif
