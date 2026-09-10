@@ -1,11 +1,11 @@
 #include "include/string.h"
 
 /**
- * @brief Copies size bytes from srcptr to dstptr.
- * @param * dstptr
- * @param void
+ * @brief Copy bytes between memory regions that may overlap.
+ * @param dstptr Destination memory region.
+ * @param srcptr Source memory region.
  * @param size Number of bytes to copy.
- * @return Pointer to destination memory (dstptr)
+ * @return @p dstptr.
  */
 void *memmove(void *dstptr, const void *srcptr, size_t size)
 {
