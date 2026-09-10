@@ -19,9 +19,9 @@ uint8_t inb(uint16_t port);
 /**
  * @brief Write one byte to an x86 I/O port.
  * @param port I/O-port address.
- * @param data Byte to write.
+ * @param val Byte to write.
  */
-void outb(uint16_t port, uint8_t data);
+void outb(uint16_t port, uint8_t val);
 
 /**
  * @brief Perform the traditional short I/O delay used around legacy devices.
