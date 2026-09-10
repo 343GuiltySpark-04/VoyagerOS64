@@ -17,7 +17,7 @@
  *
  * @note Doxygen 1.9.x can misparse the GNU noreturn attribute when attaching
  * parameter documentation to this declaration, so the format-string contract
- * is described here rather than with an @c \@param command.
+ * is described in prose rather than with a dedicated parameter tag.
  */
 __attribute__((noreturn)) void panic(const char *fmt, ...);
 
