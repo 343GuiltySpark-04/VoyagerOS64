@@ -1,3 +1,10 @@
+/**
+ * @file frameallocator.h
+ * @brief Retired bitmap physical-frame allocator interface.
+ * @ingroup deprecated_code
+ * @deprecated The 0.0.5 runtime uses paging/neo_framealloc.h instead. This
+ *             header remains only for source history and archived experiments.
+ */
 #pragma once
 #include "../bitmap.h"
 #include "../limine.h"
