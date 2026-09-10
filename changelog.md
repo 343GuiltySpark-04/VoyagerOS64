@@ -106,6 +106,7 @@
 - Brought the Doxygen build to a warning-free state under the 0.0.5 release configuration.
 - Added in-tree Lucyna-palette dark themes for both the generated HTML reference and LaTeX/PDF manual.
 - Switched Graphviz documentation output to transparent SVG where supported so generated diagrams fit the dark documentation theme.
+- Added a tracked `release.sh` helper that can rebuild the ISO and PDF manual, stage the established binary-release contents in a versioned directory, create the `.tar.gz`, and emit a SHA-256 sidecar when available.
 - Expanded the repository README with the current architecture, build expectations, diagnostics, documentation workflow, and deliberate 0.0.5 boundaries.
 
 ### Qualification status
