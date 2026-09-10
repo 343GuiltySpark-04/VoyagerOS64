@@ -30,7 +30,7 @@
 - Added additional kernel panic messages.
 - Added a new terminal font.
 
-## Version 0.0.5 (Release Candidate)
+## Version 0.0.5
 
 0.0.5 is primarily the memory-management and cooperative-scheduler stabilization release. It replaces overlapping allocator experiments in the active runtime with one qualified ownership chain and restores a minimal scheduler, terminal, keyboard, and shell path on top of it.
 
@@ -55,6 +55,7 @@
 - Added multi-megabyte heap-growth testing.
 - Added deterministic randomized allocation/free/reallocation torture testing.
 - Qualified repeated same-boot runs with stable physical-frame high-water behavior and no detected corruption.
+- Repeated the full memory test multiple times in one boot without regression.
 
 ### Scheduler and processes
 
@@ -63,7 +64,8 @@
 - Added synthetic initial process contexts and a cooperative low-level stack switch.
 - Added dynamic process creation while the scheduler is already running.
 - Added the VSH `soak` command for scheduler stress testing.
-- Qualified dynamic run-queue growth into the low twenties of runnable tasks during soak testing.
+- Qualified dynamic run-queue growth to 22 runnable tasks during long cooperative soak testing.
+- Silenced the permanent scheduler heartbeat tasks after qualification while retaining them as cooperative canaries.
 - Explicitly kept PIT/IRQ preemption disabled until interrupt-frame-aware preemptive switching is implemented.
 - Task exit/reaping, wait semantics, and Unix-style `fork`/`exec` remain future work.
 
@@ -75,6 +77,7 @@
 - Restored VSH as a cooperative scheduler task.
 - Added dynamic command-buffer growth with `krealloc`.
 - Added or retained VSH commands including `time`, `memtest`, `soak`, and `halt`.
+- Retained verbose boot diagnostics intentionally for low-level bring-up and debugging.
 
 ### Interrupts and platform support
 
@@ -99,30 +102,53 @@
 
 - Cleaned dangerous live warning classes and disconnected retired allocator implementations from the active build.
 - Kept the GNU Make build as the 0.0.5 reference build system.
-- Added a Doxygen architecture/index page and expanded API/invariant documentation for the active boot, memory, paging, scheduler, interrupt, terminal, keyboard, shell, ACPI, timekeeping, and diagnostic interfaces.
-- Expanded the repository README with the current architecture, build expectations, diagnostics, and deliberate 0.0.5 boundaries.
+- Added a standalone Doxygen 1.9.4 release configuration and expanded API/invariant documentation for the active boot, memory, paging, scheduler, interrupt, terminal, keyboard, shell, ACPI, timekeeping, and diagnostic interfaces.
+- Brought the Doxygen build to a warning-free state under the 0.0.5 release configuration.
+- Added in-tree Lucyna-palette dark themes for both the generated HTML reference and LaTeX/PDF manual.
+- Switched Graphviz documentation output to transparent SVG where supported so generated diagrams fit the dark documentation theme.
+- Expanded the repository README with the current architecture, build expectations, diagnostics, documentation workflow, and deliberate 0.0.5 boundaries.
 
 ### Qualification status
 
-Before tagging, the 0.0.5 branch has passed:
+Before tagging, the 0.0.5 branch passed:
 
 - Stage-2 memory torture testing.
 - Repeated same-boot memory torture runs.
 - Cooperative scheduler operation.
-- Dynamic process creation and scheduler soak testing.
+- Dynamic process creation and long scheduler soak testing.
+- 22-task cooperative scheduling under load.
 - Multiple cold QEMU boots.
 - VSH/keyboard operation after standalone-terminal handoff.
+- Warning-free Doxygen 1.9.4 generation.
 
-## Version 0.0.6 (Planned / Subject to Change)
+## Version 0.0.6 — Lucyna (Planned / Subject to Change)
 
-Likely post-0.0.5 work includes:
+0.0.6 is planned as the first release centered on process lifecycle and a more deliberate interactive identity rather than another broad bring-up pass. The repository and project remain VoyagerOS64; **Lucyna** is the 0.0.6 runtime/UI visual direction.
 
-- Proper preemptive scheduling with complete interrupt-frame handling.
-- Task exit/reaping and wait semantics.
-- Per-process virtual address spaces.
-- Later `fork`/`exec`-style process facilities if desired.
-- Qualified per-task FPU/XSAVE state.
-- Deeper APIC/IOAPIC and SMP work.
-- Further paging cleanup and large-page auditing.
-- PIT/timekeeping semantic cleanup.
-- Possible CMake migration while retaining the known-good Make build as a reference during transition.
+### Planned process and scheduler work
+
+- Add clean task return/exit semantics instead of panicking when a task returns.
+- Remove dead tasks from the cooperative run queue and reclaim scheduler-owned task resources.
+- Add blocked/waiting process states and wait semantics suitable for foreground commands.
+- Add foreground/background job behavior without requiring `fork()`.
+- Keep the cooperative scheduler as the qualified baseline while lifecycle semantics are built and tested.
+
+### Planned VSH and interactive work
+
+- Fix VSH backspace/editing behavior.
+- Add useful process-oriented commands such as `ps`, with termination/job-control commands considered once lifecycle support exists.
+- Improve terminal ownership/output serialization so background task output does not trample interactive input.
+- Apply the Lucyna UI palette and presentation consistently across VSH, boot/runtime status output, warnings, errors, and later framebuffer UI work.
+
+### Planned memory/tooling cleanup
+
+- Audit the remaining Stage-2 paging edge cases, including large-page masks and mappings.
+- Continue keeping memory diagnostics as permanent VSH regression tools.
+- Consider beginning the Make-to-CMake transition only after the 0.0.6 functional work is stable, while retaining the known-good Make build as a reference during migration.
+
+### Deliberately deferred from the initial 0.0.6 scope
+
+- Unix-style `fork()`/`exec()` and full per-process address-space cloning.
+- IRQ/PIT preemptive scheduling until interrupt-frame-aware switching is designed and qualified.
+- Qualified per-task FPU/XSAVE state preservation.
+- APIC/IOAPIC-primary routing and SMP bring-up.
