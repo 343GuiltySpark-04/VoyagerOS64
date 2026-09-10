@@ -1,3 +1,8 @@
+/**
+ * @file term.h
+ * @brief Backend-independent terminal parser/context interface.
+ * @ingroup terminal
+ */
 #ifndef _TERM_H
 #define _TERM_H
 
@@ -16,9 +21,20 @@
 #define TERM_CB_MODE 70
 #define TERM_CB_LINUX 80
 
+/**
+ * @brief Terminal parser state plus backend/client callback table.
+ *
+ * The first portion tracks parser, cursor, charset, scroll-region, and saved
+ * terminal state. A backend such as fbterm fills the rendering callbacks; an
+ * optional client callback receives higher-level terminal control events.
+ *
+ * VoyagerOS64 0.0.5 uses this abstraction after the CR3 handoff so interactive
+ * terminal output is owned by kernel code rather than Limine's terminal
+ * callback implementation.
+ */
 struct term_context
 {
-    /* internal use */
+    /* internal parser/state-machine use */
 
     size_t   tab_size;
     bool     autoflush;
@@ -48,7 +64,7 @@ struct term_context
     size_t   saved_state_current_charset;
     size_t   saved_state_current_primary;
 
-    /* to be set by backend */
+    /* backend-provided geometry and rendering operations */
 
     size_t rows, cols;
     bool   in_bootloader;
@@ -81,13 +97,24 @@ struct term_context
     void (*full_refresh)(struct term_context *);
     void (*deinit)(struct term_context *, void (*)(void *, size_t));
 
-    /* to be set by client */
+    /* client-provided control-event callback */
 
     void (*callback)(
         struct term_context *, uint64_t, uint64_t, uint64_t, uint64_t);
 };
 
+/**
+ * @brief Reset/reinitialize parser-visible state in an existing context.
+ * @param ctx Terminal context to reinitialize.
+ */
 void term_context_reinit(struct term_context *ctx);
+
+/**
+ * @brief Feed a byte buffer through the terminal parser and backend.
+ * @param ctx Initialized terminal context.
+ * @param buf Input byte buffer.
+ * @param count Number of bytes to process.
+ */
 void term_write(struct term_context *ctx, const char *buf, size_t count);
 
 #endif
