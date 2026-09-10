@@ -1,101 +1,102 @@
 % VoyagerOS64 dark PDF theme for Doxygen-generated LaTeX.
-% Loaded through LATEX_EXTRA_STYLESHEET in Doxygen-0.0.5.
+% Lucyna palette edition; loaded through LATEX_EXTRA_STYLESHEET in
+% Doxygen-0.0.5.
 \NeedsTeXFormat{LaTeX2e}
-\ProvidesPackage{voyager-dark}[2026/09/09 VoyagerOS64 low-glare Doxygen PDF theme]
+\ProvidesPackage{voyager-dark}[2026/09/10 VoyagerOS64 Lucyna Doxygen PDF theme]
 
 \RequirePackage{xcolor}
 \RequirePackage{colortbl}
 
-% Core palette. Keep contrast high enough for long technical reading while
-% avoiding a pure-black background and pure-white body text.
-\definecolor{VoyagerBg}{HTML}{0D1117}
-\definecolor{VoyagerPanel}{HTML}{161B22}
-\definecolor{VoyagerPanelTwo}{HTML}{1D2633}
-\definecolor{VoyagerBorder}{HTML}{30363D}
-\definecolor{VoyagerFg}{HTML}{D8E1EA}
-\definecolor{VoyagerMuted}{HTML}{8B98A7}
-\definecolor{VoyagerBlue}{HTML}{58A6FF}
-\definecolor{VoyagerCyan}{HTML}{79C0FF}
-\definecolor{VoyagerGreen}{HTML}{7EE787}
-\definecolor{VoyagerOrange}{HTML}{FFA657}
-\definecolor{VoyagerPink}{HTML}{FF7AB2}
-\definecolor{VoyagerPurple}{HTML}{D2A8FF}
-\definecolor{VoyagerRed}{HTML}{FF7B72}
-\definecolor{VoyagerCode}{HTML}{0B1016}
+% Exact accent palette selected for the Lucyna visual direction.
+\definecolor{LucynaBlack}{HTML}{000000}
+\definecolor{LucynaMagenta}{HTML}{C5003C}
+\definecolor{LucynaCrimson}{HTML}{880425}
+\definecolor{LucynaYellow}{HTML}{F3E600}
+\definecolor{LucynaCyan}{HTML}{55EAD4}
 
-% Doxygen uses several named syntax colors in generated source listings. By
-% redefining them after doxygen.sty is loaded we retain readable syntax on the
-% dark page background.
-\definecolor{comment}{HTML}{8B949E}
-\definecolor{keyword}{HTML}{FF7AB2}
-\definecolor{keywordtype}{HTML}{D2A8FF}
-\definecolor{keywordflow}{HTML}{FFA657}
-\definecolor{preprocessor}{HTML}{7EE787}
-\definecolor{stringliteral}{HTML}{A5D6FF}
-\definecolor{charliteral}{HTML}{A5D6FF}
+% Derived neutrals for long-form technical reading.
+\definecolor{LucynaPanel}{HTML}{0B0B0E}
+\definecolor{LucynaPanelTwo}{HTML}{121217}
+\definecolor{LucynaPanelThree}{HTML}{18181F}
+\definecolor{LucynaBorder}{HTML}{2A2A32}
+\definecolor{LucynaFg}{HTML}{D8DEE3}
+\definecolor{LucynaFgBright}{HTML}{F2F5F7}
+\definecolor{LucynaMuted}{HTML}{9299A1}
+\definecolor{LucynaCode}{HTML}{08080B}
+
+% Doxygen source-listing syntax colors.
+\definecolor{comment}{HTML}{9299A1}
+\definecolor{keyword}{HTML}{C5003C}
+\definecolor{keywordtype}{HTML}{55EAD4}
+\definecolor{keywordflow}{HTML}{F3E600}
+\definecolor{preprocessor}{HTML}{F3E600}
+\definecolor{stringliteral}{HTML}{55EAD4}
+\definecolor{charliteral}{HTML}{55EAD4}
 
 % Whole-document dark canvas.
-\pagecolor{VoyagerBg}
-\color{VoyagerFg}
-\arrayrulecolor{VoyagerBorder}
+\pagecolor{LucynaBlack}
+\color{LucynaFg}
+\arrayrulecolor{LucynaBorder}
 
-% A modern sans-serif body is easier to scan on-screen; monospaced material is
-% still controlled by Doxygen's verbatim/code environments.
+% Modern on-screen reading defaults. Doxygen's code/verbatim environments keep
+% their own monospaced face.
 \renewcommand{\familydefault}{\sfdefault}
 
-% Doxygen loads hyperref before the extra stylesheet. Apply the final link
-% palette at begin-document time so generated links never fall back to dark blue.
+% Doxygen loads hyperref before this stylesheet, so set the final palette after
+% the document starts.
 \AtBeginDocument{%
-  \pagecolor{VoyagerBg}%
-  \color{VoyagerFg}%
-  \arrayrulecolor{VoyagerBorder}%
+  \pagecolor{LucynaBlack}%
+  \color{LucynaFg}%
+  \arrayrulecolor{LucynaBorder}%
   \hypersetup{%
     colorlinks=true,%
-    linkcolor=VoyagerBlue,%
-    urlcolor=VoyagerCyan,%
-    citecolor=VoyagerGreen,%
-    filecolor=VoyagerCyan,%
-    menucolor=VoyagerBlue,%
+    linkcolor=LucynaMagenta,%
+    urlcolor=LucynaCyan,%
+    citecolor=LucynaYellow,%
+    filecolor=LucynaCyan,%
+    menucolor=LucynaMagenta,%
     pdfborder={0 0 0}%
   }%
 }
 
-% Keep section hierarchy bright and legible against the dark page.
+% Section hierarchy: cyan for navigation/readability, magenta for the next
+% visual tier, with yellow reserved for smaller accents and warnings.
 \makeatletter
 \renewcommand{\section}{\@startsection{section}{1}{\z@}%
   {-3.5ex \@plus -1ex \@minus -.2ex}%
   {2.3ex \@plus .2ex}%
-  {\normalfont\Large\bfseries\color{VoyagerCyan}}}
+  {\normalfont\Large\bfseries\color{LucynaCyan}}}
 \renewcommand{\subsection}{\@startsection{subsection}{2}{\z@}%
   {-3.25ex\@plus -1ex \@minus -.2ex}%
   {1.5ex \@plus .2ex}%
-  {\normalfont\large\bfseries\color{VoyagerBlue}}}
+  {\normalfont\large\bfseries\color{LucynaMagenta}}}
 \renewcommand{\subsubsection}{\@startsection{subsubsection}{3}{\z@}%
   {-3.25ex\@plus -1ex \@minus -.2ex}%
   {1.5ex \@plus .2ex}%
-  {\normalfont\normalsize\bfseries\color{VoyagerFg}}}
+  {\normalfont\normalsize\bfseries\color{LucynaYellow}}}
 \makeatother
 
-% Doxygen's code environments normally inherit page color. Give the common
-% verbatim-like blocks a distinct panel by tinting framed boxes and rules where
-% possible without replacing Doxygen's own environment definitions.
 \setlength{\fboxsep}{5pt}
 \setlength{\fboxrule}{0.4pt}
 
-% Header/footer rules otherwise default to black and disappear on a dark page.
+% Header/footer rules otherwise disappear into a black page.
 \AtBeginDocument{%
   \renewcommand{\headrulewidth}{0.4pt}%
   \renewcommand{\footrulewidth}{0.2pt}%
 }
 
-% Common Doxygen admonition/table color names. These names are intentionally
-% redefined only if the generated style references them; redefining an unused
-% color is harmless.
-\definecolor{tableheadbgcolor}{HTML}{1D2633}
-\definecolor{tableheadfgcolor}{HTML}{F0F6FC}
-\definecolor{headbgcolor}{HTML}{161B22}
-\definecolor{headfgcolor}{HTML}{F0F6FC}
+% Common Doxygen table/header colors.
+\definecolor{tableheadbgcolor}{HTML}{880425}
+\definecolor{tableheadfgcolor}{HTML}{F2F5F7}
+\definecolor{headbgcolor}{HTML}{121217}
+\definecolor{headfgcolor}{HTML}{55EAD4}
 
-% Avoid bright white boxes around inline color backgrounds when Doxygen emits
-% framed material.
+% Additional color names used by various Doxygen LaTeX templates/releases.
+\definecolor{lightgray}{HTML}{121217}
+\definecolor{darkgray}{HTML}{9299A1}
+\definecolor{DoxyCode}{HTML}{08080B}
+\definecolor{DoxyVerb}{HTML}{D8DEE3}
+\definecolor{DoxyParamCaption}{HTML}{F3E600}
+
+% Keep framed/generated material dark and visible.
 \fboxrule=0.4pt
