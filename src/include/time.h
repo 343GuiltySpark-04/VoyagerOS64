@@ -69,7 +69,7 @@ static inline struct timespec timespec_sub(struct timespec a, struct timespec b)
 extern uint64_t system_timer_ms;
 extern uint64_t system_timer_fractions;
 
-extern uint8_t second, minute, hour, day, month;
+extern uint8_t  second, minute, hour, day, month;
 extern uint16_t year;
 
 void sys_clock_handler(void);
@@ -80,15 +80,15 @@ void print_sys_time(void);
 int  dayofweek(int y, int m, int d);
 
 struct timer *timer_new(struct timespec when);
-void timer_arm(struct timer *timer);
-void timer_disarm(struct timer *timer);
-void print_load_time(void);
+void          timer_arm(struct timer *timer);
+void          timer_disarm(struct timer *timer);
+void          print_load_time(void);
 
 uint16_t pit_get_current_count(void);
-void pit_set_reload_value(uint16_t new_count);
-void pit_set_frequency(uint64_t frequency);
-void sys_clock_handler_alt(void);
-void time_init(void);
-void pit_sleep(uint64_t ms);
+void     pit_set_reload_value(uint16_t new_count);
+void     pit_set_frequency(uint64_t frequency);
+void     sys_clock_handler_alt(void);
+void     time_init(void);
+void     pit_sleep(uint64_t ms);
 
 #endif

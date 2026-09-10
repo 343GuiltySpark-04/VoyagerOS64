@@ -2,6 +2,7 @@
 #include "include/mm/kmalloc.h"
 #include "include/mm/memtest.h"
 #include "include/printf.h"
+#include "include/proc_utils.h"
 #include "include/sched.h"
 #include "include/shell.h"
 #include "include/time.h"
@@ -141,6 +142,12 @@ void cmd_parser(const char *str)
     {
         printf_("%s", "Halting System...");
         halt();
+    }
+
+    if (shell_streq(str, "soak"))
+    {
+        create_process(soak);
+        return;
     }
 
     else

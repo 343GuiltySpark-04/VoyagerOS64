@@ -22,19 +22,19 @@ extern void config_PIT(uint8_t freq);
 
 int8_t century_register = 0x00;
 
-uint8_t second, minute, hour, day, month;
+uint8_t  second, minute, hour, day, month;
 uint16_t year;
 
-uint64_t system_timer_ms = 0;
-uint64_t system_timer_fractions = 0;
-static volatile uint64_t pit_ticks = 0;
+uint64_t                 system_timer_ms        = 0;
+uint64_t                 system_timer_fractions = 0;
+static volatile uint64_t pit_ticks              = 0;
 
 bool timer_fired;
 
 struct timespec time_mono = {0, 0};
 struct timespec time_real = {0, 0};
 
-static spinlock_t timers_lock = SPINLOCK_INIT;
+static spinlock_t timers_lock                   = SPINLOCK_INIT;
 static VECTOR_TYPE(struct timer *) armed_timers = VECTOR_INIT;
 
 extern volatile struct limine_boot_time_request boot_time_req;
@@ -89,13 +89,20 @@ void time_init(void)
 }
 
 static const char *weekday[] = {
-    "Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"
-};
+    "Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"};
 
-static const char *month_str[] = {
-    "Jan", "Feb", "Mar", "Apr", "May", "Jun",
-    "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
-};
+static const char *month_str[] = {"Jan",
+                                  "Feb",
+                                  "Mar",
+                                  "Apr",
+                                  "May",
+                                  "Jun",
+                                  "Jul",
+                                  "Aug",
+                                  "Sep",
+                                  "Oct",
+                                  "Nov",
+                                  "Dec"};
 
 uint16_t pit_get_current_count(void)
 {
@@ -129,9 +136,7 @@ void pit_sleep(uint64_t ms)
 
 void sys_clock_handler(void)
 {
-    struct timespec interval = {
-        .tv_sec = 0, .tv_nsec = 1000000000 / PIT_FREQ
-    };
+    struct timespec interval = {.tv_sec = 0, .tv_nsec = 1000000000 / PIT_FREQ};
 
     time_mono = timespec_add(time_mono, interval);
     time_real = timespec_add(time_real, interval);
@@ -206,36 +211,36 @@ uint8_t get_RTC_register(int reg)
 
 void read_rtc(void)
 {
-    uint8_t century = 0;
-    uint8_t last_second;
-    uint8_t last_minute;
-    uint8_t last_hour;
-    uint8_t last_day;
-    uint8_t last_month;
+    uint8_t  century = 0;
+    uint8_t  last_second;
+    uint8_t  last_minute;
+    uint8_t  last_hour;
+    uint8_t  last_day;
+    uint8_t  last_month;
     uint16_t last_year;
-    uint8_t last_century = 0;
-    uint8_t registerB;
+    uint8_t  last_century = 0;
+    uint8_t  registerB;
 
     while (get_update_flag())
         ;
 
     second = get_RTC_register(0x00);
     minute = get_RTC_register(0x02);
-    hour = get_RTC_register(0x04);
-    day = get_RTC_register(0x07);
-    month = get_RTC_register(0x08);
-    year = get_RTC_register(0x09);
+    hour   = get_RTC_register(0x04);
+    day    = get_RTC_register(0x07);
+    month  = get_RTC_register(0x08);
+    year   = get_RTC_register(0x09);
     if (century_register != 0)
         century = get_RTC_register(century_register);
 
     do
     {
-        last_second = second;
-        last_minute = minute;
-        last_hour = hour;
-        last_day = day;
-        last_month = month;
-        last_year = year;
+        last_second  = second;
+        last_minute  = minute;
+        last_hour    = hour;
+        last_day     = day;
+        last_month   = month;
+        last_year    = year;
         last_century = century;
 
         while (get_update_flag())
@@ -243,10 +248,10 @@ void read_rtc(void)
 
         second = get_RTC_register(0x00);
         minute = get_RTC_register(0x02);
-        hour = get_RTC_register(0x04);
-        day = get_RTC_register(0x07);
-        month = get_RTC_register(0x08);
-        year = get_RTC_register(0x09);
+        hour   = get_RTC_register(0x04);
+        day    = get_RTC_register(0x07);
+        month  = get_RTC_register(0x08);
+        year   = get_RTC_register(0x09);
         if (century_register != 0)
             century = get_RTC_register(century_register);
     } while ((last_second != second) || (last_minute != minute) ||
@@ -260,10 +265,10 @@ void read_rtc(void)
     {
         second = (second & 0x0F) + ((second / 16) * 10);
         minute = (minute & 0x0F) + ((minute / 16) * 10);
-        hour = ((hour & 0x0F) + (((hour & 0x70) / 16) * 10)) | (hour & 0x80);
-        day = (day & 0x0F) + ((day / 16) * 10);
-        month = (month & 0x0F) + ((month / 16) * 10);
-        year = (year & 0x0F) + ((year / 16) * 10);
+        hour   = ((hour & 0x0F) + (((hour & 0x70) / 16) * 10)) | (hour & 0x80);
+        day    = (day & 0x0F) + ((day / 16) * 10);
+        month  = (month & 0x0F) + ((month / 16) * 10);
+        year   = (year & 0x0F) + ((year / 16) * 10);
         if (century_register != 0)
             century = (century & 0x0F) + ((century / 16) * 10);
     }
