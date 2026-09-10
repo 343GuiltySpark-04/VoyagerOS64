@@ -70,6 +70,8 @@ PDF_HYPERLINKS = YES
 LATEX_EXTRA_STYLESHEET = docs/theme/voyager-dark.sty
 
 # Graphviz is already part of the established Voyager documentation workflow.
+# SVG + transparent canvases keep generated diagrams compatible with the dark
+# Lucyna palette instead of embedding large white rectangles in the HTML.
 HAVE_DOT = YES
 DOT_NUM_THREADS = 0
 INCLUDE_GRAPH = YES
@@ -78,4 +80,7 @@ CALL_GRAPH = YES
 CALLER_GRAPH = YES
 DIRECTORY_GRAPH = YES
 DOT_GRAPH_MAX_NODES = 100
+DOT_IMAGE_FORMAT = svg
+INTERACTIVE_SVG = YES
+DOT_TRANSPARENT = YES
 GENERATE_LEGEND = YES
