@@ -11,9 +11,9 @@
 
 extern void halt();
 
-/* This remains false for the cooperative 0.0.5 bring-up. The PIT handler uses
- * it as the gate for IRQ-time preemption, which is deliberately parked until
- * context switching is moved onto a proper interrupt-frame design. */
+/* This remains false for the cooperative bring-up. The PIT handler uses it as
+ * the gate for IRQ-time preemption, which is deliberately parked until context
+ * switching is moved onto a proper interrupt-frame design. */
 bool       allow_sched = false;
 process_t *current     = NULL;
 
@@ -146,6 +146,37 @@ void process_exit(int status)
     panic("scheduler: exited task %i resumed", exiting->pid);
 }
 
+void process_block(void)
+{
+    if (!current)
+        panic("scheduler: process_block called without a current process");
+
+    if (current == idle_process)
+        panic("scheduler: idle process attempted to block");
+
+    if (current->state != PROC_RUNNING)
+        panic("scheduler: non-running process attempted to block");
+
+    current->state = PROC_BLOCKED;
+    schedule();
+
+    /* Returning means this process was woken and selected again. */
+    if (!current || current->state != PROC_RUNNING)
+        panic("scheduler: blocked process resumed in invalid state");
+}
+
+bool process_wake(process_t *process)
+{
+    if (!process)
+        return false;
+
+    if (process->state != PROC_BLOCKED)
+        return false;
+
+    process->state = PROC_READY;
+    return true;
+}
+
 static process_t *find_next_ready(process_t *start)
 {
     if (!start)
@@ -252,9 +283,7 @@ void schedule(void)
 
         unlink_process(previous);
 
-        /*
-         * reap_deferred() above should always have emptied this slot.
-         */
+        /* tribute_pull() above should always have emptied this slot. */
         if (reaping)
             panic("scheduler: deferred reap slot still occupied");
 
@@ -272,12 +301,9 @@ void schedule(void)
         start = previous ? previous->next : run_queue_head;
     }
 
-    /*
-     * Eventually an idle task will make this case non-fatal. For now,
-     * exiting the final runnable process is still a scheduler error.
-     */
+    /* The permanent idle process should keep this invariant true. */
     if (!run_queue_head)
-        panic("scheduler: no processes remain after exit");
+        panic("scheduler: run queue unexpectedly empty");
 
     if (!start)
         start = run_queue_head;
