@@ -20,11 +20,24 @@ process_t *current     = NULL;
 static process_t *run_queue_head = NULL;
 static process_t *run_queue_tail = NULL;
 static process_t *reaping        = NULL;
+static process_t *idle_process   = NULL;
 static int        next_pid       = 1;
 
 static void task_returned(void)
 {
     process_exit(0);
+}
+
+static void idle_task(void)
+{
+    for (;;)
+    {
+        /*
+         * Cooperative scheduler for now. Once proper IRQ-time scheduling
+         * exists, this can become a real HLT-based idle loop.
+         */
+        schedule();
+    }
 }
 
 void init_scheduler(void)
@@ -33,8 +46,11 @@ void init_scheduler(void)
     run_queue_head = NULL;
     run_queue_tail = NULL;
     reaping        = NULL;
+    idle_process   = NULL;
     next_pid       = 1;
     allow_sched    = false;
+
+    idle_process = create_process(idle_task);
 }
 
 process_t *create_process(void (*entry)(void))
@@ -112,6 +128,9 @@ void process_exit(int status)
 {
     if (!current)
         panic("scheduler: process_exit called without a current process");
+
+    if (current == idle_process)
+        panic("scheduler: idle process attempted to exit");
 
     process_t *exiting = current;
 
