@@ -324,6 +324,8 @@ void _start(void)
     init_scheduler();
     // create_process(proc_a);
     // create_process(proc_b);
+    create_process(lifecycle_probe);
+    create_process(lifecycle_probe);
     create_process(vsh_loop);
 
     // printf_("%s\n", "Scheduler cooperative round-robin online.");
