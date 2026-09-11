@@ -159,9 +159,22 @@ void proc_b(void)
     printf_("Catgirl Nap Time");
 }
 
-static void lifecycle_probe(void)
+static process_t *block_probe_process = NULL;
+
+static void block_probe(void)
 {
-    printf_("[sched] lifecycle probe: returning normally\n");
+    printf_("[sched] block probe: blocking\n");
+    process_block();
+    printf_("[sched] block probe: resumed\n");
+    block_probe_process = NULL;
+}
+
+static void wake_probe(void)
+{
+    printf_("[sched] wake probe: waking blocked task\n");
+
+    if (!process_wake(block_probe_process))
+        panic("scheduler: block probe wake failed");
 }
 
 void hello_general_floatius(void)
@@ -324,8 +337,8 @@ void _start(void)
     init_scheduler();
     // create_process(proc_a);
     // create_process(proc_b);
-    create_process(lifecycle_probe);
-    create_process(lifecycle_probe);
+    block_probe_process = create_process(block_probe);
+    create_process(wake_probe);
     create_process(vsh_loop);
 
     // printf_("%s\n", "Scheduler cooperative round-robin online.");
